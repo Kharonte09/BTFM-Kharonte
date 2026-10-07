@@ -1,0 +1,16 @@
+---
+import SearchPanel from './SearchPanel.astro';
+---
+
+<dialog
+  id="search-dialog"
+  aria-label="Search the field manual"
+  class="mx-auto mt-[8vh] w-[calc(100%-2rem)] max-w-2xl bg-transparent p-0 text-paper backdrop:bg-ink-950/80 backdrop:backdrop-blur-sm"
+>
+  <SearchPanel id="dialog-search" mode="dialog" />
+  <p class="mt-2 hidden gap-4 font-mono text-[0.6875rem] text-faint sm:flex" aria-hidden="true">
+    <span><span class="kbd">↑</span> <span class="kbd">↓</span> navigate</span>
+    <span><span class="kbd">Enter</span> open</span>
+    <span><span class="kbd">Esc</span> close</span>
+  </p>
+</dialog>
