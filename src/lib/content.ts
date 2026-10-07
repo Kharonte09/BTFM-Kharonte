@@ -147,10 +147,17 @@ export async function toolsForArtifact(a: Artifact, lang: Lang): Promise<Tool[]>
   return out;
 }
 
-/** Artifacts that list this tool in their `tools`. */
+/** Every tool an artifact mentions (start, deeper and per-tool questions). */
+export const artifactToolRefs = (a: Artifact) => [
+  ...a.data.tools_start,
+  ...a.data.tools_deeper,
+  ...a.data.tool_questions.map((q) => q.tool),
+];
+
+/** Artifacts that list this tool. */
 export async function artifactsForTool(t: Tool, lang: Lang): Promise<Artifact[]> {
   const out: Artifact[] = [];
-  for (const a of await getArtifacts(lang)) if (await refersTo(a.data.tools, slugOf(t))) out.push(a);
+  for (const a of await getArtifacts(lang)) if (await refersTo(artifactToolRefs(a), slugOf(t))) out.push(a);
   return out;
 }
 

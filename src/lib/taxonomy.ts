@@ -17,7 +17,8 @@ export type IconName =
   | 'malware'
   | 'reversing'
   | 'general'
-  | 'terminal';
+  | 'terminal'
+  | 'indicators';
 
 export type Localized = Record<Lang, string>;
 
@@ -42,14 +43,24 @@ export const ARTIFACT_CATEGORIES = [
     icon: 'windows',
   },
   {
-    id: 'phishing',
-    label: { en: 'Phishing', es: 'Phishing' },
-    code: 'PHI',
+    id: 'email',
+    label: { en: 'Email', es: 'Email' },
+    code: 'EML',
     description: {
-      en: 'Emails, headers, authentication results, links and attachments (Office documents, PDF).',
-      es: 'Correos, headers, resultados de autenticación, enlaces y adjuntos (documentos Office, PDF).',
+      en: 'Messages, headers, authentication results, links and attachments.',
+      es: 'Mensajes, headers, resultados de autenticación, enlaces y adjuntos.',
     },
     icon: 'email',
+  },
+  {
+    id: 'documents',
+    label: { en: 'Documents', es: 'Documentos' },
+    code: 'DOC',
+    description: {
+      en: 'Office documents and PDF — usually delivered as attachments.',
+      es: 'Documentos Office y PDF — normalmente llegan como adjuntos.',
+    },
+    icon: 'documents',
   },
   {
     id: 'binaries',
@@ -80,6 +91,16 @@ export const ARTIFACT_CATEGORIES = [
       es: 'Imágenes de RAM: procesos, conexiones, código inyectado y handles.',
     },
     icon: 'memory',
+  },
+  {
+    id: 'indicators',
+    label: { en: 'Indicators / IOCs', es: 'Indicadores / IOCs' },
+    code: 'IOC',
+    description: {
+      en: 'IPs, domains, URLs and hashes: things to enrich, scope and pivot on — not evidence sources.',
+      es: 'IPs, dominios, URLs y hashes: cosas que enriquecer, acotar y pivotar — no fuentes de evidencia.',
+    },
+    icon: 'indicators',
   },
 ] as const satisfies readonly Category[];
 
@@ -179,7 +200,9 @@ export const ICON_NAMES = [
   'reversing',
   'general',
   'terminal',
+  'indicators',
 ] as const satisfies readonly IconName[];
 
-export const DIFFICULTY = ['basic', 'intermediate', 'advanced'] as const;
-export type Difficulty = (typeof DIFFICULTY)[number];
+/** Author's knowledge level of an entry (shown as "Coverage"). */
+export const COVERAGE = ['basic', 'intermediate', 'advanced'] as const;
+export type Coverage = (typeof COVERAGE)[number];
