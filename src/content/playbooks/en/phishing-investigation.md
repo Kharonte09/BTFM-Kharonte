@@ -1,11 +1,25 @@
 ---
 name: Phishing Investigation
 summary: From a reported email to scope, IOCs and a conclusion — headers, authentication, links, attachments, infrastructure and user impact.
+coverage: intermediate
 order: 1
 scenario: A suspicious email
 icon: email
-trigger: A user reports a suspicious email, a mail gateway alert fires, or an incident points to email as the initial access vector. Obtain the **original message as .eml/.msg** — not a forward.
 tags: [phishing, email, initial access, bec, credential phishing]
+trigger: A user reports a suspicious email, a mail gateway alert fires, or an incident points to email as the initial access vector. Obtain the **original message as .eml/.msg** — not a forward.
+objective: Decide whether the email is malicious, who was affected, and whether anything ran or credentials were exposed.
+initial_triage:
+  - Get the original `.eml` / `.msg` and hash it — no clicking, no opening attachments.
+  - Check `Authentication-Results` and compare `From`, `Reply-To` and `Return-Path`.
+  - Extract and defang URLs and attachment hashes; look them up passively.
+  - Run a message trace — who else received it?
+  - Check proxy / DNS — did anyone click?
+evidence:
+  - Original email (.eml / .msg)
+  - Mail gateway / message trace logs
+  - Proxy and DNS logs
+  - Sign-in logs of affected users
+  - Endpoint telemetry of users who opened the attachment
 steps:
   - title: Email
     goal: Secure the original message and record basic facts.
@@ -76,17 +90,34 @@ steps:
       - Classify — spam, credential phishing, malware delivery, BEC, or benign.
       - Purge the message from mailboxes, block indicators, notify affected users.
       - Record timeline, scope, actions taken and open questions.
+correlation:
+  - Email (sender, URLs, attachment hash)
+  - Message trace — recipients
+  - Proxy / DNS — clicks
+  - Sign-in logs — credential use
+  - Endpoint — process creation from Office / browser
 iocs:
   - Sender address, envelope sender and sending domain.
   - Sending IP(s) from the first trusted `Received` hop.
   - URLs (full), landing domains and redirectors.
   - Attachment names and SHA-256 hashes.
   - Subject line and distinctive body strings for message trace.
-escalate_when:
-  - A user executed an attachment or submitted credentials.
-  - The email came from a legitimate internal or partner account (compromised mailbox).
-  - The campaign targets specific roles (finance, executives) — possible targeted attack / BEC.
-  - The payload is unknown to reputation services.
+decision_points:
+  - decision: close
+    when: Spam or benign marketing; no malicious URL or attachment; nobody interacted.
+  - decision: escalate
+    when: Credentials were submitted, or the email came from a compromised internal / partner mailbox.
+  - decision: isolate
+    when: An attachment executed on an endpoint — isolate the host and start the Windows Endpoint Investigation.
+  - decision: deeper
+    when: Unknown attachment or payload — run Malware Triage on it.
+output:
+  - Verdict — spam, credential phishing, malware delivery, BEC or benign
+  - IOCs — sender, sending IP, URLs, domains, hashes
+  - Affected users and who interacted
+  - Timeline (UTC)
+  - Actions taken — purge, block, password resets
+  - Severity and next action
 related_playbooks: [malware-triage, windows-endpoint-investigation]
 ---
 

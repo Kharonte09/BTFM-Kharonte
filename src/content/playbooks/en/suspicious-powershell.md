@@ -1,11 +1,25 @@
 ---
 name: Suspicious PowerShell
 summary: Decode, deobfuscate and contextualise a PowerShell command — then find out who ran it, what it contacted and whether it persisted.
+coverage: basic
 order: 5
 scenario: Suspicious PowerShell in the logs
 icon: terminal
-trigger: An alert, log entry or EDR event shows PowerShell with encoded, obfuscated or download-and-execute content.
 tags: [powershell, deobfuscation, living off the land, execution]
+trigger: An alert, log entry or EDR event shows PowerShell with encoded, obfuscated or download-and-execute content.
+objective: Understand what the PowerShell did, who ran it and why, and whether it led to a payload, C2 or persistence.
+initial_triage:
+  - Get the full command line and the matching `4104` script block.
+  - Decode / deobfuscate it as text — never execute it.
+  - Identify the parent process and the user.
+  - Check network activity around the execution time.
+  - Look for tasks, services or Run keys created at the same time.
+evidence:
+  - Command line (`4688`, Sysmon `1`, EDR)
+  - PowerShell Operational log (`4104`)
+  - Process tree
+  - Proxy / DNS / Sysmon network events
+  - Persistence locations
 steps:
   - title: Command
     goal: Capture the exact command line and its source.
@@ -56,15 +70,34 @@ steps:
     actions:
       - URLs, domains, IPs, downloaded file hashes, file paths, task/service names.
       - Distinctive script fragments for hunting in `4104` across the fleet.
+correlation:
+  - Command line
+  - Script block `4104`
+  - Parent process and user / logon
+  - Network — downloads and C2
+  - Persistence
+  - Downloaded payload → Suspicious EXE
 iocs:
   - Download URLs, domains and IPs.
   - Hashes of downloaded payloads.
   - Distinctive script strings (variable names, function names, user agents).
   - Persistence artefacts (task names, registry values).
-escalate_when:
-  - The script downloads and executes a second stage.
-  - AMSI bypass, credential access (e.g. LSASS) or lateral movement is present.
-  - The parent is a server process (web server, SQL) — possible exploitation.
+decision_points:
+  - decision: close
+    when: Legitimate admin or software activity, confirmed with the owner.
+  - decision: deeper
+    when: It downloads a second stage — analyse the payload (Suspicious EXE).
+  - decision: isolate
+    when: C2 traffic, AMSI bypass or credential access (LSASS) is observed.
+  - decision: escalate
+    when: Parent is a server process (web server, SQL) — possible exploitation — or several hosts run the same script.
+output:
+  - What the script did, in plain words
+  - Who ran it, from which parent, on which host
+  - IOCs — URLs, domains, IPs, payload hashes, script strings
+  - Persistence found
+  - Timeline (UTC)
+  - Verdict and next action
 related_playbooks: [windows-endpoint-investigation, suspicious-exe]
 ---
 

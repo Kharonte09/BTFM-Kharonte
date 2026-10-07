@@ -1,11 +1,24 @@
 ---
 name: Suspicious EXE
 summary: Triage a Windows executable from hash to IOCs — identify, analyse statically, check reputation, observe behaviour and decide whether to reverse.
+coverage: basic
 order: 4
 scenario: A suspicious .exe / .dll
 icon: binaries
-trigger: You have a suspicious `.exe` / `.dll` — from an alert, an endpoint, an email attachment or a download. Copy it to an isolated analysis environment (ideally inside a password-protected archive, conventionally `infected`).
 tags: [malware, pe, static analysis, sandbox, triage]
+trigger: You have a suspicious `.exe` / `.dll` — from an alert, an endpoint, an email attachment or a download. Copy it to an isolated analysis environment (ideally inside a password-protected archive, conventionally `infected`).
+objective: Determine whether the executable is malicious, what it does, and which IOCs let you scope it.
+initial_triage:
+  - Copy the sample to an isolated VM; calculate SHA-256.
+  - Identify the real type — packed, .NET, installer, native.
+  - Check signature and version info.
+  - Look up the hash (do not upload by default).
+  - Find where it came from and whether it ran (Sysmon `1`, Prefetch).
+evidence:
+  - The sample
+  - Where it was found (host, path, time)
+  - Process creation and network telemetry from that host
+  - Sandbox report, if policy allows
 steps:
   - title: Hash
     goal: Fingerprint the file before anything else.
@@ -75,15 +88,33 @@ steps:
       - Hashes, file names/paths, mutexes, registry keys, task/service names, domains, IPs, URLs, user agents.
       - Write or refine a YARA rule and hunting queries.
     tools: [YARA]
+correlation:
+  - Sample (hash, path)
+  - Process creation — Sysmon `1` / `4688`
+  - Parent process and user
+  - Network — Sysmon `3` / `22`, proxy
+  - Persistence — Run keys, services, tasks
 iocs:
   - SHA-256 / SHA-1 / MD5 and imphash.
   - Dropped file names and paths.
   - Mutexes, named pipes, service and task names, registry keys.
   - C2 domains, IPs, URLs, user agents, JA3/JA4 fingerprints if available.
-escalate_when:
-  - The sample is unknown or targeted (no public hits, internal names in strings).
-  - Capabilities include credential theft, lateral movement or ransomware behaviour.
-  - Persistence or C2 evidence is found on production endpoints.
+decision_points:
+  - decision: close
+    when: Known-good, validly signed software and the behaviour is expected.
+  - decision: deeper
+    when: Packed, unknown or evasive sample — sandbox it, then reverse targeted functions only if the answer changes the response.
+  - decision: isolate
+    when: It executed on a production host and shows C2 or persistence.
+  - decision: escalate
+    when: Credential theft, lateral movement or ransomware capabilities, or several hosts affected.
+output:
+  - Verdict and confidence
+  - IOCs — hashes, paths, domains, IPs, mutexes, persistence names
+  - Affected hosts
+  - Behaviour summary
+  - YARA rule or hunting queries
+  - Next action
 related_playbooks: [malware-triage, windows-endpoint-investigation]
 ---
 

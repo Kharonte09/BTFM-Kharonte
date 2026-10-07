@@ -1,11 +1,25 @@
 ---
 name: Investigación de phishing
 summary: De un correo reportado al alcance, los IOCs y una conclusión — headers, autenticación, enlaces, adjuntos, infraestructura e impacto en los usuarios.
+coverage: intermediate
 order: 1
 scenario: Un correo sospechoso
 icon: email
-trigger: Un usuario reporta un correo sospechoso, salta una alerta del mail gateway o un incidente apunta al correo como vector de acceso inicial. Consigue el **mensaje original en .eml/.msg**, no un reenvío.
 tags: [phishing, correo, acceso inicial, bec, robo de credenciales]
+trigger: Un usuario reporta un correo sospechoso, salta una alerta del mail gateway o un incidente apunta al correo como vector de acceso inicial. Consigue el **mensaje original en .eml/.msg**, no un reenvío.
+objective: Decidir si el correo es malicioso, a quién afectó y si se ejecutó algo o se expusieron credenciales.
+initial_triage:
+  - Consigue el `.eml` / `.msg` original y calcula su hash — sin clics y sin abrir adjuntos.
+  - Revisa `Authentication-Results` y compara `From`, `Reply-To` y `Return-Path`.
+  - Extrae y haz defang de URLs y hashes de adjuntos; consúltalos de forma pasiva.
+  - Lanza una traza de mensajes — ¿quién más lo recibió?
+  - Revisa proxy / DNS — ¿alguien hizo clic?
+evidence:
+  - Correo original (.eml / .msg)
+  - Logs del mail gateway / traza de mensajes
+  - Logs de proxy y DNS
+  - Sign-in logs de los usuarios afectados
+  - Telemetría del endpoint de quien abrió el adjunto
 steps:
   - title: Correo
     goal: Asegurar el mensaje original y registrar los datos básicos.
@@ -76,17 +90,34 @@ steps:
       - Clasifica — spam, phishing de credenciales, entrega de malware, BEC o legítimo.
       - Purga el mensaje de los buzones, bloquea los indicadores, avisa a los usuarios afectados.
       - Registra timeline, alcance, acciones realizadas y preguntas abiertas.
+correlation:
+  - Correo (remitente, URLs, hash del adjunto)
+  - Traza de mensajes — destinatarios
+  - Proxy / DNS — clics
+  - Sign-in logs — uso de credenciales
+  - Endpoint — procesos lanzados por Office / navegador
 iocs:
   - Dirección del remitente, remitente del sobre y dominio de envío.
   - IP(s) de envío del primer salto `Received` de confianza.
   - URLs (completas), dominios de destino y redirectores.
   - Nombres de los adjuntos y hashes SHA-256.
   - Asunto y strings distintivos del cuerpo para la traza de mensajes.
-escalate_when:
-  - Un usuario ejecutó un adjunto o introdujo credenciales.
-  - El correo llegó desde una cuenta interna o de un socio legítima (buzón comprometido).
-  - La campaña se dirige a perfiles concretos (finanzas, directivos) — posible ataque dirigido / BEC.
-  - El payload es desconocido para los servicios de reputación.
+decision_points:
+  - decision: close
+    when: Spam o marketing legítimo; sin URL ni adjunto malicioso; nadie interactuó.
+  - decision: escalate
+    when: Se introdujeron credenciales, o el correo salió de un buzón interno / de un socio comprometido.
+  - decision: isolate
+    when: Un adjunto se ejecutó en un endpoint — aísla el equipo y empieza la Investigación de endpoint Windows.
+  - decision: deeper
+    when: Adjunto o payload desconocido — pásalo por el Malware Triage.
+output:
+  - Veredicto — spam, phishing de credenciales, entrega de malware, BEC o legítimo
+  - IOCs — remitente, IP de envío, URLs, dominios, hashes
+  - Usuarios afectados y quién interactuó
+  - Timeline (UTC)
+  - Acciones realizadas — purga, bloqueos, cambios de contraseña
+  - Severidad y siguiente acción
 related_playbooks: [malware-triage, windows-endpoint-investigation]
 ---
 
