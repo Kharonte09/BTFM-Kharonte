@@ -38,7 +38,7 @@ jobs:
 
       # configure-pages reports the published URL:
       #   project pages  → origin https://USER.github.io, base_path /REPOSITORY
-      #   custom domain  → origin https://kharonte.es,    base_path "" (root)
+      #   custom domain  → origin https://<your-domain>, base_path "" (root)
       - name: Build Astro
         run: npm run build
         env:

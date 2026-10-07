@@ -30,7 +30,7 @@ export const href = (lang: Lang, path = '/') => url(localePath(lang, path));
 
 /** Absolute URL (for canonical / Open Graph). */
 export function absoluteUrl(path: string, site: URL | undefined): string {
-  return new URL(url(path), site ?? 'https://kharonte.es').toString();
+  return new URL(url(path), site ?? 'http://localhost:4321').toString();
 }
 
 /** Strip base and locale prefix: "/REPO/es/tools/" → "/tools/". */

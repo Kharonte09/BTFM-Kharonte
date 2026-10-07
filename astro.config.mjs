@@ -5,7 +5,7 @@ import tailwindcss from '@tailwindcss/vite';
 
 /**
  * Deployment target is controlled by environment variables so the same code
- * works on a custom domain (https://kharonte.es) and on GitHub project pages
+ * works on a custom domain and on GitHub project pages
  * (https://USERNAME.github.io/REPOSITORY/).
  *
  *   SITE_URL   absolute origin, e.g. https://username.github.io
@@ -13,7 +13,7 @@ import tailwindcss from '@tailwindcss/vite';
  *
  * The GitHub Actions workflow fills both from actions/configure-pages.
  */
-const site = process.env.SITE_URL || 'https://kharonte.es';
+const site = process.env.SITE_URL || 'http://localhost:4321';
 const base = process.env.BASE_PATH || '/';
 
 export default defineConfig({

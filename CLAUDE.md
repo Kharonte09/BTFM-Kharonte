@@ -138,19 +138,7 @@ Implementa:
 * configuración correcta de Astro para GitHub Pages
 * configuración preparada para custom domain
 
-El dominio futuro será:
-
-**kharonte.es**
-
-pero NO dependas de él para que la aplicación funcione.
-
-Añade soporte para:
-
-```text
-public/CNAME
-```
-
-pero deja claro en README cómo activarlo si es necesario.
+Un dominio propio es opcional y futuro: NO dependas de él para que la aplicación funcione ni lo menciones en el repositorio.
 
 El proyecto debe funcionar también desde:
 
