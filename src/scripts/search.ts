@@ -150,7 +150,7 @@ function initRoot(root: HTMLElement) {
         const body = el('span', 'min-w-0 flex-1');
         const head = el('span', 'flex flex-wrap items-baseline gap-x-3 gap-y-0.5');
         head.append(
-          el('span', kind === 'reference' ? 'font-mono text-sm text-paper' : 'font-medium text-paper', doc.t),
+          el('span', 'font-medium text-paper', doc.t),
           el('span', 'label text-faint', doc.c),
         );
         body.append(head);

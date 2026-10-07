@@ -1,9 +1,7 @@
 import type { APIRoute, GetStaticPaths } from 'astro';
 import {
   artifactPath,
-  cheatsheetPath,
   getArtifacts,
-  getCheatsheets,
   getPlaybooks,
   getTools,
   playbookPath,
@@ -73,36 +71,6 @@ export const GET: APIRoute = async ({ props }) => {
         d.iocs,
       ),
     });
-  }
-
-  for (const c of await getCheatsheets(lang)) {
-    const d = c.data;
-    docs.push({
-      k: 'cheatsheet',
-      t: d.name,
-      u: href(lang, cheatsheetPath(c)),
-      c: t('kind.cheatsheetOne'),
-      s: d.summary,
-      a: [],
-      g: d.tags,
-      w: words(d.sections.map((s) => s.title)),
-    });
-    // Individual rows (event IDs, commands, locations) are searchable too.
-    for (const section of d.sections) {
-      section.rows.forEach((row, i) => {
-        const [first = '', ...rest] = row;
-        docs.push({
-          k: 'reference',
-          t: plain(first),
-          u: href(lang, `${cheatsheetPath(c)}#${section.id}-${i + 1}`),
-          c: `${d.name} · ${section.title}`,
-          s: plain(rest.filter(Boolean).join(' — ')),
-          a: [],
-          g: [],
-          w: '',
-        });
-      });
-    }
   }
 
   return new Response(JSON.stringify(docs), {

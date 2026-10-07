@@ -12,12 +12,11 @@ export const OG_LOCALE: Record<Lang, string> = { en: 'en_US', es: 'es_ES' };
 const en = {
   'site.title': 'KHARONTE — Blue Team Field Manual',
   'site.description':
-    'Open-source Blue Team field manual: artifacts, tools, playbooks and cheatsheets for DFIR, detection engineering and malware analysis.',
+    'Open-source Blue Team field manual: artifacts and tools for DFIR, detection engineering and malware analysis.',
 
   'nav.artifacts': 'Artifacts',
   'nav.tools': 'Tools',
   'nav.playbooks': 'Playbooks',
-  'nav.cheatsheets': 'Cheatsheets',
   'nav.search': 'Search',
   'nav.about': 'About',
   'nav.main': 'Main',
@@ -120,10 +119,7 @@ const en = {
   'kind.artifact': 'Artifacts',
   'kind.tool': 'Tools',
   'kind.playbook': 'Playbooks',
-  'kind.cheatsheet': 'Cheatsheets',
-  'kind.reference': 'Reference',
   'kind.playbookOne': 'Playbook',
-  'kind.cheatsheetOne': 'Cheatsheet',
 
   'cat.entries': '{n} entries',
   'cat.empty': 'No entries yet. Contributions welcome.',
@@ -142,12 +138,6 @@ const en = {
   'playbooks.summary':
     'High-level investigation workflows. Each step states its goal, the tools and artifacts involved, and when to escalate.',
   'playbooks.steps': '{n} steps',
-  'cheatsheets.title': 'Cheatsheets',
-  'cheatsheets.summary': 'Filterable quick-reference tables for use during an investigation.',
-  'cheatsheets.rows': '{n} rows',
-  'cheatsheets.sections': 'Sections',
-  'cheatsheets.filter': 'Filter rows',
-  'cheatsheets.filterPlaceholder': 'Filter rows… (e.g. 4624, logon, Get-WinEvent)',
 
   'home.kicker': 'Ref. manual · v0.1',
   'home.h1a': 'Blue Team',
@@ -157,7 +147,7 @@ const en = {
   'home.pick': 'Start with what you have',
   'home.ihave': 'I have',
   'home.reference': 'Reference',
-  'home.referenceText': 'Background for every playbook step: what each artifact is, how each tool works, and quick-reference tables.',
+  'home.referenceText': 'Background for every playbook step: what each artifact is and how each tool works.',
   'playbooks.questions': '{n} questions',
   'progress.label': 'Progress',
   'progress.steps': '{done}/{total} steps',
@@ -174,7 +164,6 @@ const en = {
   'home.allPlaybooks': 'All playbooks →',
   'home.tools': 'Tools',
   'home.allTools': 'All tools →',
-  'home.cheatsheets': 'Cheatsheets',
   'home.scope': 'Scope',
   'home.scopeText':
     'Kharonte is a reference to support your analysis, not an automated analyst. It never executes samples and does not call external services. Verify findings against primary sources.',
@@ -200,7 +189,7 @@ const en = {
   'about.s4': 'The repository contains no samples, secrets or personal data.',
   'about.contribute': 'Contributing',
   'about.c1':
-    'Content lives in Markdown/YAML files under `src/content/`. See the repository README for the content model and how to add tools, artifacts, playbooks and cheatsheets.',
+    'Content lives in Markdown/YAML files under `src/content/`. See the repository README for the content model and how to add playbooks, artifacts and tools.',
 
   'nf.title': 'Not found',
   'nf.kicker': '404 · No artifact at this path',
@@ -214,12 +203,11 @@ export type UiKey = keyof typeof en;
 const es: Record<UiKey, string> = {
   'site.title': 'KHARONTE — Blue Team Field Manual',
   'site.description':
-    'Blue Team Field Manual de código abierto: artefactos, herramientas, playbooks y cheatsheets para DFIR, ingeniería de detección y análisis de malware.',
+    'Blue Team Field Manual de código abierto: artefactos y herramientas para DFIR, ingeniería de detección y análisis de malware.',
 
   'nav.artifacts': 'Artefactos',
   'nav.tools': 'Herramientas',
   'nav.playbooks': 'Playbooks',
-  'nav.cheatsheets': 'Cheatsheets',
   'nav.search': 'Buscar',
   'nav.about': 'Acerca de',
   'nav.main': 'Principal',
@@ -322,10 +310,7 @@ const es: Record<UiKey, string> = {
   'kind.artifact': 'Artefactos',
   'kind.tool': 'Herramientas',
   'kind.playbook': 'Playbooks',
-  'kind.cheatsheet': 'Cheatsheets',
-  'kind.reference': 'Referencia',
   'kind.playbookOne': 'Playbook',
-  'kind.cheatsheetOne': 'Cheatsheet',
 
   'cat.entries': '{n} fichas',
   'cat.empty': 'Aún no hay fichas. Se aceptan contribuciones.',
@@ -344,12 +329,6 @@ const es: Record<UiKey, string> = {
   'playbooks.summary':
     'Workflows de investigación de alto nivel. Cada paso indica su objetivo, las herramientas y artefactos implicados y cuándo escalar.',
   'playbooks.steps': '{n} pasos',
-  'cheatsheets.title': 'Cheatsheets',
-  'cheatsheets.summary': 'Tablas de consulta rápida con filtro, para usar durante una investigación.',
-  'cheatsheets.rows': '{n} filas',
-  'cheatsheets.sections': 'Secciones',
-  'cheatsheets.filter': 'Filtrar filas',
-  'cheatsheets.filterPlaceholder': 'Filtrar filas… (p. ej. 4624, logon, Get-WinEvent)',
 
   'home.kicker': 'Ref. manual · v0.1',
   'home.h1a': 'Blue Team',
@@ -359,7 +338,7 @@ const es: Record<UiKey, string> = {
   'home.pick': 'Empieza por lo que tienes',
   'home.ihave': 'Tengo',
   'home.reference': 'Referencia',
-  'home.referenceText': 'El apoyo de cada paso de los playbooks: qué es cada artefacto, cómo funciona cada herramienta y tablas de consulta rápida.',
+  'home.referenceText': 'El apoyo de cada paso de los playbooks: qué es cada artefacto y cómo funciona cada herramienta.',
   'playbooks.questions': '{n} preguntas',
   'progress.label': 'Progreso',
   'progress.steps': '{done}/{total} pasos',
@@ -376,7 +355,6 @@ const es: Record<UiKey, string> = {
   'home.allPlaybooks': 'Todos los playbooks →',
   'home.tools': 'Herramientas',
   'home.allTools': 'Todas las herramientas →',
-  'home.cheatsheets': 'Cheatsheets',
   'home.scope': 'Alcance',
   'home.scopeText':
     'Kharonte es una referencia para apoyar tu análisis, no un analista automático. Nunca ejecuta muestras ni llama a servicios externos. Contrasta los hallazgos con fuentes primarias.',
@@ -402,7 +380,7 @@ const es: Record<UiKey, string> = {
   'about.s4': 'El repositorio no contiene muestras, secretos ni datos personales.',
   'about.contribute': 'Contribuir',
   'about.c1':
-    'El contenido está en ficheros Markdown/YAML en `src/content/`. Consulta el README del repositorio para ver el modelo de contenido y cómo añadir herramientas, artefactos, playbooks y cheatsheets.',
+    'El contenido está en ficheros Markdown/YAML en `src/content/`. Consulta el README del repositorio para ver el modelo de contenido y cómo añadir playbooks, artefactos y herramientas.',
 
   'nf.title': 'No encontrado',
   'nf.kicker': '404 · No hay artefacto en esta ruta',

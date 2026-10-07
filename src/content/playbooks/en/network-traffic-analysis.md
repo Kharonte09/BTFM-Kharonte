@@ -97,6 +97,6 @@ escalate_when:
 related_playbooks: [malware-triage, windows-endpoint-investigation, phishing-investigation]
 ---
 
-Start with **statistics, not packets**. Protocol Hierarchy, Endpoints and Conversations tell you where to look; display filters and Follow Stream tell you what happened. See the **Wireshark Display Filters** cheatsheet for ready-to-use filters.
+Start with **statistics, not packets**. Protocol Hierarchy, Endpoints and Conversations tell you where to look; display filters and Follow Stream tell you what happened.
 
 Treat everything you export from a capture as live malware.

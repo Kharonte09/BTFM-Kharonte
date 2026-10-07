@@ -8,5 +8,4 @@ export const NAV: readonly { key: UiKey; href: string }[] = [
   { key: 'nav.playbooks', href: '/playbooks/' },
   { key: 'nav.artifacts', href: '/artifacts/' },
   { key: 'nav.tools', href: '/tools/' },
-  { key: 'nav.cheatsheets', href: '/cheatsheets/' },
 ];

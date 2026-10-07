@@ -42,7 +42,7 @@ related_artifacts: [sysmon, powershell-logs, scheduled-tasks, registry]
 
 Windows writes events to channels stored as `.evtx` files. The **Security** log holds authentication and auditing events, **System** holds service and driver events, and many components keep their own *Operational* logs (PowerShell, Task Scheduler, RDP, Defender, Sysmon).
 
-For investigations, parse the logs into a single timeline rather than browsing them one by one in Event Viewer. See the **Windows Event IDs** cheatsheet for the most useful IDs.
+For investigations, parse the logs into a single timeline rather than browsing them one by one in Event Viewer.
 
 ### Logon types (4624 / 4625)
 

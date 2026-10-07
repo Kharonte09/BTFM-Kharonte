@@ -98,25 +98,4 @@ const playbooks = defineCollection({
   }),
 });
 
-const cheatsheets = defineCollection({
-  loader: glob({ pattern: '**/*.yaml', base: './src/content/cheatsheets' }),
-  schema: z.object({
-    ...common,
-    order: z.number().default(100),
-    sections: z
-      .array(
-        z.object({
-          id: z.string(),
-          title: z.string(),
-          note: z.string().optional(),
-          columns: z.array(z.string()).min(1),
-          /** Zero-based indexes of columns rendered in monospace. */
-          mono: z.array(z.number()).default([0]),
-          rows: z.array(z.array(z.string())).min(1),
-        }),
-      )
-      .min(1),
-  }),
-});
-
-export const collections = { tools, artifacts, playbooks, cheatsheets };
+export const collections = { tools, artifacts, playbooks };

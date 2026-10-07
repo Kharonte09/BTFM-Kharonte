@@ -1,5 +1,5 @@
 /** Shape of each document in /search-index.json (shared by server and client). */
-export type SearchKind = 'artifact' | 'tool' | 'playbook' | 'cheatsheet' | 'reference';
+export type SearchKind = 'artifact' | 'tool' | 'playbook';
 
 export interface SearchDoc {
   /** kind */
@@ -8,7 +8,7 @@ export interface SearchDoc {
   t: string;
   /** url (already base- and locale-prefixed) */
   u: string;
-  /** context label: category or cheatsheet section */
+  /** context label: category or kind */
   c: string;
   /** summary */
   s: string;
@@ -32,4 +32,4 @@ export interface SearchStrings {
   error: string;
 }
 
-export const KIND_ORDER: SearchKind[] = ['artifact', 'tool', 'playbook', 'cheatsheet', 'reference'];
+export const KIND_ORDER: SearchKind[] = ['playbook', 'artifact', 'tool'];

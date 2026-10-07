@@ -41,5 +41,3 @@ related_artifacts: [scheduled-tasks, windows-event-logs]
 ---
 
 The registry is stored in **hive** files. System-wide hives live under `C:\Windows\System32\config\`, and each user has `NTUSER.DAT` and `UsrClass.dat` in their profile. `CurrentControlSet` is a runtime link — in an offline `SYSTEM` hive, check `Select\Current` to know which `ControlSet00X` was active.
-
-See the **Persistence Locations** cheatsheet for the most common autostart keys.

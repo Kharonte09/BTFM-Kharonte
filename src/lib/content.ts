@@ -13,11 +13,10 @@ import { href } from './url';
 export type Tool = CollectionEntry<'tools'>;
 export type Artifact = CollectionEntry<'artifacts'>;
 export type Playbook = CollectionEntry<'playbooks'>;
-export type Cheatsheet = CollectionEntry<'cheatsheets'>;
-type AnyEntry = Tool | Artifact | Playbook | Cheatsheet;
-type CollectionName = 'tools' | 'artifacts' | 'playbooks' | 'cheatsheets';
+type AnyEntry = Tool | Artifact | Playbook;
+type CollectionName = 'tools' | 'artifacts' | 'playbooks';
 
-export type EntryKind = 'artifact' | 'tool' | 'playbook' | 'cheatsheet';
+export type EntryKind = 'artifact' | 'tool' | 'playbook';
 
 export const slugOf = (e: AnyEntry) => e.id.slice(e.id.indexOf('/') + 1);
 export const langOf = (e: AnyEntry) => e.id.slice(0, e.id.indexOf('/')) as Lang;
@@ -49,15 +48,12 @@ const byOrder = (
 export const getTools = async (lang: Lang) => (await localized('tools', lang)).sort(byName);
 export const getArtifacts = async (lang: Lang) => (await localized('artifacts', lang)).sort(byName);
 export const getPlaybooks = async (lang: Lang) => (await localized('playbooks', lang)).sort(byOrder);
-export const getCheatsheets = async (lang: Lang) =>
-  (await localized('cheatsheets', lang)).sort(byOrder);
 
 /* ---------- Paths (unlocalised; wrap with href(lang, …)) ---------- */
 
 export const toolPath = (t: Tool) => `/tools/${t.data.category}/${slugOf(t)}/`;
 export const artifactPath = (a: Artifact) => `/artifacts/${a.data.category}/${slugOf(a)}/`;
 export const playbookPath = (p: Playbook) => `/playbooks/${slugOf(p)}/`;
-export const cheatsheetPath = (c: Cheatsheet) => `/cheatsheets/${slugOf(c)}/`;
 
 /* ---------- Reference codes (field-manual style identifiers) ---------- */
 
@@ -70,8 +66,6 @@ export function refCode(kind: EntryKind, slug: string, category?: string): strin
       return `TL/${getToolCategory(category!).code}/${s}`;
     case 'playbook':
       return `PB/${s}`;
-    case 'cheatsheet':
-      return `CS/${s}`;
   }
 }
 

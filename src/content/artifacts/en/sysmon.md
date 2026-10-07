@@ -40,5 +40,3 @@ related_artifacts: [windows-event-logs, powershell-logs, pcap]
 Sysmon is a free Microsoft Sysinternals tool installed as a service and driver. It writes detailed telemetry to its own event log channel, controlled by an XML configuration that defines which events are included or excluded.
 
 Widely used community configurations (e.g. SwiftOnSecurity's `sysmon-config`, Olaf Hartong's `sysmon-modular`) are good starting points. Always check **which configuration was deployed** before concluding that something did *not* happen.
-
-See the **Windows Event IDs** cheatsheet for the full Sysmon event list.

@@ -41,5 +41,3 @@ related_artifacts: [scheduled-tasks, windows-event-logs]
 ---
 
 El registro se almacena en ficheros **hive**. Los hives del sistema están en `C:\Windows\System32\config\`, y cada usuario tiene `NTUSER.DAT` y `UsrClass.dat` en su perfil. `CurrentControlSet` es un enlace en tiempo de ejecución — en un hive `SYSTEM` offline, mira `Select\Current` para saber qué `ControlSet00X` estaba activo.
-
-Consulta la cheatsheet **Ubicaciones de persistencia** para las claves de autoarranque más comunes.
