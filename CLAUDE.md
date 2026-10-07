@@ -2,17 +2,35 @@
 
 Este fichero contiene la especificación original del proyecto. Es la fuente de verdad para cualquier decisión de producto, diseño o contenido.
 
+## Reglas de contenido (V2 — obligatorias)
+
+- **Do not add content merely to increase the number of pages. Every artifact, tool or playbook must have operational value for a Blue Team / DFIR analyst.**
+- **Prefer "what should I do next?" over encyclopedic explanations.**
+- **Only document tools, artifacts and workflows that are well understood, useful, and relevant to the author's actual workflow. Do not fabricate expertise or fill the knowledge base for the sake of completeness.**
+- Antes de crear una sección: "¿Esto ayudaría a David mientras está investigando un incidente?" Si no, no se añade.
+- Honestidad técnica: cada ficha lleva `coverage` (basic / intermediate / advanced) = nivel de conocimiento del autor. Mejor "Coverage: Basic" que una página inventada. El valor inicial se tomó de los apuntes del Cuaderno de Guardia (intermediate si aparece trabajado ahí); el autor lo ajusta.
+- Público: Junior Blue Team → SOC L1/L2 → DFIR junior/intermedio. No explicar conceptos básicos.
+
+## Modelo V2 (estructura de cada página)
+
+- **Artifact:** Start here (primeros 5 minutos + comandos) → Why investigate it → First questions → What to look for → Where to find it → Tools (Start with / Go deeper / qué responde cada una) → Quick reference (cuerpo Markdown opcional, breve) → Correlate (flujo) → What to extract (IOCs) → Common mistakes → What next (playbooks, artefactos, herramientas relacionados).
+- **Tool:** Purpose (= summary) → Start here (comandos) → Use it when → What to look for → Output → Combine with → Common mistakes → What next. Sin texto de introducción.
+- **Playbook:** Trigger + Objective → Initial triage (recuadro Start here) → Evidence → (Questions) → Investigation (pasos con progreso) → Correlation → IOCs → Decision points (close / escalate / isolate / deeper) → Output.
+- **Portada:** "Start with what you have" (6 entradas, en `src/lib/entry-points.ts`) → Playbooks → Referencia.
+- **Búsqueda:** cada resultado muestra "Useful for" (playbooks) y "Tools".
+- Decisiones del autor sobre el documento V2: categorías **Email** y **Documents** separadas; solo **5 playbooks** (Phishing, Suspicious EXE, Suspicious PowerShell, Windows Endpoint Investigation, Malware Triage); categoría **Indicators / IOCs** para IPs/dominios/URLs; **sin cheatsheets**.
+
 ## Notas operativas (para Claude)
 
 - Stack: Astro + TypeScript + Tailwind CSS + Content Collections (Markdown/YAML) + Fuse.js (búsqueda client-side). Sitio 100 % estático.
 - El contenido vive en `src/content/{playbooks,artifacts,tools}/{en,es}/` (mismo nombre de fichero en ambos idiomas = mismo slug); los esquemas en `src/content.config.ts`. Nunca hardcodear contenido en componentes.
 - i18n: inglés por defecto en `/`, español en `/es/`. Rutas en `src/pages/[...locale]/`; textos de interfaz en `src/i18n/ui.ts`; enlaces de página con `href(lang, path)`. Si falta la traducción se muestra la versión inglesa con aviso. Toda ficha nueva debe crearse en los dos idiomas.
 - Español: la estructura y la explicación en español, pero la **jerga del sector se queda en inglés** (es como se habla en un SOC). En inglés: Blue Team Field Manual, logs / event logs / logging, triage, headers (correo), strings (extraídos de binarios), logon / Logon types, workflow, mail gateway, defang, credential dumping, fingerprint, Alternate Data Streams, y los nombres oficiales de eventos de Windows/Sysmon. Títulos que son jerga también en inglés (Windows Event Logs, PowerShell Logs, Malware Triage). En español lo que es natural en DFIR: artefactos, herramientas, registro (de Windows), persistencia, movimiento lateral, volcado de memoria, tareas programadas. Nunca traducir comandos, rutas, Event IDs ni nombres de herramientas.
-- **Enfoque playbook-oriented:** la web gira alrededor de los playbooks ("Tengo… → playbook"). Portada y menú empiezan por playbooks; artefactos y herramientas son referencia de apoyo y enlazan de vuelta a los playbooks ("Se usa en los playbooks"). Cada playbook tiene `scenario` (etiqueta "Tengo…"), `icon`, `questions` (estilo BTLO) y progreso por pasos/preguntas guardado en `localStorage` (`kh-pb:<slug>`). Se usan para retos tipo BTLO.
-- **Alcance del contenido:** basado en la experiencia del autor y en el temario de BTL1 (Phishing, Threat Intel, Digital Forensics, SIEM, Incident Response). No añadir artefactos que no encajen ahí (se eliminaron Amcache y Shimcache). Los documentos (Office, PDF) van dentro de la categoría Phishing, como adjuntos.
+- **Enfoque playbook-oriented:** la web gira alrededor de los playbooks ("Tengo… → playbook"). Portada y menú empiezan por playbooks; artefactos y herramientas son referencia de apoyo y enlazan de vuelta a los playbooks ("Se usa en los playbooks"). Cada playbook tiene `scenario` (etiqueta "Tengo…"), `icon`, `questions` opcionales (estilo BTLO) y progreso por pasos/preguntas guardado en `localStorage` (`kh-pb:<slug>`). Se usan para retos tipo BTLO.
+- **Alcance del contenido:** basado en la experiencia del autor y en el temario de BTL1 (Phishing, Threat Intel, Digital Forensics, SIEM, Incident Response). No añadir artefactos que no encajen ahí (se eliminaron Amcache y Shimcache).
 - **Sin cheatsheets:** se eliminaron por decisión del autor (esas tablas las consulta en Google o en una IA). Aunque la especificación de abajo las menciona (§5, §20, §21), no se deben volver a añadir salvo que el autor lo pida.
 - Tema: oscuro por defecto, claro opcional (`data-theme` en `<html>`, tokens redefinidos en `src/styles/global.css`, variante `light:`).
-- Las relaciones entre entradas se hacen por slug (`tools: [pecmd]`, `related_artifacts: [prefetch]`). El build falla si un slug no existe.
+- Las relaciones entre entradas se hacen por slug, nombre o alias (`tools_start: [PECmd]`, `related_artifacts: [prefetch]`). Si no existe la página se muestra como chip sin enlace. Evitar alias que coincidan con el nombre de una herramienta (p. ej. "PowerShell").
 - Todos los enlaces internos deben pasar por `href(lang, path)` (páginas) o `url()` (assets) de `src/lib/url.ts` para respetar `base` en GitHub Pages (project pages).
 - Base/site se controlan con `SITE_URL` y `BASE_PATH` (ver `astro.config.mjs` y el workflow).
 - Reglas de contenido: no inventar funcionalidades. Lo dudoso se marca con `review: true` en el frontmatter (se muestra un aviso "Pending review").
