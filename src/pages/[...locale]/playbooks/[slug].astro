@@ -56,8 +56,28 @@ const label = (id: string) => toc.find((s) => s.id === id)?.label ?? id;
   fallback={isFallback(playbook, lang)}
   updated={d.updated}
 >
-  <div slot="header" class="mt-6">
+  <div slot="header" class="mt-6 space-y-5">
     <Flow steps={d.steps.map((s) => s.title)} compact links />
+    <div
+      data-pb-root={slugOf(playbook)}
+      data-steps-tpl={t('progress.steps')}
+      data-questions-tpl={t('progress.questions')}
+      class="flex max-w-3xl flex-wrap items-center gap-x-4 gap-y-2"
+    >
+      <span class="label">{t('progress.label')}</span>
+      <span class="relative h-1 min-w-32 flex-1 bg-ink-700" aria-hidden="true">
+        <span data-pb-bar class="absolute inset-y-0 left-0 w-0 bg-ember transition-[width] duration-300"></span>
+      </span>
+      <span data-pb-count class="font-mono text-xs text-paper-dim" aria-live="polite"></span>
+      <button
+        type="button"
+        data-pb-reset
+        class="font-mono text-[0.6875rem] text-faint underline decoration-ink-500 underline-offset-4 hover:text-paper"
+        title={t('progress.note')}
+      >
+        {t('progress.reset')}
+      </button>
+    </div>
   </div>
 
   <Section id="start" title={label('start')} index={n('start')}>
@@ -72,9 +92,17 @@ const label = (id: string) => toc.find((s) => s.id === id)?.label ?? id;
       <Section id="questions" title={label('questions')} index={n('questions')}>
         <ol class="space-y-2">
           {d.questions.map((q, i) => (
-            <li class="flex gap-3 leading-relaxed text-paper-dim [&_code]:font-mono [&_code]:text-paper">
-              <span class="mt-0.5 shrink-0 font-mono text-xs text-ember">Q{i + 1}</span>
-              <span set:html={inline(q)} />
+            <li>
+              <label class="group flex cursor-pointer gap-3 leading-relaxed text-paper-dim has-checked:text-mute [&_code]:font-mono [&_code]:text-paper">
+                <input
+                  type="checkbox"
+                  data-pb-q={i}
+                  class="mt-1.5 size-3.5 shrink-0 cursor-pointer accent-ember"
+                  aria-label={`${t('progress.questionDone')}: Q${i + 1}`}
+                />
+                <span class="mt-0.5 shrink-0 font-mono text-xs text-ember">Q{i + 1}</span>
+                <span class="group-has-checked:line-through group-has-checked:decoration-ink-500" set:html={inline(q)} />
+              </label>
             </li>
           ))}
         </ol>
@@ -86,10 +114,23 @@ const label = (id: string) => toc.find((s) => s.id === id)?.label ?? id;
     <ol class="space-y-4">
       {
         d.steps.map((step, i) => (
-          <li id={`step-${i + 1}`} class="scroll-mt-24 border border-ink-700 bg-ink-900">
-            <div class="flex items-baseline gap-3 border-b border-ink-700 px-4 py-3">
+          <li
+            id={`step-${i + 1}`}
+            data-pb-step-card
+            class="scroll-mt-24 border border-ink-700 bg-ink-900 transition-colors has-[[data-pb-step]:checked]:border-ember/40"
+          >
+            <div class="flex items-center gap-3 border-b border-ink-700 px-4 py-3">
               <span class="font-mono text-xs text-ember">{String(i + 1).padStart(2, '0')}</span>
-              <h3 class="font-semibold text-paper">{step.title}</h3>
+              <h3 class="flex-1 font-semibold text-paper">{step.title}</h3>
+              <label class="flex cursor-pointer items-center gap-2 font-mono text-[0.6875rem] text-faint hover:text-paper">
+                <span class="hidden sm:inline">✓</span>
+                <input
+                  type="checkbox"
+                  data-pb-step={i}
+                  class="size-4 cursor-pointer accent-ember"
+                  aria-label={`${t('progress.stepDone')}: ${step.title}`}
+                />
+              </label>
             </div>
             <div class="space-y-4 p-4">
               <p class="text-sm leading-relaxed text-paper" set:html={inline(step.goal)} />
@@ -157,3 +198,70 @@ const label = (id: string) => toc.find((s) => s.id === id)?.label ?? id;
     )
   }
 </EntryLayout>
+
+<script>
+  // Playbook progress (steps done, questions answered), stored per playbook in this browser.
+  const root = document.querySelector<HTMLElement>('[data-pb-root]');
+  if (root) {
+    const key = `kh-pb:${root.dataset.pbRoot}`;
+    const steps = [...document.querySelectorAll<HTMLInputElement>('[data-pb-step]')];
+    const questions = [...document.querySelectorAll<HTMLInputElement>('[data-pb-q]')];
+    const bar = root.querySelector<HTMLElement>('[data-pb-bar]');
+    const count = root.querySelector<HTMLElement>('[data-pb-count]');
+
+    const load = (): { s: number[]; q: number[] } => {
+      try {
+        const v = JSON.parse(localStorage.getItem(key) ?? '{}') as { s?: number[]; q?: number[] };
+        return { s: v.s ?? [], q: v.q ?? [] };
+      } catch {
+        return { s: [], q: [] };
+      }
+    };
+    const checked = (xs: HTMLInputElement[], attr: string) =>
+      xs.filter((x) => x.checked).map((x) => Number(x.getAttribute(attr)));
+
+    const render = () => {
+      const s = checked(steps, 'data-pb-step');
+      const q = checked(questions, 'data-pb-q');
+      if (bar) bar.style.width = `${steps.length ? (s.length / steps.length) * 100 : 0}%`;
+      const fill = (tpl: string | undefined, done: number, total: number) =>
+        (tpl ?? '{done}/{total}').replace('{done}', String(done)).replace('{total}', String(total));
+      if (count) {
+        count.textContent = [
+          fill(root.dataset.stepsTpl, s.length, steps.length),
+          questions.length ? fill(root.dataset.questionsTpl, q.length, questions.length) : '',
+        ]
+          .filter(Boolean)
+          .join(' · ');
+      }
+      // Mirror step state on the compact workflow strip.
+      steps.forEach((x, i) => {
+        document
+          .querySelector(`a[href="#step-${i + 1}"]`)
+          ?.classList.toggle('border-ember/60!', x.checked);
+      });
+      return { s, q };
+    };
+
+    const save = () => {
+      const state = render();
+      try {
+        if (state.s.length || state.q.length) localStorage.setItem(key, JSON.stringify(state));
+        else localStorage.removeItem(key);
+      } catch {
+        /* storage unavailable: progress lasts for this page only */
+      }
+    };
+
+    const saved = load();
+    steps.forEach((x) => (x.checked = saved.s.includes(Number(x.dataset.pbStep))));
+    questions.forEach((x) => (x.checked = saved.q.includes(Number(x.dataset.pbQ))));
+    render();
+
+    [...steps, ...questions].forEach((x) => x.addEventListener('change', save));
+    root.querySelector('[data-pb-reset]')?.addEventListener('click', () => {
+      [...steps, ...questions].forEach((x) => (x.checked = false));
+      save();
+    });
+  }
+</script>
