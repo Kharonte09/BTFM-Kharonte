@@ -6,7 +6,7 @@ type: Parser de artefactos
 platforms: [Windows]
 license: Gratuita (MIT)
 homepage: https://ericzimmerman.github.io/
-difficulty: basic
+coverage: basic
 aliases: [Prefetch Explorer Command Line]
 tags: [prefetch, ejecución, ejecución de programas, timeline, eric zimmerman]
 use_when:
@@ -19,12 +19,6 @@ look_for:
   - Herramientas de administración y reconocimiento (`psexec*.exe`, `net.exe`, `nltest.exe`, `whoami.exe`, `adfind.exe`) agrupadas en el tiempo.
   - Contador de ejecuciones a 1 en binarios con nombres aleatorios.
   - Ficheros referenciados que apuntan a directorios de staging, DLL cargadas desde rutas extrañas o volúmenes extraíbles.
-workflow:
-  - Recolectar `C:\Windows\Prefetch\*.pf`
-  - PECmd → CSV
-  - Ordenar por última ejecución
-  - Pivotar sobre ejecutables sospechosos
-  - Correlacionar con event logs y ficheros LNK
 examples:
   - label: Parsear un directorio Prefetch completo a CSV
     command: 'PECmd.exe -d "C:\Cases\triage\C\Windows\Prefetch" --csv "C:\Cases\out" --csvf prefetch.csv'
@@ -38,7 +32,7 @@ outputs:
   - Información del volumen (número de serie, fecha de creación) y directorios referenciados.
   - Ficheros referenciados durante los primeros segundos de ejecución.
   - Un CSV de timeline (una fila por ejecución) además del CSV principal.
-notes:
+mistakes:
   - Ejecútalo en una estación forense sobre ficheros recolectados; evita hacerlo en el equipo sospechoso en vivo.
   - El Prefetch de Windows 10/11 está comprimido; analízalo en Windows 8+ o con un parser que implemente la descompresión.
   - Las marcas de tiempo están en UTC. Mantén todo el timeline en UTC.
@@ -46,7 +40,3 @@ notes:
 complements: [KAPE, Timeline Explorer, EvtxECmd]
 related_artifacts: [prefetch]
 ---
-
-PECmd forma parte de las **herramientas de Eric Zimmerman** (EZ Tools). Analiza los ficheros Prefetch de Windows (`.pf`), que el sistema operativo crea para acelerar el arranque de aplicaciones y que, como efecto secundario, registran evidencia de ejecución de programas.
-
-La salida suele cargarse en **Timeline Explorer** (también de las EZ Tools) para filtrarla y ordenarla.

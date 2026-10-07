@@ -6,7 +6,7 @@ type: Artifact parser
 platforms: [Windows]
 license: Free (MIT)
 homepage: https://ericzimmerman.github.io/
-difficulty: basic
+coverage: basic
 aliases: [Prefetch Explorer Command Line]
 tags: [prefetch, execution, program execution, timeline, eric zimmerman]
 use_when:
@@ -19,12 +19,6 @@ look_for:
   - Admin and recon tools (`psexec*.exe`, `net.exe`, `nltest.exe`, `whoami.exe`, `adfind.exe`) clustered in time.
   - Run counts of 1 for binaries with random-looking names.
   - Referenced files that point to staging directories, DLLs loaded from odd locations, or removable volumes.
-workflow:
-  - Collect `C:\Windows\Prefetch\*.pf`
-  - PECmd → CSV
-  - Sort by last run time
-  - Pivot on suspicious executables
-  - Correlate with event logs and LNK files
 examples:
   - label: Parse a whole Prefetch directory to CSV
     command: 'PECmd.exe -d "C:\Cases\triage\C\Windows\Prefetch" --csv "C:\Cases\out" --csvf prefetch.csv'
@@ -38,7 +32,7 @@ outputs:
   - Volume information (serial number, creation time) and directories referenced.
   - Files referenced during the first seconds of execution.
   - A timeline CSV (one row per run time) in addition to the main CSV.
-notes:
+mistakes:
   - Run on a forensic workstation against collected files, not on the live suspect host when avoidable.
   - Windows 10/11 Prefetch is compressed; parse it on Windows 8+ or use a parser that implements the decompression.
   - Timestamps are UTC. Keep everything in UTC through the timeline.
@@ -46,7 +40,3 @@ notes:
 complements: [KAPE, Timeline Explorer, EvtxECmd]
 related_artifacts: [prefetch]
 ---
-
-PECmd is part of **Eric Zimmerman's tools** (EZ Tools). It parses Windows Prefetch (`.pf`) files, which the operating system creates to speed up application start-up and which, as a side effect, record evidence of program execution.
-
-Output is usually loaded into **Timeline Explorer** (also EZ Tools) for filtering and sorting.

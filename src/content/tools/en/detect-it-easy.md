@@ -6,7 +6,7 @@ type: File identification
 platforms: [Windows, Linux, macOS]
 license: Open source (MIT)
 homepage: https://github.com/horsicq/Detect-It-Easy
-difficulty: basic
+coverage: basic
 aliases: [DIE, diec]
 tags: [file identification, packer, compiler, entropy, triage]
 use_when:
@@ -18,11 +18,6 @@ look_for:
   - '.NET detection → decompile with ILSpy / dnSpyEx instead of disassembling.'
   - Installers and SFX archives → extract contents and analyse the payload instead.
   - High-entropy sections or overlay data.
-workflow:
-  - Sample
-  - DIE (type, compiler, packer)
-  - Decide path (unpack · decompile · extract · static)
-  - PEStudio / capa / FLOSS
 examples:
   - label: Command-line scan
     command: 'diec sample.bin'
@@ -32,7 +27,7 @@ outputs:
   - File type and architecture.
   - Detected compiler, linker, library, packer, protector, installer (with signature names).
   - Entropy view and section information in the GUI.
-notes:
+mistakes:
   - Detections are signature-based; "nothing detected" does not mean "not packed".
   - Signatures are scripts and can be extended; keep the tool updated.
   - Command-line flags vary between versions — check `diec --help`.
@@ -40,7 +35,3 @@ complements: [PEStudio, capa, FLOSS, YARA]
 related_artifacts: [pe-executables, office-documents]
 review: true
 ---
-
-Detect It Easy (DIE) identifies file types and the toolchain that produced them using a library of scriptable signatures. It handles PE, ELF, Mach-O, APK and many archive and document formats, and ships with a GUI (`die`), a console version (`diec`) and a lightweight variant.
-
-In triage it answers the first question about a sample: **what is this and how was it built?**

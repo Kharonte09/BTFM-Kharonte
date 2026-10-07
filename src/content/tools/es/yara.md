@@ -6,7 +6,7 @@ type: Reglas de detección
 platforms: [Windows, Linux, macOS]
 license: Código abierto (BSD-3-Clause)
 homepage: https://virustotal.github.io/yara/
-difficulty: intermediate
+coverage: basic
 aliases: [YARA-X, yr]
 tags: [detección, reglas, hunting, firmas, clasificación]
 use_when:
@@ -17,12 +17,6 @@ look_for:
   - Coincidencias de conjuntos de reglas públicos curados — confírmalas con la descripción y referencias de la regla.
   - Qué strings coincidieron (`-s`) — una coincidencia con strings genéricos es más débil que con strings únicos.
   - Coincidencias inesperadas en ficheros legítimos (problema de calidad de la regla).
-workflow:
-  - Muestra o directorio
-  - Ejecutar conjunto de reglas
-  - Revisar strings coincidentes
-  - Escribir / afinar tu propia regla
-  - Hunting en la recolección
 examples:
   - label: Analizar un fichero con un fichero de reglas y mostrar los strings coincidentes
     command: 'yara -s rules.yar sample.bin'
@@ -33,14 +27,10 @@ examples:
 outputs:
   - Nombres de las reglas que coincidieron con cada fichero (y metadatos/etiquetas si se piden).
   - Identificadores de strings coincidentes y offsets con `-s`.
-notes:
+mistakes:
   - '**YARA-X** es la reescritura en Rust de VirusTotal y su sucesora designada; el YARA original está en modo mantenimiento. La mayoría de reglas funcionan sin cambios, pero revisa las notas de compatibilidad.'
   - Una regla débil genera falsos positivos a escala. Pruébala contra un corpus legítimo antes de desplegarla.
   - Analizar la memoria de procesos en vivo requiere privilegios adecuados y puede ser ruidoso.
 complements: [capa, FLOSS, Velociraptor, VirusTotal]
 related_artifacts: [pe-executables, memory-dump, office-documents]
 ---
-
-YARA, creado por Victor Alvarez en VirusTotal, permite describir familias de malware mediante **reglas**: un conjunto de strings de texto, hexadecimales o expresiones regulares más una condición booleana. La misma regla sirve para clasificar una muestra, buscar en un recurso compartido o analizar la memoria de procesos.
-
-La reescritura en Rust **YARA-X** (`yr`) es la sucesora en desarrollo activo.

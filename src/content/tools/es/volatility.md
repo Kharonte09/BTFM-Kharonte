@@ -6,7 +6,7 @@ type: Memory forensics
 platforms: [Windows, Linux, macOS]
 license: Volatility Software License (VSL)
 homepage: https://github.com/volatilityfoundation/volatility3
-difficulty: intermediate
+coverage: intermediate
 aliases: [Volatility, vol, vol.py, Volatility3]
 tags: [memoria, ram, procesos, inyección, malfind, forense]
 use_when:
@@ -19,12 +19,6 @@ look_for:
   - Líneas de comandos sospechosas (`windows.cmdline`).
   - Conexiones de procesos inesperados (`windows.netscan`).
   - Memoria privada ejecutable, sobre todo con cabecera `MZ` (`windows.malfind`).
-workflow:
-  - '`windows.info`'
-  - '`windows.pstree` / `windows.psscan`'
-  - '`windows.cmdline` / `windows.netscan`'
-  - '`windows.malfind` / `windows.dlllist`'
-  - Volcar y calcular el hash de los ficheros sospechosos
 examples:
   - label: Información de la imagen
     command: 'vol -f mem.raw windows.info'
@@ -43,7 +37,7 @@ examples:
 outputs:
   - Tablas por plugin (texto por defecto; renderers `-r json` / `-r csv` para scripting).
   - Ficheros, imágenes de procesos y regiones de memoria volcados al directorio de salida.
-notes:
+mistakes:
   - '**Volatility 3** sustituye a Volatility 2 (Python 2, ya sin mantenimiento). Los nombres de plugins cambian — `windows.pslist` en lugar de `pslist --profile=…`; los perfiles se sustituyen por tablas de símbolos.'
   - Por defecto descarga automáticamente las tablas de símbolos de Windows; en máquinas de análisis sin conexión, prepáralas antes.
   - Las opciones de los plugins cambian entre versiones — revisa `vol <plugin> -h`.
@@ -51,7 +45,3 @@ notes:
 complements: [MemProcFS, YARA, Velociraptor, Wireshark]
 related_artifacts: [memory-dump, pe-executables]
 ---
-
-**Volatility 3** (Volatility Foundation) es el framework open source de referencia para memory forensics. Analiza las estructuras del kernel en una imagen de RAM para listar procesos, conexiones de red, módulos cargados, handles, hives del registro en memoria y regiones de memoria sospechosas, y puede volcar ficheros e imágenes de procesos para seguir analizándolos.
-
-Se invoca como `vol` (o `vol.py`) seguido de la imagen y el nombre del plugin.

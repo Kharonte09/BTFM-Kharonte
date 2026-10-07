@@ -6,7 +6,7 @@ type: Maldoc analysis
 platforms: [Windows, Linux, macOS]
 license: Open source (BSD-2-Clause)
 homepage: https://github.com/decalage2/oletools
-difficulty: intermediate
+coverage: intermediate
 aliases: [olevba, oleid, mraptor, oleobj, rtfobj, msodde, olemeta]
 tags: [maldoc, office, macros, vba, ole, rtf, dde, phishing]
 use_when:
@@ -18,12 +18,6 @@ look_for:
   - '"Suspicious" keywords — `Shell`, `CreateObject`, `WScript.Shell`, `URLDownloadToFile`, `Environ`.'
   - IOCs extracted by `olevba` (URLs, IPs, executable names).
   - '`oleid` flags for external relationships, encryption, XLM macros and embedded objects.'
-workflow:
-  - '`oleid` — risk indicators'
-  - '`olevba` — macros + keywords + IOCs'
-  - '`olevba --deobf --decode` — simple deobfuscation'
-  - '`oleobj` / `rtfobj` / `msodde` — other vectors'
-  - CyberChef / sandbox for the next stage
 examples:
   - label: Install / update
     command: 'pip install -U oletools'
@@ -44,7 +38,7 @@ outputs:
   - A risk summary of the container (`oleid`) and a macro verdict (`mraptor`).
   - Extracted embedded objects written to disk (`oleobj`, `rtfobj`).
   - DDE links found in document fields (`msodde`).
-notes:
+mistakes:
   - The tools never execute macros, but run them in an isolated VM — extracted objects can be live malware.
   - Heavily obfuscated or stomped VBA can defeat static extraction; compare with p-code tools or a sandbox.
   - For Excel 4.0 (XLM) macros, XLMMacroDeobfuscator gives better results by emulating the formulas.
@@ -52,7 +46,3 @@ notes:
 complements: [oledump.py, XLMMacroDeobfuscator, CyberChef, Detect It Easy, YARA]
 related_artifacts: [office-documents, eml]
 ---
-
-**oletools** is a collection of Python tools by Philippe Lagadec for analysing OLE compound files (legacy `.doc`, `.xls`, `.ppt`, `.msg`) and OOXML Office documents. The most used are `olevba` (macro extraction and analysis), `oleid` (risk indicators), `mraptor` (macro verdict), `oleobj` and `rtfobj` (embedded objects) and `msodde` (DDE).
-
-It is the standard first step in maldoc triage — most questions about a malicious document can be answered without opening it.

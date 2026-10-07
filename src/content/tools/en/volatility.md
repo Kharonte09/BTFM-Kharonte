@@ -6,7 +6,7 @@ type: Memory forensics
 platforms: [Windows, Linux, macOS]
 license: Volatility Software License (VSL)
 homepage: https://github.com/volatilityfoundation/volatility3
-difficulty: intermediate
+coverage: intermediate
 aliases: [Volatility, vol, vol.py, Volatility3]
 tags: [memory, ram, processes, injection, malfind, forensics]
 use_when:
@@ -19,12 +19,6 @@ look_for:
   - Suspicious command lines (`windows.cmdline`).
   - Connections owned by unexpected processes (`windows.netscan`).
   - Executable private memory, especially with an `MZ` header (`windows.malfind`).
-workflow:
-  - '`windows.info`'
-  - '`windows.pstree` / `windows.psscan`'
-  - '`windows.cmdline` / `windows.netscan`'
-  - '`windows.malfind` / `windows.dlllist`'
-  - Dump and hash suspicious files
 examples:
   - label: Image information
     command: 'vol -f mem.raw windows.info'
@@ -43,7 +37,7 @@ examples:
 outputs:
   - Tables per plugin (text by default; `-r json` / `-r csv` renderers for scripting).
   - Dumped files, process images and memory regions written to the output directory.
-notes:
+mistakes:
   - '**Volatility 3** replaces Volatility 2 (Python 2, no longer maintained). Plugin names differ — `windows.pslist` instead of `pslist --profile=…`; profiles are replaced by symbol tables.'
   - Symbol tables for Windows are downloaded automatically by default; on offline analysis machines, prepare them in advance.
   - Plugin options change between releases — check `vol <plugin> -h`.
@@ -51,7 +45,3 @@ notes:
 complements: [MemProcFS, YARA, Velociraptor, Wireshark]
 related_artifacts: [memory-dump, pe-executables]
 ---
-
-**Volatility 3** (Volatility Foundation) is the reference open-source framework for memory forensics. It parses kernel structures in a RAM image to list processes, network connections, loaded modules, handles, registry hives in memory and suspicious memory regions, and can dump files and process images for further analysis.
-
-It is invoked as `vol` (or `vol.py`) followed by the image and a plugin name.

@@ -6,7 +6,7 @@ type: Transformación de datos
 platforms: [Web, Offline (HTML autónomo)]
 license: Código abierto (Apache-2.0)
 homepage: https://github.com/gchq/CyberChef
-difficulty: basic
+coverage: intermediate
 tags: [decodificación, base64, desofuscación, powershell, iocs, defang]
 use_when:
   - Necesitas decodificar capas Base64, hex, URL-encoding, UTF-16LE, gzip/deflate o XOR.
@@ -17,12 +17,6 @@ look_for:
   - Texto legible tras **From Base64 → Decode text (UTF-16LE)** en un `-EncodedCommand` de PowerShell.
   - Bytes mágicos de compresión (`1f 8b` gzip) tras un paso de decodificación — añade Gunzip / Raw Inflate.
   - Claves en claro junto a rutinas XOR o AES en scripts.
-workflow:
-  - Pegar la entrada
-  - Probar **Magic** para obtener pistas
-  - Construir la receta capa a capa
-  - Extraer IOCs
-  - Defang para el informe
 examples:
   - label: Receta para -EncodedCommand de PowerShell
     command: 'From_Base64(''A-Za-z0-9+/='',true,false) → Decode_text(''UTF-16LE (1200)'')'
@@ -33,14 +27,10 @@ examples:
 outputs:
   - Datos transformados, descargables como fichero.
   - Una receta guardable / compartible (JSON o fragmento de URL) que documenta cada paso.
-notes:
+mistakes:
   - Usa una **copia local/offline** para datos sensibles. Aunque el procesado es en el cliente, una URL con la entrada incrustada puede filtrar datos si se comparte.
   - Las entradas grandes pueden congelar la pestaña; recórtalas antes.
   - Decodificar un payload es seguro; ejecutarlo no. Nunca pegues la salida en una shell.
 complements: [FLOSS, PowerShell, jq]
 related_artifacts: [powershell-logs, eml]
 ---
-
-CyberChef es una aplicación web de código abierto publicada por el GCHQ. Las operaciones (más de 300) se encadenan en **recetas**, de modo que una decodificación de varias capas es reproducible y se puede compartir con un compañero.
-
-Se ejecuta íntegramente en el navegador y puede descargarse como un HTML autónomo para usarla sin conexión.

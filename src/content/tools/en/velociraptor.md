@@ -6,7 +6,7 @@ type: Endpoint collection & hunting
 platforms: [Windows, Linux, macOS]
 license: Open source (AGPL-3.0)
 homepage: https://docs.velociraptor.app/
-difficulty: intermediate
+coverage: basic
 aliases: [VQL]
 tags: [triage, hunting, collection, live response, fleet]
 use_when:
@@ -17,12 +17,6 @@ look_for:
   - Hunt results that stand out from the fleet baseline (stacking — rare values are interesting).
   - Process, network and persistence artifacts collected at the same point in time.
   - Errors or timeouts per client — they indicate incomplete coverage.
-workflow:
-  - Deploy server and clients (or build an offline collector)
-  - Select artifacts (e.g. `Windows.KapeFiles.Targets`, `Windows.System.Pslist`)
-  - Run a collection or a hunt
-  - Stack and filter results in notebooks
-  - Export for timeline / further analysis
 examples:
   - label: Start a local single-binary instance for testing
     command: 'velociraptor gui'
@@ -32,7 +26,7 @@ outputs:
   - Per-artifact result tables (JSON/CSV) and uploaded files per client.
   - Hunt-level aggregated results across clients.
   - Offline collector ZIP containers.
-notes:
+mistakes:
   - Artifacts are YAML files wrapping VQL queries; you can write your own and share them.
   - Hunts at scale can generate load and data volume — scope by label or OS first.
   - '`velociraptor gui` is intended for testing and single-user use, not as a production deployment.'
@@ -40,7 +34,3 @@ notes:
 complements: [KAPE, EvtxECmd, YARA]
 related_artifacts: [windows-event-logs, prefetch, registry, scheduled-tasks]
 ---
-
-Velociraptor is an endpoint agent and server whose core is **VQL** (Velociraptor Query Language), an SQL-like language that queries the endpoint state: files, registry, event logs, processes, network connections, etc.
-
-Reusable queries are packaged as **artifacts**. A large built-in library covers common DFIR collections, and the community maintains an artifact exchange.

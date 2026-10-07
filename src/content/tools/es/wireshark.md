@@ -6,7 +6,7 @@ type: Análisis de paquetes
 platforms: [Windows, Linux, macOS]
 license: Código abierto (GPL-2.0)
 homepage: https://www.wireshark.org/
-difficulty: intermediate
+coverage: intermediate
 aliases: [tshark]
 tags: [pcap, red, dns, http, tls, c2]
 use_when:
@@ -19,12 +19,6 @@ look_for:
   - Peticiones HTTP con user agents raros, POST a IPs directas, descargas de ejecutables.
   - Valores SNI de TLS y certificados (autofirmados, nombres que no coinciden).
   - Credenciales en claro (FTP, HTTP basic, SMTP AUTH).
-workflow:
-  - Protocol Hierarchy / Conversations
-  - Filtrar (`dns`, `http.request`, `tls.handshake`)
-  - Follow stream
-  - Export objects
-  - Extraer IOCs
 examples:
   - label: Filtro de visualización — peticiones HTTP y consultas DNS
     command: 'http.request || dns.flags.response == 0'
@@ -40,7 +34,7 @@ outputs:
   - Paquetes diseccionados con los campos de cada protocolo.
   - Estadísticas (conversaciones, endpoints, jerarquía de protocolos, gráficas de E/S).
   - Streams reensamblados y objetos exportados (HTTP, SMB, TFTP, IMF…).
-notes:
+mistakes:
   - 'Los **filtros de visualización** (`ip.addr == 10.0.0.5`) y los **filtros de captura** (BPF, `host 10.0.0.5`) usan sintaxis distintas.'
   - Los objetos exportados pueden ser malware activo. Expórtalos solo en un entorno de análisis aislado.
   - Las capturas grandes se trocean más rápido con `tshark`/`editcap`, o se resumen antes con Zeek.
@@ -48,5 +42,3 @@ notes:
 complements: [Zeek, NetworkMiner, Suricata, CyberChef]
 related_artifacts: [pcap, ip-domain]
 ---
-
-Wireshark es la interfaz gráfica de referencia para el análisis de paquetes. Sus disectores decodifican miles de protocolos, y el mismo motor está disponible en línea de comandos como **tshark**, ideal para scripting y para extraer campos de capturas grandes.
