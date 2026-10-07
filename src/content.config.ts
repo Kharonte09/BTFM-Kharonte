@@ -75,6 +75,8 @@ const playbooks = defineCollection({
     ...common,
     order: z.number().default(100),
     trigger: z.string(),
+    /** Questions the analysis should answer (BTLO / CTF-style). */
+    questions: list,
     steps: z
       .array(
         z.object({

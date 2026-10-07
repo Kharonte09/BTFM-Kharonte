@@ -30,6 +30,7 @@ const hasBody = Boolean(playbook.body?.trim());
 
 const sections: (TocItem & { show: boolean })[] = [
   { id: 'start', label: t('sec.start'), show: true },
+  { id: 'questions', label: t('sec.questions.pb'), show: d.questions.length > 0 },
   { id: 'steps', label: t('sec.steps'), show: true },
   { id: 'iocs', label: t('sec.iocs'), show: d.iocs.length > 0 },
   { id: 'escalate', label: t('sec.escalateWhen'), show: d.escalate_when.length > 0 },
@@ -65,6 +66,21 @@ const label = (id: string) => toc.find((s) => s.id === id)?.label ?? id;
       set:html={inline(d.trigger)}
     />
   </Section>
+
+  {
+    d.questions.length > 0 && (
+      <Section id="questions" title={label('questions')} index={n('questions')}>
+        <ol class="space-y-2">
+          {d.questions.map((q, i) => (
+            <li class="flex gap-3 leading-relaxed text-paper-dim [&_code]:font-mono [&_code]:text-paper">
+              <span class="mt-0.5 shrink-0 font-mono text-xs text-ember">Q{i + 1}</span>
+              <span set:html={inline(q)} />
+            </li>
+          ))}
+        </ol>
+      </Section>
+    )
+  }
 
   <Section id="steps" title={label('steps')} index={n('steps')}>
     <ol class="space-y-4">

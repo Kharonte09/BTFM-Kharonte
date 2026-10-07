@@ -67,6 +67,7 @@ export const GET: APIRoute = async ({ props }) => {
       g: d.tags,
       w: words(
         d.trigger,
+        d.questions,
         d.steps.map((s) => s.title),
         d.steps.flatMap((s) => s.tools),
         d.iocs,
