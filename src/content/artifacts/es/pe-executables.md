@@ -1,42 +1,71 @@
 ---
-name: Ejecutables PE (EXE / DLL)
-summary: Ficheros Portable Executable de Windows — EXE, DLL, SYS y ensamblados .NET. La forma más habitual de payload de malware en Windows.
+name: PE / EXE / DLL
+summary: Ejecutables y librerías de Windows (EXE, DLL, SYS, .NET). El payload de malware más habitual — identifícalo, consulta su reputación, averigua qué hace y dónde se ejecutó.
 category: binaries
+coverage: basic
 aliases: [PE Executables (EXE / DLL), EXE, DLL, PE, .NET assemblies, Portable Executable, Suspicious EXE, Ejecutable]
-tags: [malware, análisis estático, hashes, imports, packers, .net]
-evidence:
-  - Hashes (MD5, SHA-1, SHA-256) e imphash para reputación y pivotaje.
-  - Fecha de compilación, información de linker y compilador, Rich header.
-  - Imports y exports — pistas de capacidades.
-  - Secciones, entropía, recursos y overlay — pistas de empaquetado o payloads embebidos.
-  - Firma Authenticode e información de versión.
-  - Strings — URLs, rutas, comandos, mutex.
-locations:
-  - label: Ubicaciones habituales de drop
-    path: '%TEMP% · %APPDATA% · %LOCALAPPDATA% · C:\ProgramData · C:\Users\Public · Downloads'
-  - label: Evidencia de presencia pasada
-    path: Prefetch · $MFT · event logs
-questions:
-  - ¿Es conocido este fichero (malicioso o legítimo)?
-  - ¿Está empaquetado, es .NET, es un instalador o está firmado?
-  - ¿Qué puede hacer (red, persistencia, inyección, cifrado)?
-  - ¿Qué IOCs puedo extraer para acotar el incidente?
-  - ¿Necesita análisis dinámico o reversing?
-tools: [Detect It Easy, PEStudio, FLOSS, capa, YARA, VirusTotal, Ghidra]
+tags: [malware, análisis estático, hashes, imports, packers]
+start_here:
+  - Preserva la muestra original (cópiala a una VM de análisis aislada, idealmente en un archivo con contraseña `infected`).
+  - Calcula el SHA-256 y anota de dónde salió el fichero.
+  - Identifica el tipo real y la arquitectura — ¿empaquetado? ¿.NET? ¿instalador?
+  - Comprueba la firma Authenticode y la información de versión.
+  - Consulta la reputación del **hash** (no subas el fichero).
+start_commands:
+  - label: Hash (Windows)
+    command: 'Get-FileHash .\sample.exe -Algorithm SHA256'
+  - label: Firma
+    command: 'Get-AuthenticodeSignature .\sample.exe'
+  - label: Hash y tipo (Linux)
+    command: 'sha256sum sample.exe && file sample.exe'
+why:
+  - Alerta del EDR / antivirus sobre un ejecutable.
+  - Descarga sospechosa o fichero escrito por Office, un navegador o un script.
+  - Adjunto de correo (o un EXE dentro de un ZIP / ISO / IMG).
+  - Binario desconocido encontrado en el triage de un endpoint.
+  - Ejecución inesperada de un proceso desde una ruta escribible por el usuario.
 look_for:
-  - Fecha de compilación que no encaja con la historia (en el futuro, o de hace décadas — puede falsificarse).
-  - Pocos imports más `LoadLibrary`/`GetProcAddress` → resolución dinámica o empaquetado.
-  - Secciones con entropía alta, nombres de sección raros, secciones ejecutables y escribibles.
+  - Imports sospechosos (inyección de procesos, keylogging, cifrado, red) o muy pocos imports más `LoadLibrary`/`GetProcAddress`.
+  - URLs, IPs, dominios, comandos y rutas del registro en los strings.
+  - Nombres de sección raros, secciones ejecutables y escribibles, entropía alta (empaquetado).
+  - Overlays o recursos que contienen otro PE (`MZ`).
   - Firmantes inválidos, caducados o inesperados; información de versión que imita a un fabricante legítimo.
-  - Overlays y recursos que contienen cabeceras PE (`MZ`).
-  - Ensamblados .NET — descompílalos con ILSpy / dnSpyEx en lugar de desensamblar.
-limitations:
-  - El análisis estático no ve lo que hace una muestra empaquetada o una etapa descargada — escala a sandbox o reversing.
-  - Las fechas de compilación y la información de versión se falsifican trivialmente.
-  - Una firma válida puede venir de un certificado robado o abusado.
-related_artifacts: [prefetch, memory-dump]
+  - Fecha de compilación que no encaja con la historia (se puede falsificar).
+tools_start: [Detect It Easy, PEStudio, FLOSS]
+tools_deeper: [capa, Ghidra]
+tool_questions:
+  - tool: Detect It Easy
+    question: ¿Qué es — compilador, packer, .NET, instalador?
+  - tool: PEStudio
+    question: ¿Qué propiedades son sospechosas (imports, secciones, recursos, firma)?
+  - tool: FLOSS
+    question: ¿Qué strings contiene, incluidos los ofuscados?
+  - tool: capa
+    question: ¿Qué podría hacer (capacidades, técnicas ATT&CK candidatas)?
+  - tool: VirusTotal
+    question: ¿Esta muestra ya es conocida?
+  - tool: ANY.RUN
+    question: ¿Qué pasa cuando se ejecuta?
+  - tool: Hybrid Analysis
+    question: ¿Qué comportamiento e indicadores se observan?
+correlate:
+  - PE en disco (ruta, hash)
+  - Creación de proceso — Sysmon `1` / Security `4688`
+  - Línea de comandos y proceso padre
+  - Conexiones de red — Sysmon `3` / `22`
+  - Ficheros escritos — Sysmon `11`
+  - Persistencia — claves Run, servicios, tareas programadas
+extract:
+  - SHA-256 (y MD5 / SHA-1 para consultas antiguas), imphash
+  - Nombre de fichero y ruta completa
+  - Dominios, URLs e IPs
+  - Mutex, named pipes
+  - Claves del registro y rutas de ficheros soltados
+  - Líneas de comandos que lanza
+mistakes:
+  - No ejecutes muestras desconocidas en tu estación de trabajo normal — usa una VM aislada o una sandbox.
+  - El número de detecciones de VirusTotal no es evidencia suficiente por sí solo; cero detecciones no significa legítimo.
+  - Una API o un import sospechoso no implica automáticamente comportamiento malicioso.
+  - Subir el fichero (en lugar de buscar el hash) lo hace público.
+related_artifacts: [sysmon, windows-event-logs, registry, pcap, memory-dump]
 ---
-
-Windows usa el formato Portable Executable (PE) para ejecutables, DLL y drivers. La cabecera describe secciones, imports, exports, recursos y el punto de entrada, y cada uno de ellos puede revelar cómo se construyó el fichero y qué pretende hacer.
-
-En los ensamblados .NET el PE contiene una cabecera CLR y código IL; descompiladores como **ILSpy** o **dnSpyEx** (el fork mantenido del archivado dnSpy) recuperan un código muy cercano al fuente.

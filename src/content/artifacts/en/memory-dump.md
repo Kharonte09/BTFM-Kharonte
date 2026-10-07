@@ -1,55 +1,59 @@
 ---
 name: Memory Dump
-summary: Image of a system's physical RAM. Shows running processes, network connections, injected code and artefacts that never touch disk.
+summary: A RAM image — what was running, connected and injected at capture time. The place to find fileless malware and decrypted payloads.
 category: memory
-aliases: [RAM dump, memory image, Processes, Handles, DLLs, Network connections]
-tags: [memory, processes, injection, fileless, volatility]
-evidence:
-  - Running and recently terminated processes, parent-child relationships, command lines.
-  - Network connections and listening sockets with owning process.
-  - Loaded DLLs and modules, handles (files, registry keys, mutexes).
-  - Injected or unbacked executable memory regions.
-  - Decrypted strings, keys and configurations present only at runtime.
-locations:
-  - label: Acquisition output
-    path: Raw (.raw/.mem) · crash dump (.dmp) · VM memory files (e.g. .vmem)
-  - label: On-disk memory remnants
-    path: C:\hiberfil.sys · C:\pagefile.sys · C:\swapfile.sys
+coverage: intermediate
+aliases: [RAM dump, memory image, Volcado de memoria, Memory]
+tags: [memory, volatility, processes, injection, fileless]
+start_here:
+  - Hash the image and record how and when it was acquired.
+  - Identify the OS build and capture time — `windows.info`.
+  - List processes as a tree — wrong parents, paths or names stand out.
+  - Check command lines and network connections of anything suspicious.
+  - Look for injected code (`windows.malfind`) and dump what you need.
+start_commands:
+  - label: Image info
+    command: 'vol -f mem.raw windows.info'
+  - label: Process tree
+    command: 'vol -f mem.raw windows.pstree'
+  - label: Command lines
+    command: 'vol -f mem.raw windows.cmdline'
+  - label: Network connections
+    command: 'vol -f mem.raw windows.netscan'
+  - label: Injected code
+    command: 'vol -f mem.raw windows.malfind'
+why:
+  - Suspected fileless malware or injection.
+  - Host captured before containment or shutdown.
+  - Need the decrypted configuration or the C2 of a sample.
+  - Lab or challenge with a memory image.
 questions:
-  - Which processes were running, and which are suspicious?
-  - Which process owned this network connection?
-  - Is there injected code in a legitimate process?
-  - What command lines were used?
-  - Is there fileless malware or a decrypted payload in memory?
-tools: [Volatility 3, MemProcFS, YARA, Velociraptor]
+  - Which process is malicious (name, PID, parent, path)?
+  - How was it launched (command line)?
+  - Which remote IP and port does it connect to?
+  - Is there injected code, and in which process?
 look_for:
-  - Processes with wrong parents (e.g. `svchost.exe` not started by `services.exe`) or wrong paths.
+  - Wrong parent (e.g. `svchost.exe` not from `services.exe`) or wrong path.
   - Misspelled system process names (`scvhost.exe`, `lsas.exe`).
-  - '`windows.malfind` hits — executable private memory, especially with an `MZ` header.'
+  - Processes in `windows.psscan` but not in `windows.pslist` (hidden or terminated).
+  - '`windows.malfind` hits with an `MZ` header or shellcode.'
   - Connections from processes that should not be networked.
-  - Processes visible to scan-based plugins but missing from the list-based ones (hiding).
-limitations:
-  - Acquisition must happen before shutdown; the image is a single point in time.
-  - Acquisition tools change memory and can be blocked by security products.
-  - Analysis depends on matching symbols/profiles for the OS build.
-  - Smear — memory changes during acquisition can produce inconsistent structures.
+tools_start: [Volatility 3]
+tools_deeper: [MemProcFS, YARA]
+correlate:
+  - Suspicious process (PID, path, command line)
+  - Network connection (`netscan`) → PCAP / proxy logs
+  - Dumped file → hash → PE analysis
+  - Persistence (`svcscan`, Run keys in memory) → registry / tasks on disk
+extract:
+  - Process names, PIDs, paths and command lines
+  - Remote IPs and ports
+  - Hashes of dumped files
+  - Mutexes and persistence entries
+mistakes:
+  - The image is a single point in time — it misses what ran before.
+  - Plugin names and options change between Volatility 3 versions — check `vol <plugin> -h`.
+  - Volatility 2 profiles do not apply to Volatility 3 (it uses symbol tables).
+  - Acquisition smear can produce inconsistent results — corroborate with several plugins.
 related_artifacts: [pe-executables, pcap, sysmon]
 ---
-
-Memory forensics recovers the **runtime state** of a system. Typical acquisition tools include WinPmem, DumpIt and Magnet RAM Capture; analysis is usually done with **Volatility 3** (Volatility 2 is no longer maintained) or **MemProcFS**, which exposes memory as a virtual file system.
-
-### Common Volatility 3 plugins (Windows)
-
-| Plugin | Use |
-| --- | --- |
-| `windows.info` | OS build and image information |
-| `windows.pslist` / `windows.psscan` | Process list (linked list vs. pool scanning) |
-| `windows.pstree` | Parent-child tree |
-| `windows.cmdline` | Process command lines |
-| `windows.netscan` | Network connections and sockets |
-| `windows.dlllist` | Loaded modules per process |
-| `windows.handles` | Open handles per process |
-| `windows.malfind` | Suspicious executable memory regions |
-| `windows.svcscan` | Services |
-
-Example: `vol -f memory.raw windows.pstree`

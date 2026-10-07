@@ -1,35 +1,42 @@
 ---
 name: PDF Documents
-summary: Portable Document Format files. Used in phishing for malicious links and QR codes, and less often for JavaScript or embedded files.
-category: phishing
+summary: In phishing a PDF is usually a container for a link or a QR code; less often it carries JavaScript or an embedded file. Find which, then follow the link.
+category: documents
+coverage: intermediate
 aliases: [PDF]
-tags: [phishing, javascript, embedded files, urls, maldoc]
-evidence:
-  - URLs and actions (`/URI`, `/Launch`, `/OpenAction`, `/AA`).
-  - Embedded JavaScript and embedded files.
-  - Forms and XFA content.
-  - Producer/creator metadata and creation dates.
-locations:
-  - label: Delivery
-    path: Email attachments · downloads · links to file-sharing services
-questions:
-  - Does the PDF contain JavaScript or auto-actions?
-  - Which URLs does it link to (including QR codes in images)?
-  - Does it embed another file?
-tools: [pdfid.py, pdf-parser.py, CyberChef, VirusTotal, YARA]
+tags: [phishing, javascript, embedded files, urls, qr]
+start_here:
+  - Hash the file and confirm it really is a PDF (`file`).
+  - Run `pdfid` and check the risky keywords.
+  - If a keyword is present, inspect that object with `pdf-parser`.
+  - Extract every URL — including QR codes in images — and analyse them as indicators.
+start_commands:
+  - label: Keyword triage
+    command: 'pdfid.py suspicious.pdf'
+  - label: Find objects with JavaScript
+    command: 'pdf-parser.py --search JavaScript suspicious.pdf'
+why:
+  - Phishing attachment, often an "invoice" or "shared document".
+  - A user opened a PDF and then entered credentials on a page.
 look_for:
-  - Keywords — `/JS`, `/JavaScript`, `/OpenAction`, `/AA`, `/Launch`, `/EmbeddedFile`, `/URI`, `/AcroForm`, `/XFA`, `/ObjStm`.
-  - A single page with a big "View document" button and a link — classic credential-phishing lure.
-  - QR codes pointing to login pages (quishing) — decode them offline.
-  - Object streams (`/ObjStm`) hiding the interesting objects — decompress before concluding.
-limitations:
-  - '`pdfid` counts keywords; obfuscated names (e.g. `/J#61vaScript`) are normalised but you should still inspect objects.'
+  - '`/JavaScript`, `/JS`, `/OpenAction`, `/AA`, `/Launch`, `/EmbeddedFile`, `/URI`.'
+  - A single page with a big "View document" button and one link.
+  - QR codes pointing to login pages.
+  - Object streams (`/ObjStm`) hiding the interesting objects.
+tools_start: [pdfid.py]
+tools_deeper: [pdf-parser.py, CyberChef, VirusTotal]
+correlate:
+  - PDF (hash, URLs)
+  - URL → reputation and landing page
+  - Proxy / DNS — who opened the link
+  - Sign-in logs — credentials submitted?
+extract:
+  - SHA-256 of the PDF
+  - URLs and domains (including from QR codes)
+  - Embedded file names and hashes
+mistakes:
+  - '`pdfid` only counts keywords — a clean result does not mean there is no link.'
   - Links inside images (QR) are invisible to keyword tools.
-  - Reader exploits depend on the reader version — static analysis shows intent, not success.
-related_artifacts: [eml, office-documents]
-review: true
+  - Don't open the PDF in a normal reader on the analyst workstation.
+related_artifacts: [eml, office-documents, ip-domain]
 ---
-
-A PDF is a set of objects (dictionaries, streams) referenced from a trailer. Didier Stevens' **pdfid.py** gives a fast keyword triage; **pdf-parser.py** lets you search, decompress and dump individual objects.
-
-In current phishing campaigns PDFs are mostly **containers for a link or QR code**; extract and analyse the URL as the next step.

@@ -1,41 +1,47 @@
 ---
 name: Windows Prefetch
-summary: Ficheros que crea Windows para acelerar el arranque de aplicaciones. Evidencia sólida de ejecución, con número de ejecuciones y últimas ejecuciones.
+summary: Evidencia de que un programa se ejecutó en un Windows cliente — con número de ejecuciones y últimas ejecuciones. Úsalo para confirmar ejecución y construir el timeline.
 category: windows
+coverage: intermediate
 aliases: [Prefetch, .pf]
 tags: [ejecución, ejecución de programas, timeline]
-evidence:
-  - Que un ejecutable concreto se ejecutó en el sistema.
-  - Cuántas veces se ejecutó y la última vez (más hasta 7 ejecuciones anteriores en Windows 8+).
-  - Ficheros y directorios que cargó el programa durante sus primeros segundos.
-  - Los volúmenes desde los que se ejecutó.
+start_here:
+  - Recolecta `C:\Windows\Prefetch\*.pf` (en Windows Server no existe por defecto).
+  - Analiza la carpeta a CSV y ordena por última ejecución.
+  - Busca el nombre del ejecutable sospechoso — anota el número de ejecuciones y las horas.
+  - Revisa los ficheros que cargó al arrancar en busca de rutas de staging o payloads.
+start_commands:
+  - label: Analizar la carpeta Prefetch a CSV
+    command: 'PECmd.exe -d "C:\Cases\triage\C\Windows\Prefetch" --csv "C:\Cases\out"'
+why:
+  - Necesitas probar si un binario sospechoso llegó a ejecutarse.
+  - Construcción del timeline de ejecución de un endpoint.
+  - Las herramientas del atacante pueden haberse borrado — el Prefetch puede sobrevivir.
+questions:
+  - ¿Se ejecutó aquí este programa? ¿Cuándo y cuántas veces?
+  - ¿Qué más se ejecutó en ese momento?
+  - ¿Se ejecutó desde una ruta inusual o un medio extraíble?
 locations:
   - label: Ficheros Prefetch
     path: C:\Windows\Prefetch\<EXENAME>-<HASH>.pf
-  - label: Configuración de Prefetch
-    path: HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management\PrefetchParameters\EnablePrefetcher
-questions:
-  - ¿Se ejecutó este programa en este equipo?
-  - ¿Cuándo se ejecutó por última vez y cuántas veces?
-  - ¿Qué más se ejecutó en ese mismo momento?
-  - ¿Qué DLL o ficheros tocó al arrancar (rutas de staging, payloads)?
-  - ¿Se ejecutó desde un medio extraíble o una ruta inusual?
-tools: [PECmd, KAPE, Velociraptor, Timeline Explorer]
 look_for:
   - Ejecutables en rutas escribibles por el usuario o con nombres aleatorios.
-  - LOLBins y herramientas de administración (`psexec`, `wmic`, `certutil`, `rundll32`) a horas inesperadas.
-  - Grupos de utilidades de reconocimiento (`whoami`, `net`, `nltest`, `ipconfig`) en pocos minutos.
-  - El mismo nombre de ejecutable con **varios hashes distintos** — mismo nombre, distinta ruta.
-  - 'Ficheros referenciados bajo `\Users\<user>\AppData\` o `\Temp\`.'
-limitations:
-  - Desactivado por defecto en las ediciones Windows Server; también puede desactivarse por registro.
-  - Número limitado de entradas (1024 en Windows 8+); en sistemas con mucha actividad las más antiguas se pierden.
-  - Registra ejecución, no éxito. No prueba que el programa completara su tarea.
-  - El hash del nombre depende de la ruta del ejecutable (y, en procesos anfitriones, de la línea de comandos); no es un hash del fichero.
-  - Las técnicas antiforenses pueden borrar los .pf; su ausencia no prueba que algo no se ejecutara.
-related_artifacts: [windows-event-logs, registry]
+  - LOLBins y herramientas de administración / reconocimiento (`psexec`, `certutil`, `rundll32`, `whoami`, `net`) a horas inesperadas.
+  - El mismo nombre con **hashes distintos** — mismo nombre de binario, ruta distinta.
+  - Ficheros referenciados bajo `\Users\<user>\AppData\` o `\Temp\`.
+tools_start: [PECmd]
+tools_deeper: [Timeline Explorer]
+correlate:
+  - Hora de ejecución en Prefetch
+  - Creación de proceso en ese momento — `4688` / Sysmon `1`
+  - LNK / actividad del usuario justo antes
+  - El binario en disco → análisis del PE
+extract:
+  - Nombre y ruta del ejecutable, número de ejecuciones, horas
+  - Ficheros y rutas referenciados sospechosos
+mistakes:
+  - Que no exista el `.pf` no prueba que el programa no se ejecutara.
+  - El hash del nombre del fichero es un hash de la ruta, no del fichero.
+  - Prefetch registra ejecución, no éxito.
+related_artifacts: [lnk, windows-event-logs, pe-executables]
 ---
-
-Prefetch es una función de rendimiento de Windows. Cuando arranca una aplicación, el Cache Manager vigila los ficheros que carga y los registra en un `.pf` para que el siguiente arranque sea más rápido.
-
-Para un investigador es uno de los artefactos de **evidencia de ejecución** más fiables en equipos cliente Windows. En Windows 10 y posteriores los ficheros están comprimidos, así que analízalos con una herramienta que soporte el formato en lugar de leerlos directamente.

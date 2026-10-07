@@ -1,43 +1,50 @@
 ---
 name: Windows Registry
-summary: Hierarchical configuration database. Holds persistence locations, user activity, devices, services and execution traces.
+summary: Configuration database. During an investigation you mainly use it for persistence (what starts automatically) and user activity.
 category: windows
-aliases: [Registry, hives, NTUSER.DAT]
-tags: [persistence, user activity, configuration, usb, execution]
-evidence:
-  - Autostart / persistence configuration (Run keys, services, Winlogon, IFEO…).
-  - User activity — recently opened files, typed paths, folders browsed (ShellBags), UserAssist.
-  - Connected USB devices and mounted volumes.
-  - System configuration — computer name, time zone, network interfaces, last shutdown.
+coverage: basic
+aliases: [Registry, hives, NTUSER.DAT, Registro, Registro de Windows]
+tags: [persistence, user activity, configuration, autostart]
+start_here:
+  - Check the autostart locations first — `Run` / `RunOnce` under HKLM and HKCU.
+  - List services and their `ImagePath`.
+  - For offline analysis, collect the hives **with** their transaction logs.
+  - Note key last-write times inside the incident window.
+start_commands:
+  - label: Run keys (live)
+    command: "Get-ItemProperty 'HKLM:\\Software\\Microsoft\\Windows\\CurrentVersion\\Run', 'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Run'"
+  - label: Services with binary path (live)
+    command: 'Get-CimInstance Win32_Service | Select-Object Name, State, StartMode, PathName'
+why:
+  - Suspected persistence after a malware execution.
+  - Need to know what a user opened or ran (user activity).
+  - Service or autostart entry found during triage.
 locations:
   - label: System hives
     path: C:\Windows\System32\config\SYSTEM · SOFTWARE · SAM · SECURITY
   - label: User hive
     path: C:\Users\<user>\NTUSER.DAT
-  - label: User classes hive
-    path: C:\Users\<user>\AppData\Local\Microsoft\Windows\UsrClass.dat
-  - label: Transaction logs
-    path: <hive>.LOG1 · <hive>.LOG2
-questions:
-  - What starts automatically on this host or at user logon?
-  - Which programs did this user run via Explorer (UserAssist)?
-  - Which folders and files did the user open?
-  - Which USB devices were connected and when?
-  - What was the system's time zone (to interpret local timestamps)?
-tools: [RECmd, Registry Explorer, RegRipper, KAPE, Velociraptor]
+  - label: Autostart keys
+    path: HKLM\Software\Microsoft\Windows\CurrentVersion\Run · RunOnce (and HKCU)
 look_for:
-  - '`HKLM\Software\Microsoft\Windows\CurrentVersion\Run` / `RunOnce` and the same under `HKCU`.'
-  - '`HKLM\SYSTEM\CurrentControlSet\Services\<name>\ImagePath` pointing to unusual paths.'
-  - '`HKLM\Software\Microsoft\Windows NT\CurrentVersion\Winlogon` (`Shell`, `Userinit`).'
-  - '`...\Image File Execution Options\<exe>\Debugger` entries.'
-  - '`HKCU\Software\Classes\CLSID` entries that shadow system COM objects (COM hijacking).'
-  - Key last-write times inside the incident window.
-limitations:
-  - Last-write timestamps exist per key, not per value.
-  - Without transaction logs, recent changes may be missing from a dirty hive.
-  - Live system hives are locked — collect with a forensic tool (KAPE, Velociraptor, FTK Imager).
-  - Many artifacts are version-specific; verify the Windows build before interpreting.
-related_artifacts: [scheduled-tasks, windows-event-logs]
+  - Run / RunOnce values pointing to `AppData`, `Temp`, `ProgramData` or scripts.
+  - Services whose `ImagePath` is unusual or runs a script / LOLBin.
+  - '`Winlogon` `Shell` / `Userinit` changes and `Image File Execution Options` `Debugger` entries.'
+  - Key last-write times that match the incident timeline.
+tools_start: [Registry Explorer, RECmd]
+tools_deeper: [RegRipper]
+correlate:
+  - Autostart entry (Run key, service)
+  - Binary it points to → hash and analyse it (PE)
+  - When it was created — Sysmon `13`, `7045`
+  - Which process / user created it
+extract:
+  - Key path, value name and data
+  - Binary or command it launches
+  - Last-write timestamp
+mistakes:
+  - Last-write time is per key, not per value — it does not tell you which value changed.
+  - Without transaction logs (`.LOG1` / `.LOG2`) recent changes may be missing.
+  - Many legitimate programs use Run keys — judge by path, signer and timing.
+related_artifacts: [scheduled-tasks, windows-event-logs, sysmon, pe-executables]
 ---
-
-The registry is stored in **hive** files. System-wide hives live under `C:\Windows\System32\config\`, and each user has `NTUSER.DAT` and `UsrClass.dat` in their profile. `CurrentControlSet` is a runtime link — in an offline `SYSTEM` hive, check `Select\Current` to know which `ControlSet00X` was active.

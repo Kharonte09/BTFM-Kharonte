@@ -1,43 +1,48 @@
 ---
-name: Accesos directos LNK
-summary: Ficheros de acceso directo de Windows. Se crean automáticamente al abrir ficheros y se abusan como payloads de phishing que lanzan comandos.
+name: Ficheros LNK
+summary: Accesos directos de Windows. Importan por dos motivos — prueban que un usuario abrió un fichero, y los atacantes los entregan como payloads que ejecutan comandos.
 category: windows
-aliases: [LNK Shortcut Files, LNK, .lnk, Shortcut, Acceso directo]
+coverage: intermediate
+aliases: [LNK Shortcut Files, LNK Files, LNK, .lnk, Shortcut, Acceso directo, Accesos directos LNK]
 tags: [actividad de usuario, phishing, acceso inicial, acceso a ficheros]
-evidence:
-  - La ruta del objetivo y, a menudo, sus marcas MAC y tamaño en el momento del acceso.
-  - Información del volumen (tipo de unidad, número de serie, etiqueta) — local, extraíble o de red.
-  - Identificadores de máquina (nombre NetBIOS, dirección MAC en el tracker block) del sistema donde estaba el objetivo.
-  - En LNK maliciosos, la línea de comandos y argumentos ejecutados, y la ruta del icono usada para disimular.
+start_here:
+  - 'Decide qué caso es: un LNK de **elementos recientes** (actividad del usuario) o un LNK **entregado** (payload).'
+  - Analízalo con una herramienta — el diálogo de Propiedades trunca los argumentos largos.
+  - Lee la ruta del objetivo, los argumentos y el directorio de trabajo.
+  - Anota las marcas de tiempo del objetivo, el volumen (local / USB / red) y la información de la máquina.
+start_commands:
+  - label: Analizar un LNK
+    command: 'LECmd.exe -f "C:\Cases\sample.lnk"'
+  - label: Analizar una carpeta Recent a CSV
+    command: 'LECmd.exe -d "C:\Cases\triage\C\Users\<user>\AppData\Roaming\Microsoft\Windows\Recent" --csv "C:\Cases\out"'
+why:
+  - Un phishing entregó un LNK dentro de un ZIP / ISO / IMG.
+  - Necesitas saber si un usuario abrió un fichero y desde dónde (USB, recurso compartido).
+  - Posible persistencia en la carpeta Inicio.
 locations:
-  - label: Ficheros recientes (automático)
+  - label: Elementos recientes
     path: C:\Users\<user>\AppData\Roaming\Microsoft\Windows\Recent\
-  - label: Ficheros recientes de Office
-    path: C:\Users\<user>\AppData\Roaming\Microsoft\Office\Recent\
-  - label: Escritorio / carpeta Inicio
-    path: C:\Users\<user>\Desktop\ · ...\Start Menu\Programs\Startup\
-  - label: Entrega por phishing
-    path: Dentro de adjuntos ZIP / ISO / VHD o descargas
-questions:
-  - ¿Abrió este usuario un fichero concreto, y cuándo?
-  - ¿Estaba el fichero en un USB o en un recurso compartido de red?
-  - ¿Qué ejecuta realmente este acceso directo sospechoso?
-  - ¿En qué máquina se creó el LNK?
-tools: [LECmd, KAPE, CyberChef, Timeline Explorer]
+  - label: Carpeta Inicio
+    path: C:\Users\<user>\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup\
 look_for:
-  - Objetivos como `cmd.exe`, `powershell.exe`, `mshta.exe`, `rundll32.exe`, `conhost.exe` con argumentos largos.
-  - Argumentos rellenados con espacios para ocultar el comando real en el diálogo de Propiedades.
-  - Ubicaciones de icono que apuntan a iconos de documento o carpeta para disimular el acceso directo.
-  - LNK en la carpeta Inicio (persistencia).
-  - LNK recientes que referencian ficheros en volúmenes extraíbles en torno a una exfiltración.
-limitations:
-  - Los LNK de elementos recientes guardan el último acceso; los anteriores se sobrescriben.
-  - Los usuarios y las herramientas de limpieza pueden borrarlos; una configuración puede desactivar el registro de recientes.
-  - Las marcas de tiempo embebidas son las del fichero **objetivo**, no las del LNK.
-related_artifacts: [eml, powershell-logs, prefetch]
-review: true
+  - Objetivos como `cmd.exe`, `powershell.exe`, `mshta.exe`, `rundll32.exe` con argumentos largos.
+  - Argumentos rellenados con espacios para ocultar el comando real.
+  - Icono de documento o carpeta para disimular el acceso directo.
+  - Objetivos en volúmenes extraíbles o recursos compartidos.
+tools_start: [LECmd]
+tools_deeper: [CyberChef]
+correlate:
+  - Objetivo y argumentos del LNK
+  - Creación de proceso — `4688` / Sysmon `1`
+  - Prefetch del binario lanzado
+  - Red / descarga de la siguiente etapa
+extract:
+  - Ruta del objetivo y línea de comandos completa
+  - URLs, IPs o nombres de fichero en los argumentos
+  - Número de serie del volumen, nombre / MAC de la máquina (donde estaba el objetivo)
+mistakes:
+  - Las marcas de tiempo embebidas son las del **objetivo**, no las del LNK.
+  - Los LNK de recientes solo guardan el último acceso — las aperturas anteriores se sobrescriben.
+  - No hagas doble clic en un LNK entregado «para ver qué hace».
+related_artifacts: [eml, prefetch, powershell-logs]
 ---
-
-Un fichero `.lnk` es una estructura binaria (formato Shell Link) que apunta a un objetivo. Windows los crea automáticamente para los ficheros abiertos recientemente, lo que los convierte en buena evidencia de **acceso a ficheros**. Los atacantes también entregan LNK directamente — a menudo dentro de archivos comprimidos o imágenes de disco — porque un doble clic ejecuta la línea de comandos embebida.
-
-Analízalos con **LECmd** (Eric Zimmerman) en lugar de fiarte del diálogo de Propiedades, que puede truncar argumentos largos.

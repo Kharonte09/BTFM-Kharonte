@@ -1,38 +1,49 @@
 ---
-name: Direcciones IP y dominios
-summary: Indicadores de red encontrados en logs, alertas, correos o muestras. Necesitan contexto y enriquecimiento antes de convertirse en IOCs accionables.
-category: network
-aliases: [IP Addresses & Domains, IP, Domain, Suspicious IP, Suspicious domain, URL, Dominio, IP sospechosa]
-tags: [iocs, enriquecimiento, inteligencia de amenazas, infraestructura, c2]
-evidence:
-  - Dónde aparece el indicador en tu entorno (qué equipos, usuarios, momentos).
-  - Contexto de propiedad y alojamiento — ASN, proveedor, geolocalización (aproximada).
-  - Registro del dominio e historial DNS.
-  - Reputación y relación con malware o campañas conocidas.
-locations:
-  - label: Fuentes internas
-    path: Logs de firewall / proxy / DNS · telemetría EDR · Sysmon 3 y 22 · logs del mail gateway
-  - label: Muestras y documentos
-    path: Cadenas, configuraciones, informes de sandbox, cuerpos y headers de correo
+name: IPs, dominios y URLs
+summary: Indicadores, no fuentes de evidencia. Una IP o un dominio solo se convierte en IOC cuando sabes dónde lo viste, qué es y qué equipos lo tocaron.
+category: indicators
+coverage: intermediate
+aliases: [IP Addresses & Domains, IPs, Domains & URLs, IP, Domain, URL, Suspicious IP, Suspicious domain, IOC, Direcciones IP y dominios]
+tags: [iocs, enriquecimiento, threat intelligence, infraestructura, c2]
+start_here:
+  - Anota dónde lo viste y cuándo (alerta, correo, muestra, log).
+  - Haz defang antes de compartirlo (`hxxps://evil[.]example`).
+  - Consulta su reputación — de forma pasiva.
+  - Busca en **tus** logs (proxy, DNS, firewall, EDR) todos los equipos que lo contactaron.
+  - Decide — bloquear, vigilar o descartar — y deja escrito por qué.
+why:
+  - Indicador de una alerta, un correo de phishing o una muestra.
+  - Informe de threat intel o una petición para revisar una IP.
+  - Destino desconocido en los logs del proxy / firewall.
 questions:
-  - ¿Qué equipos internos se comunicaron con este indicador, y cuándo por primera vez?
-  - ¿Es infraestructura compartida (CDN, cloud, hosting) o dedicada?
-  - ¿Es conocido como malicioso, y por qué?
-  - ¿Qué más está alojado en él o relacionado con él?
-tools: [VirusTotal, Wireshark, Zeek, CyberChef]
+  - ¿Qué equipos internos lo contactaron — primera y última vez?
+  - ¿Es infraestructura compartida (CDN, cloud) o dedicada?
+  - ¿Se conoce como malicioso, y por qué?
 look_for:
-  - Primera y última aparición en **tus** logs — eso define la ventana del alcance.
+  - Primera y última aparición en **tu** telemetría — eso fija la ventana del alcance.
   - Dominios registrados recientemente y nombres parecidos a otros legítimos.
-  - Direcciones de cloud y CDN — bloquear la IP puede romper servicios legítimos; prioriza indicadores de dominio/URL.
-  - Dominios que resuelven a muchas IPs rápidamente (fast flux) o IPs que alojan muchos dominios no relacionados.
-limitations:
-  - Las IPs cambian de manos; la reputación caduca. Anota la fecha de cada consulta.
+  - Direcciones de cloud / CDN — bloquear la IP puede romper servicios legítimos.
+  - Otros dominios en la misma IP; otras IPs para el mismo dominio.
+tools_start: [VirusTotal, CyberChef]
+tools_deeper: [Wireshark]
+tool_questions:
+  - tool: VirusTotal
+    question: ¿Se conoce, y con qué está relacionado (ficheros, dominios, URLs)?
+  - tool: CyberChef
+    question: Extraer indicadores de un texto y hacer defang para un informe.
+correlate:
+  - Indicador (IP / dominio / URL)
+  - Logs de proxy, DNS y firewall — qué equipos y cuándo
+  - Endpoint — qué proceso hizo la conexión (Sysmon `3` / `22`)
+  - Muestras o correos relacionados
+extract:
+  - El indicador, con defang, con primera / última aparición
+  - Equipos y usuarios que lo contactaron
+  - Hashes, URLs y dominios relacionados
+mistakes:
+  - La reputación caduca — las IPs cambian de manos; anota la fecha de cada consulta.
   - La geolocalización es aproximada y no es atribución.
-  - Las consultas a servicios de terceros pueden ser visibles para otros — evita consultar nombres internos sensibles.
+  - No consultes nombres internos sensibles en servicios de terceros.
+  - Una reputación limpia no hace que un indicador sea seguro.
 related_artifacts: [pcap, eml, sysmon]
-review: true
 ---
-
-Una IP o un dominio solo es un indicador cuando tiene **contexto**: dónde lo viste, qué es y por qué importa. Enriquécelo, delimita su alcance en tu propia telemetría y solo entonces bloquéalo o repórtalo.
-
-Haz defang de los indicadores en los informes (`hxxps://evil[.]example`) para que no se puedan pulsar por accidente.

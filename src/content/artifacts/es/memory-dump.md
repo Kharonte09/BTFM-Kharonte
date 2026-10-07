@@ -1,55 +1,59 @@
 ---
 name: Volcado de memoria
-summary: Imagen de la RAM física de un sistema. Muestra procesos en ejecución, conexiones de red, código inyectado y artefactos que nunca tocan el disco.
+summary: Una imagen de RAM — qué se ejecutaba, qué conexiones había y qué estaba inyectado en el momento de la captura. El sitio donde encontrar malware fileless y payloads descifrados.
 category: memory
-aliases: [Memory Dump, RAM dump, memory image, Processes, Handles, DLLs, Network connections, Volcado de RAM]
-tags: [memoria, procesos, inyección, fileless, volatility]
-evidence:
-  - Procesos en ejecución y terminados recientemente, relaciones padre-hijo, líneas de comandos.
-  - Conexiones de red y sockets a la escucha con su proceso propietario.
-  - DLL y módulos cargados, handles (ficheros, claves del registro, mutex).
-  - Regiones de memoria ejecutable inyectadas o sin respaldo en disco.
-  - Strings descifrados, claves y configuraciones presentes solo en tiempo de ejecución.
-locations:
-  - label: Salida de la adquisición
-    path: Raw (.raw/.mem) · volcado de bloqueo (.dmp) · ficheros de memoria de VM (p. ej. .vmem)
-  - label: Restos de memoria en disco
-    path: C:\hiberfil.sys · C:\pagefile.sys · C:\swapfile.sys
+coverage: intermediate
+aliases: [Memory Dump, RAM dump, memory image, Volcado de RAM, Memory]
+tags: [memoria, volatility, procesos, inyección, fileless]
+start_here:
+  - Calcula el hash de la imagen y anota cómo y cuándo se adquirió.
+  - Identifica la build del sistema y la hora de captura — `windows.info`.
+  - Lista los procesos en árbol — los padres, rutas o nombres incorrectos destacan.
+  - Revisa las líneas de comandos y conexiones de red de lo sospechoso.
+  - Busca código inyectado (`windows.malfind`) y vuelca lo que necesites.
+start_commands:
+  - label: Información de la imagen
+    command: 'vol -f mem.raw windows.info'
+  - label: Árbol de procesos
+    command: 'vol -f mem.raw windows.pstree'
+  - label: Líneas de comandos
+    command: 'vol -f mem.raw windows.cmdline'
+  - label: Conexiones de red
+    command: 'vol -f mem.raw windows.netscan'
+  - label: Código inyectado
+    command: 'vol -f mem.raw windows.malfind'
+why:
+  - Sospecha de malware fileless o de inyección.
+  - Equipo capturado antes de contenerlo o apagarlo.
+  - Necesitas la configuración descifrada o el C2 de una muestra.
+  - Laboratorio o reto con una imagen de memoria.
 questions:
-  - ¿Qué procesos se estaban ejecutando y cuáles son sospechosos?
-  - ¿Qué proceso era el dueño de esta conexión de red?
-  - ¿Hay código inyectado en un proceso legítimo?
-  - ¿Qué líneas de comandos se usaron?
-  - ¿Hay malware fileless o un payload descifrado en memoria?
-tools: [Volatility 3, MemProcFS, YARA, Velociraptor]
+  - ¿Qué proceso es malicioso (nombre, PID, padre, ruta)?
+  - ¿Cómo se lanzó (línea de comandos)?
+  - ¿A qué IP y puerto remotos se conecta?
+  - ¿Hay código inyectado, y en qué proceso?
 look_for:
-  - Procesos con padres incorrectos (p. ej. `svchost.exe` no lanzado por `services.exe`) o rutas incorrectas.
+  - Padre incorrecto (p. ej. `svchost.exe` que no viene de `services.exe`) o ruta incorrecta.
   - Nombres de procesos del sistema mal escritos (`scvhost.exe`, `lsas.exe`).
-  - 'Coincidencias de `windows.malfind` — memoria privada ejecutable, sobre todo con cabecera `MZ`.'
+  - Procesos en `windows.psscan` pero no en `windows.pslist` (ocultos o terminados).
+  - 'Coincidencias de `windows.malfind` con cabecera `MZ` o shellcode.'
   - Conexiones de procesos que no deberían usar la red.
-  - Procesos visibles para los plugins de escaneo pero ausentes en los basados en listas (ocultación).
-limitations:
-  - La adquisición debe hacerse antes de apagar; la imagen es un único instante.
-  - Las herramientas de adquisición modifican la memoria y algunos productos de seguridad pueden bloquearlas.
-  - El análisis depende de símbolos/perfiles que coincidan con la build del sistema operativo.
-  - Smear — los cambios de memoria durante la adquisición pueden producir estructuras inconsistentes.
+tools_start: [Volatility 3]
+tools_deeper: [MemProcFS, YARA]
+correlate:
+  - Proceso sospechoso (PID, ruta, línea de comandos)
+  - Conexión de red (`netscan`) → PCAP / logs del proxy
+  - Fichero volcado → hash → análisis del PE
+  - Persistencia (`svcscan`, claves Run en memoria) → registro / tareas en disco
+extract:
+  - Nombres, PIDs, rutas y líneas de comandos de los procesos
+  - IPs y puertos remotos
+  - Hashes de los ficheros volcados
+  - Mutex y entradas de persistencia
+mistakes:
+  - La imagen es un único instante — no ve lo que se ejecutó antes.
+  - Los nombres y opciones de los plugins cambian entre versiones de Volatility 3 — revisa `vol <plugin> -h`.
+  - Los perfiles de Volatility 2 no sirven en Volatility 3 (usa tablas de símbolos).
+  - El smear de la adquisición puede dar resultados inconsistentes — corrobora con varios plugins.
 related_artifacts: [pe-executables, pcap, sysmon]
 ---
-
-La forense de memoria recupera el **estado en ejecución** de un sistema. Herramientas habituales de adquisición son WinPmem, DumpIt y Magnet RAM Capture; el análisis suele hacerse con **Volatility 3** (Volatility 2 ya no se mantiene) o **MemProcFS**, que expone la memoria como un sistema de ficheros virtual.
-
-### Plugins habituales de Volatility 3 (Windows)
-
-| Plugin | Uso |
-| --- | --- |
-| `windows.info` | Build del sistema e información de la imagen |
-| `windows.pslist` / `windows.psscan` | Lista de procesos (lista enlazada frente a escaneo de pool) |
-| `windows.pstree` | Árbol padre-hijo |
-| `windows.cmdline` | Líneas de comandos de los procesos |
-| `windows.netscan` | Conexiones y sockets de red |
-| `windows.dlllist` | Módulos cargados por proceso |
-| `windows.handles` | Handles abiertos por proceso |
-| `windows.malfind` | Regiones de memoria ejecutable sospechosas |
-| `windows.svcscan` | Servicios |
-
-Ejemplo: `vol -f memory.raw windows.pstree`

@@ -1,35 +1,42 @@
 ---
 name: Documentos PDF
-summary: Ficheros Portable Document Format. Se usan en phishing para enlaces maliciosos y códigos QR, y con menos frecuencia para JavaScript o ficheros embebidos.
-category: phishing
+summary: En phishing un PDF suele ser un contenedor de un enlace o un código QR; con menos frecuencia lleva JavaScript o un fichero embebido. Averigua cuál es y sigue el enlace.
+category: documents
+coverage: intermediate
 aliases: [PDF Documents, PDF]
-tags: [phishing, javascript, ficheros embebidos, urls, maldoc]
-evidence:
-  - URLs y acciones (`/URI`, `/Launch`, `/OpenAction`, `/AA`).
-  - JavaScript y ficheros embebidos.
-  - Formularios y contenido XFA.
-  - Metadatos de productor/creador y fechas de creación.
-locations:
-  - label: Entrega
-    path: Adjuntos de correo · descargas · enlaces a servicios de compartición de ficheros
-questions:
-  - ¿Contiene el PDF JavaScript o acciones automáticas?
-  - ¿A qué URLs enlaza (incluidos códigos QR en imágenes)?
-  - ¿Embebe otro fichero?
-tools: [pdfid.py, pdf-parser.py, CyberChef, VirusTotal, YARA]
+tags: [phishing, javascript, ficheros embebidos, urls, qr]
+start_here:
+  - Calcula el hash y confirma que de verdad es un PDF (`file`).
+  - Ejecuta `pdfid` y revisa las palabras clave de riesgo.
+  - Si aparece alguna, inspecciona ese objeto con `pdf-parser`.
+  - Extrae todas las URLs — también las de códigos QR en imágenes — y analízalas como indicadores.
+start_commands:
+  - label: Triage por palabras clave
+    command: 'pdfid.py suspicious.pdf'
+  - label: Buscar objetos con JavaScript
+    command: 'pdf-parser.py --search JavaScript suspicious.pdf'
+why:
+  - Adjunto de phishing, a menudo una «factura» o un «documento compartido».
+  - Un usuario abrió un PDF y luego introdujo credenciales en una página.
 look_for:
-  - Palabras clave — `/JS`, `/JavaScript`, `/OpenAction`, `/AA`, `/Launch`, `/EmbeddedFile`, `/URI`, `/AcroForm`, `/XFA`, `/ObjStm`.
-  - Una sola página con un gran botón «Ver documento» y un enlace — señuelo clásico de robo de credenciales.
-  - Códigos QR que llevan a páginas de login (quishing) — decodifícalos sin conexión.
-  - Object streams (`/ObjStm`) que ocultan los objetos interesantes — descomprímelos antes de concluir.
-limitations:
-  - '`pdfid` cuenta palabras clave; los nombres ofuscados (p. ej. `/J#61vaScript`) se normalizan, pero inspecciona igualmente los objetos.'
+  - '`/JavaScript`, `/JS`, `/OpenAction`, `/AA`, `/Launch`, `/EmbeddedFile`, `/URI`.'
+  - Una sola página con un gran botón «Ver documento» y un enlace.
+  - Códigos QR que llevan a páginas de login.
+  - Object streams (`/ObjStm`) que ocultan los objetos interesantes.
+tools_start: [pdfid.py]
+tools_deeper: [pdf-parser.py, CyberChef, VirusTotal]
+correlate:
+  - PDF (hash, URLs)
+  - URL → reputación y página de destino
+  - Proxy / DNS — quién abrió el enlace
+  - Sign-in logs — ¿se introdujeron credenciales?
+extract:
+  - SHA-256 del PDF
+  - URLs y dominios (también de los códigos QR)
+  - Nombres y hashes de ficheros embebidos
+mistakes:
+  - '`pdfid` solo cuenta palabras clave — un resultado limpio no significa que no haya enlace.'
   - Los enlaces dentro de imágenes (QR) son invisibles para las herramientas de palabras clave.
-  - Los exploits del lector dependen de su versión — el análisis estático muestra la intención, no el éxito.
-related_artifacts: [eml, office-documents]
-review: true
+  - No abras el PDF con un lector normal en la estación del analista.
+related_artifacts: [eml, office-documents, ip-domain]
 ---
-
-Un PDF es un conjunto de objetos (diccionarios, streams) referenciados desde un trailer. **pdfid.py** de Didier Stevens da un triage rápido por palabras clave; **pdf-parser.py** permite buscar, descomprimir y volcar objetos concretos.
-
-En las campañas de phishing actuales los PDF son sobre todo **contenedores de un enlace o un código QR**; extrae y analiza la URL como siguiente paso.

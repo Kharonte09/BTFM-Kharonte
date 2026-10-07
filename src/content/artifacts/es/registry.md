@@ -1,43 +1,50 @@
 ---
 name: Registro de Windows
-summary: Base de datos jerárquica de configuración. Contiene ubicaciones de persistencia, actividad del usuario, dispositivos, servicios y rastros de ejecución.
+summary: Base de datos de configuración. En una investigación lo usas sobre todo para la persistencia (qué arranca solo) y la actividad del usuario.
 category: windows
+coverage: basic
 aliases: [Windows Registry, Registry, hives, NTUSER.DAT, Registro]
-tags: [persistencia, actividad de usuario, configuración, usb, ejecución]
-evidence:
-  - Configuración de autoarranque / persistencia (claves Run, servicios, Winlogon, IFEO…).
-  - Actividad del usuario — ficheros abiertos recientemente, rutas escritas, carpetas visitadas (ShellBags), UserAssist.
-  - Dispositivos USB conectados y volúmenes montados.
-  - Configuración del sistema — nombre del equipo, zona horaria, interfaces de red, último apagado.
+tags: [persistencia, actividad de usuario, configuración, autoarranque]
+start_here:
+  - Revisa primero las ubicaciones de autoarranque — `Run` / `RunOnce` en HKLM y HKCU.
+  - Lista los servicios y su `ImagePath`.
+  - Para análisis offline, recolecta los hives **con** sus logs de transacciones.
+  - Anota las últimas escrituras de claves dentro de la ventana del incidente.
+start_commands:
+  - label: Claves Run (en vivo)
+    command: "Get-ItemProperty 'HKLM:\\Software\\Microsoft\\Windows\\CurrentVersion\\Run', 'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Run'"
+  - label: Servicios con ruta del binario (en vivo)
+    command: 'Get-CimInstance Win32_Service | Select-Object Name, State, StartMode, PathName'
+why:
+  - Sospecha de persistencia tras la ejecución de malware.
+  - Necesitas saber qué abrió o ejecutó un usuario (actividad de usuario).
+  - Servicio o entrada de autoarranque encontrada durante el triage.
 locations:
   - label: Hives del sistema
     path: C:\Windows\System32\config\SYSTEM · SOFTWARE · SAM · SECURITY
   - label: Hive del usuario
     path: C:\Users\<user>\NTUSER.DAT
-  - label: Hive de clases del usuario
-    path: C:\Users\<user>\AppData\Local\Microsoft\Windows\UsrClass.dat
-  - label: Logs de transacciones
-    path: <hive>.LOG1 · <hive>.LOG2
-questions:
-  - ¿Qué arranca automáticamente en este equipo o al iniciar sesión el usuario?
-  - ¿Qué programas ejecutó este usuario desde el Explorador (UserAssist)?
-  - ¿Qué carpetas y ficheros abrió el usuario?
-  - ¿Qué dispositivos USB se conectaron y cuándo?
-  - ¿Cuál era la zona horaria del sistema (para interpretar marcas locales)?
-tools: [RECmd, Registry Explorer, RegRipper, KAPE, Velociraptor]
+  - label: Claves de autoarranque
+    path: HKLM\Software\Microsoft\Windows\CurrentVersion\Run · RunOnce (y HKCU)
 look_for:
-  - '`HKLM\Software\Microsoft\Windows\CurrentVersion\Run` / `RunOnce` y lo mismo bajo `HKCU`.'
-  - '`HKLM\SYSTEM\CurrentControlSet\Services\<name>\ImagePath` apuntando a rutas inusuales.'
-  - '`HKLM\Software\Microsoft\Windows NT\CurrentVersion\Winlogon` (`Shell`, `Userinit`).'
-  - 'Entradas `...\Image File Execution Options\<exe>\Debugger`.'
-  - 'Entradas `HKCU\Software\Classes\CLSID` que suplantan objetos COM del sistema (COM hijacking).'
-  - Últimas escrituras de claves dentro de la ventana del incidente.
-limitations:
-  - La marca de última escritura existe por clave, no por valor.
-  - Sin los logs de transacciones, un hive sucio puede no contener los cambios recientes.
-  - Los hives del sistema en vivo están bloqueados — recolecta con una herramienta forense (KAPE, Velociraptor, FTK Imager).
-  - Muchos artefactos dependen de la versión; verifica la build de Windows antes de interpretarlos.
-related_artifacts: [scheduled-tasks, windows-event-logs]
+  - Valores Run / RunOnce que apuntan a `AppData`, `Temp`, `ProgramData` o a scripts.
+  - Servicios cuyo `ImagePath` es inusual o ejecuta un script / LOLBin.
+  - 'Cambios en `Shell` / `Userinit` de `Winlogon` y entradas `Debugger` en `Image File Execution Options`.'
+  - Últimas escrituras de claves que coinciden con el timeline del incidente.
+tools_start: [Registry Explorer, RECmd]
+tools_deeper: [RegRipper]
+correlate:
+  - Entrada de autoarranque (clave Run, servicio)
+  - Binario al que apunta → hash y análisis (PE)
+  - Cuándo se creó — Sysmon `13`, `7045`
+  - Qué proceso / usuario la creó
+extract:
+  - Ruta de la clave, nombre y dato del valor
+  - Binario o comando que lanza
+  - Marca de tiempo de última escritura
+mistakes:
+  - La última escritura es por clave, no por valor — no te dice qué valor cambió.
+  - Sin los logs de transacciones (`.LOG1` / `.LOG2`) pueden faltar cambios recientes.
+  - Muchos programas legítimos usan claves Run — juzga por ruta, firmante y momento.
+related_artifacts: [scheduled-tasks, windows-event-logs, sysmon, pe-executables]
 ---
-
-El registro se almacena en ficheros **hive**. Los hives del sistema están en `C:\Windows\System32\config\`, y cada usuario tiene `NTUSER.DAT` y `UsrClass.dat` en su perfil. `CurrentControlSet` es un enlace en tiempo de ejecución — en un hive `SYSTEM` offline, mira `Select\Current` para saber qué `ControlSet00X` estaba activo.

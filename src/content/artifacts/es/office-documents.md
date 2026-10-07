@@ -1,43 +1,56 @@
 ---
-name: Documentos Office y macros
-summary: Ficheros Word/Excel/PowerPoint en formato OOXML u OLE antiguo. Pueden contener macros VBA o XLM, objetos embebidos, enlaces externos y plantillas.
-category: phishing
-aliases: [Office Documents & Macros, DOCX, DOCM, XLSX, XLSM, DOC, XLS, OLE, VBA, macros, XLM, Excel 4.0 macros]
-tags: [phishing, macros, vba, xlm, ole, acceso inicial, maldoc]
-evidence:
-  - Código fuente de las macros VBA y sus puntos de autoejecución.
-  - Hojas de macros Excel 4.0 (XLM), a menudo ocultas.
-  - Objetos OLE, ejecutables o scripts embebidos.
-  - Relaciones externas (plantillas remotas, enlaces) contactadas al abrir el documento.
-  - Metadatos — autor, último modificador, fechas de creación, versión de la aplicación.
-locations:
-  - label: OOXML (contenedor zip)
-    path: .docx / .docm / .xlsx / .xlsm / .pptm → word/ · xl/ · _rels/ · vbaProject.bin
-  - label: OLE antiguo (fichero compuesto)
-    path: .doc / .xls / .ppt → streams y storages (p. ej. Macros/VBA)
-  - label: Referencia a plantilla remota
-    path: word/_rels/settings.xml.rels → attachedTemplate Target="http(s)://…"
-questions:
-  - ¿Contiene macros el documento, y se ejecutan automáticamente?
-  - ¿Qué descarga o ejecuta la macro?
-  - ¿Contacta el documento con un servidor remoto al abrirse?
-  - ¿Hay un payload embebido?
-tools: [olevba, oledump.py, oleid, XLMMacroDeobfuscator, Detect It Easy, CyberChef, YARA]
+name: Documentos Office
+summary: Ficheros Word / Excel / PowerPoint que pueden llevar macros, objetos embebidos o plantillas remotas. Averigua si ejecutan algo y qué descargan después — sin abrirlos.
+category: documents
+coverage: intermediate
+aliases: [Office Documents & Macros, Office Documents, DOCX, DOCM, XLSX, XLSM, DOC, XLS, OLE, VBA, macros, XLM]
+tags: [phishing, macros, vba, xlm, ole, maldoc]
+start_here:
+  - Calcula el hash y comprueba el tipo real — la extensión puede mentir.
+  - Ejecuta `oleid` para un resumen rápido del riesgo (macros, enlaces externos, objetos embebidos).
+  - Extrae las macros con `olevba` y localiza el punto de autoejecución.
+  - Saca las URLs, IPs y comandos que usa la macro.
+  - Si no hay macros, revisa plantillas remotas, DDE y objetos embebidos.
+start_commands:
+  - label: Indicadores de riesgo
+    command: 'oleid suspicious.doc'
+  - label: Extraer y analizar macros
+    command: 'olevba suspicious.docm'
+  - label: Veredicto rápido sobre las macros
+    command: 'mraptor suspicious.doc'
+why:
+  - Adjunto de phishing.
+  - Una aplicación Office lanzó `cmd.exe` / `powershell.exe` en un endpoint.
+  - Documento descargado justo antes de una ejecución sospechosa.
 look_for:
-  - Puntos de autoejecución — `AutoOpen`, `Document_Open`, `Workbook_Open`, `Auto_Open`.
-  - '`Shell`, `WScript.Shell`, `CreateObject`, `URLDownloadToFile`, `XMLHTTP`, `Environ`, `CallByName`.'
-  - Ofuscación — cadenas de `Chr()`, inversión de strings, `StrReverse`, bloques Base64, código basura.
-  - Hojas de macros XLM ocultas o muy ocultas con `EXEC`, `CALL`, `REGISTER`, `URLDownloadToFileA`.
-  - Destinos externos en ficheros `.rels` (inyección de plantilla remota).
-  - Objetos OLE / packages embebidos, y ficheros RTF con `\objdata`.
-limitations:
-  - Las herramientas estáticas pueden no ver macros muy ofuscadas; puede hacer falta emulación o una sandbox.
-  - Con VBA stomping el código fuente puede diferir del p-code compilado que se ejecuta de verdad.
-  - Microsoft bloquea por defecto las macros en ficheros con Mark-of-the-Web, así que los atacantes pasaron a otros formatos (archivos comprimidos, LNK, OneNote, HTML smuggling).
-related_artifacts: [eml, pdf, pe-executables]
-review: true
+  - Autoejecución — `AutoOpen`, `Document_Open`, `Workbook_Open`, `Auto_Open`.
+  - '`Shell`, `WScript.Shell`, `CreateObject`, `URLDownloadToFile`, `powershell`.'
+  - Ofuscación — cadenas de `Chr()`, `StrReverse`, bloques Base64, código basura.
+  - Hojas de macros Excel 4.0 (XLM) ocultas.
+  - Destinos externos `attachedTemplate` en `word/_rels/settings.xml.rels` (plantilla remota).
+tools_start: [oletools]
+tools_deeper: [oledump.py, XLMMacroDeobfuscator, CyberChef, ANY.RUN]
+tool_questions:
+  - tool: oletools
+    question: ¿Tiene macros y qué hacen?
+  - tool: CyberChef
+    question: ¿Qué hay detrás de los strings ofuscados?
+  - tool: ANY.RUN
+    question: ¿Qué pasa cuando se abre el documento con el contenido habilitado?
+correlate:
+  - Documento (hash, macro, URL)
+  - Office lanzando un proceso hijo — Sysmon `1` / `4688`
+  - PowerShell / descarga de la siguiente etapa
+  - Red — la URL de la macro
+  - Fichero soltado → análisis del PE
+extract:
+  - SHA-256 del documento
+  - URLs, dominios e IPs usados para descargar la siguiente etapa
+  - Comandos lanzados por la macro
+  - Nombres y rutas de los ficheros soltados
+mistakes:
+  - Nunca habilites el contenido en la estación del analista.
+  - El VBA muy ofuscado o con stomping puede engañar a la extracción estática — confírmalo en una sandbox.
+  - Que no tenga macros no significa que sea seguro — revisa plantillas remotas, DDE y objetos embebidos.
+related_artifacts: [eml, pdf, powershell-logs, pe-executables]
 ---
-
-Los ficheros Office modernos (**OOXML**) son archivos ZIP con partes XML; las macros viven en un `vbaProject.bin` binario (que a su vez es un fichero OLE). Los ficheros antiguos (`.doc`, `.xls`) son **ficheros compuestos OLE**, un pequeño sistema de ficheros de streams.
-
-`oletools` (Philippe Lagadec: `olevba`, `oleid`, `oleobj`, `rtfobj`, `msodde`) y `oledump.py` de Didier Stevens son las herramientas estáticas de referencia. Analiza en una VM aislada y nunca habilites el contenido en una estación de analista.

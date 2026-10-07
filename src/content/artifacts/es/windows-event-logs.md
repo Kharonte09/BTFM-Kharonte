@@ -1,48 +1,77 @@
 ---
 name: Windows Event Logs
-summary: Logs estructurados que escriben Windows y las aplicaciones (.evtx). Fuente principal para logons, creación de procesos, servicios, tareas y manipulación de logs.
+summary: Logs estructurados que escribe Windows (.evtx). Tu fuente principal para saber quién inició sesión, qué se ejecutó, qué cambió y si alguien intentó ocultarlo.
 category: windows
-aliases: [Windows Event Logs, evtx, Event Logs, Security log, Visor de eventos]
+coverage: intermediate
+aliases: [evtx, Event Logs, Security log, Visor de eventos, Registros de eventos de Windows]
 tags: [logons, movimiento lateral, ejecución, persistencia, timeline]
-evidence:
-  - Autenticación — logons correctos y fallidos, tipo de logon, equipo de origen y cuenta.
-  - Creación de procesos (si la auditoría está activa), incluida la línea de comandos.
-  - Instalación de servicios, creación de tareas programadas, cambios de cuentas y grupos.
-  - Borrado de logs y cambios en la política de auditoría.
+start_here:
+  - Define la ventana temporal y los equipos en alcance (UTC).
+  - Recolecta o exporta `Security`, `System`, `PowerShell/Operational` y `Sysmon/Operational`.
+  - Mira el evento más antiguo de cada log — esa es tu ventana de visibilidad.
+  - Filtra los logons (`4624`/`4625`) del usuario o equipo de interés.
+  - Pivota a la creación de procesos (`4688` / Sysmon `1`) de esa misma sesión.
+start_commands:
+  - label: Logons correctos recientes (en vivo)
+    command: "Get-WinEvent -FilterHashtable @{LogName='Security'; Id=4624; StartTime=(Get-Date).AddDays(-1)}"
+  - label: Consultar un log exportado
+    command: "Get-WinEvent -FilterHashtable @{Path='.\\Security.evtx'; Id=4625}"
+  - label: Exportar un log para análisis offline
+    command: 'wevtutil epl Security C:\Cases\Security.evtx'
+why:
+  - Alerta de logon sospechoso, fuerza bruta o password spraying.
+  - Posible movimiento lateral (RDP, SMB, servicios tipo PsExec).
+  - Necesitas confirmar qué se ejecutó en un equipo y con qué cuenta.
+  - Sospecha de persistencia (servicio, tarea o cuenta nuevos).
+  - Puede que se hayan borrado logs.
+questions:
+  - ¿Quién inició sesión — y con qué tipo de logon?
+  - ¿Cuándo, y desde qué equipo o IP?
+  - ¿Qué proceso se ejecutó y con qué línea de comandos?
+  - ¿Qué cambió — servicios, tareas, cuentas, grupos?
+  - ¿Hubo movimiento lateral o borrado de logs?
 locations:
   - label: Ficheros de log
     path: C:\Windows\System32\winevt\Logs\*.evtx
-  - label: Canales principales
-    path: Security.evtx · System.evtx · Application.evtx
-  - label: Logs operativos útiles
-    path: Microsoft-Windows-PowerShell%4Operational.evtx · Microsoft-Windows-Sysmon%4Operational.evtx · Microsoft-Windows-TaskScheduler%4Operational.evtx · Microsoft-Windows-TerminalServices-*.evtx
-questions:
-  - ¿Quién inició sesión, cuándo y desde dónde?
-  - ¿Qué tipo de logon se usó (interactivo, de red, RDP)?
-  - ¿Qué proceso se ejecutó y con qué línea de comandos?
-  - ¿Hubo movimiento lateral (logons de red, credenciales explícitas, servicios remotos)?
-  - ¿Se creó persistencia (servicio, tarea programada, cuenta nueva)?
-  - ¿Se borraron logs?
-tools: [EvtxECmd, Event Viewer, Hayabusa, Chainsaw, Velociraptor, KAPE]
+  - label: Logs útiles
+    path: Security · System · Application · Microsoft-Windows-PowerShell/Operational · Microsoft-Windows-Sysmon/Operational
 look_for:
-  - '`4624` con tipo de logon 3 o 10 desde equipos inesperados; ráfagas de `4625` (fuerza bruta / password spraying).'
-  - '`4648` (credenciales explícitas) y `4672` (privilegios especiales) justo después de un logon.'
-  - '`4688` / Sysmon `1` con LOLBins o líneas de comandos codificadas.'
-  - '`7045` servicios nuevos con rutas en `%TEMP%`, `ADMIN$` o one-liners de PowerShell.'
-  - '`4698` / TaskScheduler `106` tareas programadas nuevas.'
+  - '`4624` (logon — revisa el tipo y el origen), `4625` (logon fallido), `4672` (logon privilegiado), `4648` (credenciales explícitas).'
+  - '`4688` creación de procesos (con línea de comandos solo si la auditoría lo activa).'
+  - '`4104` script block de PowerShell.'
+  - '`7045` (System) / `4697` (Security) servicio instalado; `4698` tarea programada creada.'
+  - '`4720` cuenta creada, `4732` / `4728` añadida a un grupo.'
   - '`1102` (Security) o `104` (System) — log borrado.'
-  - Huecos en el timeline — el logging se detuvo o el log rotó.
-limitations:
-  - Muchos eventos valiosos dependen de la **política de auditoría** (p. ej. línea de comandos en `4688`, acceso a objetos) y vienen desactivados por defecto.
-  - Los logs tienen un tamaño máximo y rotan; en servidores con mucha actividad el log de Security puede cubrir solo horas.
-  - Un atacante con privilegios de administrador puede borrar o manipular los logs.
-  - Las marcas de tiempo del fichero están en UTC; los visores las muestran en hora local.
+tools_start: [Event Viewer, EvtxECmd]
+tools_deeper: [Chainsaw, Hayabusa]
+tool_questions:
+  - tool: Event Viewer
+    question: Vistazo rápido a unos pocos eventos de un equipo.
+  - tool: EvtxECmd
+    question: Todos los logs en un único timeline filtrable (CSV).
+  - tool: Chainsaw
+    question: ¿Qué eventos coinciden con reglas de detección conocidas (Sigma)?
+  - tool: Hayabusa
+    question: ¿Qué eventos coinciden con reglas de detección conocidas (Sigma), en forma de timeline?
+correlate:
+  - Logon `4624` (logon ID, IP de origen, tipo)
+  - '`4688` / Sysmon `1` creación de procesos en la misma sesión'
+  - Sysmon `3` / `22` red y DNS
+  - Persistencia — `7045`, `4698`, claves Run
+  - Otros equipos — el origen del logon
+extract:
+  - Cuentas implicadas y tipos de logon
+  - Equipos e IPs de origen
+  - Nombres de procesos, líneas de comandos y procesos padre
+  - Nombres de servicios, tareas y cuentas creados
+  - Marcas de tiempo (UTC) para el timeline
+mistakes:
+  - Los Event IDs dependen del contexto — nunca trates un único evento como prueba de compromiso.
+  - Muchos eventos dependen de la política de auditoría (línea de comandos en `4688`, `4698`) — que falte un evento no significa que no haya actividad.
+  - Los logs rotan; en servidores con mucha actividad el log de Security puede cubrir solo horas.
+  - El Visor de eventos muestra hora local; el `.evtx` guarda UTC.
 related_artifacts: [sysmon, powershell-logs, scheduled-tasks, registry]
 ---
-
-Windows escribe eventos en canales que se guardan como ficheros `.evtx`. El log de **Security** contiene los eventos de autenticación y auditoría, **System** los de servicios y drivers, y muchos componentes tienen su propio log *Operational* (PowerShell, Task Scheduler, RDP, Defender, Sysmon).
-
-En una investigación, analiza los logs en un único timeline en lugar de revisarlos uno a uno en el Visor de eventos.
 
 ### Logon types (4624 / 4625)
 
@@ -50,10 +79,8 @@ En una investigación, analiza los logs en un único timeline en lugar de revisa
 | --- | --- |
 | 2 | Interactivo (consola) |
 | 3 | Red (SMB, unidad mapeada, muchas herramientas de administración remota) |
-| 4 | Batch (tareas programadas) |
-| 5 | Servicio |
+| 4 / 5 | Batch (tarea programada) / Servicio |
 | 7 | Desbloqueo |
-| 8 | NetworkCleartext |
 | 9 | NewCredentials (`runas /netonly`) |
 | 10 | RemoteInteractive (RDP) |
 | 11 | CachedInteractive |

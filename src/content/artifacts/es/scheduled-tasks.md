@@ -1,38 +1,50 @@
 ---
 name: Tareas programadas
-summary: Tareas registradas en el Programador de tareas de Windows. Mecanismo habitual de persistencia y de ejecución remota.
+summary: Uno de los mecanismos de persistencia y ejecución remota más usados. Revísalas en casi todos los triages de endpoint.
 category: windows
+coverage: basic
 aliases: [Scheduled Tasks, Task Scheduler, schtasks, Programador de tareas]
 tags: [persistencia, movimiento lateral, ejecución]
-evidence:
-  - Definición de la tarea — desencadenador, acción (comando + argumentos), principal (usuario), autor y fecha de registro.
-  - Eventos de creación, actualización, borrado y ejecución en los logs.
+start_here:
+  - Lista las tareas habilitadas y qué ejecuta cada una.
+  - Mira las tareas creadas o modificadas en la ventana del incidente.
+  - Lee la acción (comando + argumentos) y el usuario con el que se ejecuta.
+  - Revisa los eventos de creación (`4698`, TaskScheduler `106`).
+start_commands:
+  - label: Tareas habilitadas (en vivo)
+    command: "Get-ScheduledTask | Where-Object State -ne 'Disabled' | Select-Object TaskPath, TaskName, State"
+  - label: Qué ejecuta una tarea
+    command: "(Get-ScheduledTask -TaskName '<name>').Actions"
+  - label: Todas las tareas, en detalle (cmd)
+    command: 'schtasks /query /fo LIST /v'
+why:
+  - Sospecha de persistencia tras la ejecución de malware.
+  - Posible movimiento lateral (`schtasks /create /s <host>`).
+  - Algo vuelve a ejecutarse tras matarlo o tras reiniciar.
 locations:
   - label: Ficheros XML de tareas
     path: C:\Windows\System32\Tasks\
-  - label: Caché en el registro
-    path: HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Tree · \Tasks
   - label: Log operativo
     path: Microsoft-Windows-TaskScheduler/Operational
-questions:
-  - ¿Se creó persistencia mediante una tarea programada, y quién lo hizo?
-  - ¿Qué comando ejecuta la tarea y con qué usuario?
-  - ¿Se creó la tarea de forma remota (movimiento lateral)?
-  - ¿Cuándo se ejecutó la tarea?
-tools: [Velociraptor, KAPE, EvtxECmd, RECmd, PowerShell]
 look_for:
   - Acciones que ejecutan scripts o binarios desde `AppData`, `Temp`, `ProgramData` o `Users\Public`.
-  - 'Acciones con `powershell.exe` / `cmd.exe` / `mshta.exe` y argumentos codificados o largos.'
-  - Nombres de tarea que imitan tareas legítimas de Microsoft o de un fabricante pero en la carpeta equivocada.
-  - 'Security `4698` (creada) / `4702` (actualizada) y TaskScheduler `106` (registrada), `140` (actualizada), `141` (borrada), `200`/`201` (acción iniciada/completada).'
-  - Tareas presentes en el `TaskCache` del registro pero sin fichero XML, o sin descriptor de seguridad (tareas ocultas).
-limitations:
-  - Los eventos de Security `4698`–`4702` requieren la subcategoría de auditoría "Other Object Access Events".
-  - El log Operational de TaskScheduler puede estar desactivado o ser pequeño en sistemas antiguos.
-  - El XML de la tarea puede modificarse tras su creación; revisa tanto el XML como el registro.
+  - 'Acciones con `powershell.exe`, `cmd.exe`, `mshta.exe` y argumentos codificados o largos.'
+  - Nombres que imitan tareas de Microsoft o de un fabricante en la carpeta equivocada.
+  - 'Security `4698` (creada) / `4702` (actualizada); TaskScheduler `106` (registrada), `200`/`201` (ejecutada).'
+tools_start: [PowerShell, Event Viewer]
+tools_deeper: [EvtxECmd]
+correlate:
+  - Tarea (nombre, acción, autor, fecha)
+  - Evento de creación — `4698` / TaskScheduler `106`
+  - Logon que la creó — `4624` (tipo 3 = remoto)
+  - Binario o script que ejecuta → análisis de PE / PowerShell
+extract:
+  - Nombre y ruta de la tarea
+  - Comando, argumentos y usuario de ejecución
+  - Hora de creación y cuenta que la creó
+mistakes:
+  - '`4698`–`4702` requieren la subcategoría de auditoría "Other Object Access Events" — que no haya evento no es prueba.'
+  - Muchas tareas legítimas ejecutan PowerShell — juzga por ruta, autor y momento.
+  - Borrar la tarea antes de recolectarla destruye evidencia — exporta primero.
 related_artifacts: [windows-event-logs, registry, powershell-logs]
 ---
-
-Las tareas programadas se guardan como ficheros XML en `C:\Windows\System32\Tasks\` y también en el `TaskCache` del registro. Comparar ambas fuentes ayuda a detectar manipulaciones, como tareas ocultadas eliminando su descriptor de seguridad.
-
-La creación remota (`schtasks /create /s <host>`, o mediante la interfaz RPC del Programador de tareas) es una técnica de movimiento lateral habitual; correlaciónala con logons de red (`4624` tipo 3) en el equipo destino.

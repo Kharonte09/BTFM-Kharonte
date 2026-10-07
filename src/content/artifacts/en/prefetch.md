@@ -1,41 +1,47 @@
 ---
 name: Windows Prefetch
-summary: Files Windows creates to speed up application launch. Strong evidence of program execution, with run counts and last run times.
+summary: Evidence that a program ran on a Windows client — with run count and last run times. Use it to confirm execution and build the execution timeline.
 category: windows
+coverage: intermediate
 aliases: [Prefetch, .pf]
 tags: [execution, program execution, timeline]
-evidence:
-  - That a specific executable ran on the system.
-  - How many times it ran and the last run time (plus up to 7 earlier run times on Windows 8+).
-  - Files and directories the program loaded during its first seconds of execution.
-  - The volume(s) it was run from.
+start_here:
+  - Collect `C:\Windows\Prefetch\*.pf` (it does not exist by default on Windows Server).
+  - Parse the folder to CSV and sort by last run time.
+  - Search for the suspicious executable name — note run count and run times.
+  - Check the files it loaded at start-up for staging paths or payloads.
+start_commands:
+  - label: Parse the Prefetch folder to CSV
+    command: 'PECmd.exe -d "C:\Cases\triage\C\Windows\Prefetch" --csv "C:\Cases\out"'
+why:
+  - Need to prove whether a suspicious binary actually ran.
+  - Building an execution timeline of an endpoint.
+  - Attacker tools may have been deleted — Prefetch can survive.
+questions:
+  - Did this program run here? When, and how many times?
+  - What else ran around the same time?
+  - Did it run from an unusual path or removable media?
 locations:
   - label: Prefetch files
     path: C:\Windows\Prefetch\<EXENAME>-<HASH>.pf
-  - label: Prefetch configuration
-    path: HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management\PrefetchParameters\EnablePrefetcher
-questions:
-  - Did this program run on this host?
-  - When did it run last, and how many times?
-  - What else ran around the same time?
-  - Which DLLs or files did it touch on start-up (staging paths, payloads)?
-  - Was it executed from removable media or an unusual path?
-tools: [PECmd, KAPE, Velociraptor, Timeline Explorer]
 look_for:
   - Executables in user-writable paths or with random names.
-  - LOLBins and admin tools (`psexec`, `wmic`, `certutil`, `rundll32`) at unexpected times.
-  - Clusters of recon utilities (`whoami`, `net`, `nltest`, `ipconfig`) within minutes.
-  - The same executable name with **several different hashes** — same name, different path.
+  - LOLBins and admin / recon tools (`psexec`, `certutil`, `rundll32`, `whoami`, `net`) at unexpected times.
+  - The same name with **different hashes** — same binary name, different path.
   - Referenced files under `\Users\<user>\AppData\` or `\Temp\`.
-limitations:
-  - Disabled by default on Windows Server editions; can also be disabled via registry.
-  - Limited number of entries (1024 on Windows 8+); older entries roll off on busy systems.
-  - Records execution, not success. It does not prove the program completed its task.
-  - The hash in the file name depends on the executable path (and, for hosting processes, the command line), so it is not a file hash.
-  - Anti-forensics can delete .pf files; absence is not proof that something did not run.
-related_artifacts: [windows-event-logs, registry]
+tools_start: [PECmd]
+tools_deeper: [Timeline Explorer]
+correlate:
+  - Prefetch run time
+  - Process creation at that time — `4688` / Sysmon `1`
+  - LNK / user activity just before
+  - The binary on disk → PE analysis
+extract:
+  - Executable name and path, run count, run times
+  - Suspicious referenced files and paths
+mistakes:
+  - Absence of a `.pf` file does not prove a program did not run.
+  - The hash in the file name is a path hash, not a file hash.
+  - Prefetch records execution, not success.
+related_artifacts: [lnk, windows-event-logs, pe-executables]
 ---
-
-Prefetch is a Windows performance feature. When an application starts, the Cache Manager monitors the files it loads and records them in a `.pf` file so the next launch is faster.
-
-For investigators it is one of the most reliable **evidence-of-execution** artifacts on Windows client systems. On Windows 10 and later the files are compressed, so parse them with a tool that supports the format rather than reading them directly.

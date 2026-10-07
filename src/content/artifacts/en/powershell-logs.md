@@ -1,44 +1,69 @@
 ---
 name: PowerShell Logs
-summary: Script block, module and engine logging, transcripts and console history. The main source for reconstructing PowerShell activity.
+summary: Command lines, script block logs (4104) and console history. Start here when you see suspicious PowerShell — decode it, then find who ran it and what it touched.
 category: windows
-aliases: [PowerShell, Script Block Logging, 4104, PSReadLine]
+coverage: basic
+aliases: [Script Block Logging, 4104, PSReadLine, Suspicious PowerShell]
 tags: [powershell, execution, deobfuscation, living off the land]
-evidence:
-  - The content of executed script blocks (`4104`), often after de-obfuscation layers are resolved.
-  - Pipeline and module execution details (`4103`).
-  - Engine start/stop with host application and command line (Windows PowerShell log `400`/`403`).
-  - Interactive commands typed by a user (PSReadLine history).
+start_here:
+  - Get the **full** command line (`4688`, Sysmon `1`, EDR) — not a truncated UI view.
+  - Look for the matching `4104` script block — it often shows the deobfuscated code.
+  - Identify the parent process and the user.
+  - Decode encoded content without executing it.
+  - Check network activity and persistence around the same time.
+start_commands:
+  - label: Recent script blocks (live)
+    command: "Get-WinEvent -LogName 'Microsoft-Windows-PowerShell/Operational' -FilterXPath '*[System[EventID=4104]]' -MaxEvents 50"
+  - label: Decode -EncodedCommand (UTF-16LE) without running it
+    command: '[Text.Encoding]::Unicode.GetString([Convert]::FromBase64String($b64))'
+why:
+  - Alert on encoded or obfuscated PowerShell.
+  - PowerShell launched by Office, a browser, `mshta.exe` or `wscript.exe`.
+  - Download-and-execute behaviour in proxy or EDR telemetry.
+  - Need to know what an attacker typed on a host.
+questions:
+  - What exactly did the command or script do?
+  - Who ran it, and which process launched it?
+  - Did it download or contact anything?
+  - Did it create persistence?
 locations:
-  - label: Operational log
-    path: Microsoft-Windows-PowerShell/Operational
-  - label: Classic log
-    path: Windows PowerShell.evtx
+  - label: Script block / module logging
+    path: Microsoft-Windows-PowerShell/Operational (4104, 4103)
+  - label: Engine start/stop
+    path: Windows PowerShell.evtx (400 / 403)
   - label: Console history
     path: C:\Users\<user>\AppData\Roaming\Microsoft\Windows\PowerShell\PSReadLine\ConsoleHost_history.txt
-  - label: Transcripts (if enabled)
-    path: Configured output directory (default under the user's Documents folder)
-questions:
-  - What exactly did the PowerShell command or script do?
-  - Was an encoded command or a download cradle executed?
-  - Which user and which parent process launched PowerShell?
-  - Was AMSI or logging tampered with?
-tools: [EvtxECmd, CyberChef, Hayabusa, Chainsaw, PowerShell]
 look_for:
   - '`-EncodedCommand` / `-enc`, `-NoProfile`, `-WindowStyle Hidden`, `-ExecutionPolicy Bypass`.'
-  - Download cradles — `Net.WebClient`, `DownloadString`, `Invoke-WebRequest`, `iwr`, `Start-BitsTransfer`.
-  - '`IEX` / `Invoke-Expression` on downloaded or decoded content.'
-  - '`FromBase64String`, `-bxor`, `[char]` arrays, string reversal and concatenation obfuscation.'
-  - References to `AmsiUtils`, `amsiInitFailed`, or reflection tampering.
-  - '`4104` events logged at **Warning** level — Windows flags script blocks it considers suspicious.'
-limitations:
-  - Script block and module logging must be enabled by policy for full coverage.
-  - Large scripts are split across multiple `4104` events (check the message number / total fields).
-  - PowerShell v2 (if installed) bypasses script block logging — look for version downgrades.
-  - PSReadLine history only covers interactive console sessions and can be cleared.
+  - '`IEX` / `Invoke-Expression`, `DownloadString`, `Invoke-WebRequest`, `Net.WebClient`.'
+  - '`FromBase64String`, `-bxor`, `[char]` arrays, string concatenation and reversal.'
+  - References to `AmsiUtils` or `amsiInitFailed` (AMSI tampering).
+  - '`4104` events logged at **Warning** level — Windows flags them as suspicious.'
+tools_start: [CyberChef, Event Viewer]
+tools_deeper: [EvtxECmd]
+tool_questions:
+  - tool: CyberChef
+    question: What does the encoded / obfuscated content really say?
+  - tool: Event Viewer
+    question: Which script blocks ran on this host, and when?
+  - tool: EvtxECmd
+    question: All PowerShell events across hosts in one timeline.
+correlate:
+  - Command line — `4688` / Sysmon `1`
+  - Parent process and user
+  - Script block — `4104`
+  - Network — Sysmon `3` / `22`, proxy
+  - Files written — Sysmon `11`
+  - Persistence — tasks, Run keys, services
+extract:
+  - Download URLs, domains and IPs
+  - Hashes of downloaded payloads
+  - Distinctive script strings (function names, variables, user agents)
+  - Task, service or registry names created
+mistakes:
+  - These indicators are not malicious by themselves — admins and software use `-enc`, `-NoProfile` and `IEX` legitimately.
+  - Never run decoded content to "see what it does"; decode it as text.
+  - Script block logging may be disabled; PowerShell v2 bypasses it.
+  - Large scripts are split across several `4104` events — rebuild the whole script before concluding.
 related_artifacts: [windows-event-logs, sysmon, scheduled-tasks]
 ---
-
-PowerShell has several independent logging sources. **Script block logging** (`4104`) is the most valuable because it records the code that the engine actually compiles — after layers such as `-EncodedCommand` or string concatenation have been resolved.
-
-Even without explicit configuration, Windows PowerShell 5 and later automatically logs script blocks that contain suspicious content at Warning level.
