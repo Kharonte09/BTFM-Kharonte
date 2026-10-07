@@ -1,7 +1,8 @@
 ---
-import { url } from '@/lib/url';
+import { getLang, href as localHref } from '@/lib/url';
 
 interface Props {
+  /** Unlocalised path */
   href: string;
   title: string;
   summary: string;
@@ -9,10 +10,11 @@ interface Props {
   meta?: string;
 }
 const { href, title, summary, code, meta } = Astro.props;
+const lang = getLang(Astro.url);
 ---
 
 <a
-  href={url(href)}
+  href={localHref(lang, href)}
   class="group flex h-full flex-col gap-2 border border-ink-700 bg-ink-900 p-4 transition-colors hover:border-ink-500 hover:bg-ink-850"
 >
   {code && <span class="label truncate text-faint">{code}</span>}

@@ -1,11 +1,32 @@
 ---
-import { TriangleAlert } from '@lucide/astro';
+import { Languages, TriangleAlert } from '@lucide/astro';
+import { getLang } from '@/lib/url';
+import { useTranslations } from '@/i18n/ui';
+
+/** "review": content pending verification. "fallback": shown in the default language. */
+interface Props {
+  kind?: 'review' | 'fallback';
+}
+const { kind = 'review' } = Astro.props;
+const t = useTranslations(getLang(Astro.url));
+const Icon = kind === 'review' ? TriangleAlert : Languages;
 ---
 
-<aside class="flex gap-3 border border-ember/40 bg-ember/5 p-4 text-sm text-paper-dim" role="note">
-  <TriangleAlert size={18} stroke-width={1.5} class="mt-0.5 shrink-0 text-ember" aria-hidden="true" />
+<aside
+  class:list={[
+    'flex gap-3 border p-4 text-sm text-paper-dim',
+    kind === 'review' ? 'border-ember/40 bg-ember/5' : 'border-ink-600 bg-ink-900',
+  ]}
+  role="note"
+>
+  <Icon
+    size={18}
+    stroke-width={1.5}
+    class:list={['mt-0.5 shrink-0', kind === 'review' ? 'text-ember' : 'text-mute']}
+    aria-hidden="true"
+  />
   <p>
-    <strong class="font-semibold text-paper">Pending review.</strong> Parts of this entry have not been
-    fully verified. Cross-check with the official documentation before relying on it.
+    <strong class="font-semibold text-paper">{t(kind === 'review' ? 'review.title' : 'fallback.title')}</strong>
+    {t(kind === 'review' ? 'review.body' : 'fallback.body')}
   </p>
 </aside>

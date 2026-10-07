@@ -1,0 +1,36 @@
+---
+import type { GetStaticPaths } from 'astro';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import PageHeader from '@/components/PageHeader.astro';
+import Section from '@/components/Section.astro';
+import BulletList from '@/components/BulletList.astro';
+import { inline } from '@/lib/inline';
+import { localeStaticPaths } from '@/i18n/routing';
+import { useTranslations, type Lang } from '@/i18n/ui';
+
+export const getStaticPaths = (() => localeStaticPaths()) satisfies GetStaticPaths;
+
+const { lang } = Astro.props as { lang: Lang };
+const t = useTranslations(lang);
+---
+
+<BaseLayout title={t('nav.about')} description={t('about.description')}>
+  <PageHeader title={t('about.title')} summary={t('about.summary')} crumbs={[{ label: t('nav.about') }]} />
+
+  <div class="mt-10 max-w-3xl space-y-12">
+    <Section id="principles" title={t('about.principles')} index={1}>
+      <BulletList items={[t('about.p1'), t('about.p2'), t('about.p3'), t('about.p4')]} />
+    </Section>
+
+    <Section id="safety" title={t('about.safety')} index={2}>
+      <BulletList items={[t('about.s1'), t('about.s2'), t('about.s3'), t('about.s4')]} />
+    </Section>
+
+    <Section id="contribute" title={t('about.contribute')} index={3}>
+      <p
+        class="leading-relaxed text-paper-dim [&_code]:font-mono [&_code]:text-paper"
+        set:html={inline(t('about.c1'))}
+      />
+    </Section>
+  </div>
+</BaseLayout>

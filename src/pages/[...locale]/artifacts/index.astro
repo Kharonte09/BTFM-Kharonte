@@ -1,26 +1,31 @@
 ---
+import type { GetStaticPaths } from 'astro';
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import PageHeader from '@/components/PageHeader.astro';
 import CategoryBlock from '@/components/CategoryBlock.astro';
 import Icon from '@/components/Icon.astro';
-import { artifactPath, getArtifacts, refCode } from '@/lib/content';
+import { artifactPath, getArtifacts, refCode, slugOf } from '@/lib/content';
 import { ARTIFACT_CATEGORIES } from '@/lib/taxonomy';
+import { localeStaticPaths } from '@/i18n/routing';
+import { useTranslations, type Lang } from '@/i18n/ui';
 
-const artifacts = await getArtifacts();
-const summary =
-  'Evidence you will meet during an investigation: what it is, where it lives, which questions it answers and which tools parse it.';
+export const getStaticPaths = (() => localeStaticPaths()) satisfies GetStaticPaths;
+
+const { lang } = Astro.props as { lang: Lang };
+const t = useTranslations(lang);
+const artifacts = await getArtifacts(lang);
 ---
 
-<BaseLayout title="Artifacts" description={summary}>
-  <PageHeader title="Artifacts" summary={summary} crumbs={[{ label: 'Artifacts' }]}>
-    <nav aria-label="Artifact categories" class="mt-6">
+<BaseLayout title={t('artifacts.title')} description={t('artifacts.summary')}>
+  <PageHeader title={t('artifacts.title')} summary={t('artifacts.summary')} crumbs={[{ label: t('artifacts.title') }]}>
+    <nav aria-label={t('cat.nav.artifacts')} class="mt-6">
       <ul class="flex flex-wrap gap-2">
         {
           ARTIFACT_CATEGORIES.map((c) => (
             <li>
               <a href={`#${c.id}`} class="chip">
                 <Icon name={c.icon} size={13} class="text-ember" />
-                {c.label}
+                {c.label[lang]}
               </a>
             </li>
           ))
@@ -41,7 +46,7 @@ const summary =
               href: artifactPath(a),
               title: a.data.name,
               summary: a.data.summary,
-              code: refCode('artifact', a.id, a.data.category),
+              code: refCode('artifact', slugOf(a), a.data.category),
             }))}
         />
       ))

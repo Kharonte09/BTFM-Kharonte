@@ -2,7 +2,8 @@
 import EntryCard from './EntryCard.astro';
 import Icon from './Icon.astro';
 import type { Category } from '@/lib/taxonomy';
-import { url } from '@/lib/url';
+import { getLang, href as localHref } from '@/lib/url';
+import { useTranslations } from '@/i18n/ui';
 
 export interface CardData {
   href: string;
@@ -20,6 +21,8 @@ interface Props {
 }
 
 const { category, href, entries, headingLevel = 'h2' } = Astro.props;
+const lang = getLang(Astro.url);
+const t = useTranslations(lang);
 const Heading = headingLevel;
 ---
 
@@ -31,12 +34,20 @@ const Heading = headingLevel;
       </span>
       <div>
         <Heading id={`cat-${category.id}`} class="font-semibold text-paper">
-          {href ? <a href={url(href)} class="hover:underline hover:decoration-ember hover:underline-offset-4">{category.label}</a> : category.label}
+          {
+            href ? (
+              <a href={localHref(lang, href)} class="hover:underline hover:decoration-ember hover:underline-offset-4">
+                {category.label[lang]}
+              </a>
+            ) : (
+              category.label[lang]
+            )
+          }
         </Heading>
-        <p class="text-sm text-mute">{category.description}</p>
+        <p class="text-sm text-mute">{category.description[lang]}</p>
       </div>
     </div>
-    <span class="label shrink-0">{String(entries.length).padStart(2, '0')} entries</span>
+    <span class="label shrink-0">{t('cat.entries', { n: String(entries.length).padStart(2, '0') })}</span>
   </div>
   {
     entries.length > 0 ? (
@@ -48,9 +59,7 @@ const Heading = headingLevel;
         ))}
       </ul>
     ) : (
-      <p class="border border-dashed border-ink-700 px-4 py-6 text-sm text-faint">
-        No entries yet. Contributions welcome.
-      </p>
+      <p class="border border-dashed border-ink-700 px-4 py-6 text-sm text-faint">{t('cat.empty')}</p>
     )
   }
 </section>

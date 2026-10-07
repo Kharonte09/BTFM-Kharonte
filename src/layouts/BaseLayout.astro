@@ -3,8 +3,8 @@ import '@/styles/global.css';
 import Header from '@/components/Header.astro';
 import Footer from '@/components/Footer.astro';
 import SearchDialog from '@/components/SearchDialog.astro';
-import { SITE } from '@/lib/site';
-import { url } from '@/lib/url';
+import { DEFAULT_LANG, LOCALES, OG_LOCALE, useTranslations } from '@/i18n/ui';
+import { getLang, localePath, unlocalizedPath, url } from '@/lib/url';
 
 interface Props {
   title?: string;
@@ -13,23 +13,53 @@ interface Props {
   noindex?: boolean;
 }
 
-const { title, description = SITE.description, type = 'website', noindex = false } = Astro.props;
-const fullTitle = title ? `${title} · KHARONTE` : SITE.title;
+const lang = getLang(Astro.url);
+const t = useTranslations(lang);
+const { title, description = t('site.description'), type = 'website', noindex = false } = Astro.props;
+const fullTitle = title ? `${title} · KHARONTE` : t('site.title');
 const canonical = new URL(Astro.url.pathname, Astro.site).toString();
 const ogImage = new URL(url('og.png'), Astro.site).toString();
+const path = unlocalizedPath(Astro.url.pathname);
+const alternates = LOCALES.map((l) => ({ lang: l, href: new URL(url(localePath(l, path)), Astro.site).toString() }));
+const isDefaultHome = lang === DEFAULT_LANG && path === '/';
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang={lang} data-theme="dark">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script is:inline>
+      // Apply the saved theme before first paint. Dark is the default.
+      try {
+        var th = localStorage.getItem('kh-theme');
+        if (th === 'light' || th === 'dark') {
+          document.documentElement.dataset.theme = th;
+          document.documentElement.style.colorScheme = th;
+        }
+      } catch (e) {}
+    </script>
+    {
+      isDefaultHome && (
+        <script is:inline define:vars={{ esHome: url('/es/') }}>
+          // Returning visitor who chose Spanish with the switch → Spanish home.
+          try {
+            if (localStorage.getItem('kh-lang') === 'es') location.replace(esHome);
+          } catch (e) {}
+        </script>
+      )
+    }
     <title>{fullTitle}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
+    {
+      !noindex &&
+        alternates.map((a) => <link rel="alternate" hreflang={a.lang} href={a.href} />)
+    }
+    {!noindex && <link rel="alternate" hreflang="x-default" href={alternates[0]!.href} />}
     {noindex && <meta name="robots" content="noindex" />}
     <meta name="theme-color" content="#09090a" />
-    <meta name="color-scheme" content="dark" />
+    <meta name="color-scheme" content="dark light" />
     <meta name="generator" content={Astro.generator} />
 
     <link rel="icon" href={url('favicon.svg')} type="image/svg+xml" />
@@ -38,6 +68,7 @@ const ogImage = new URL(url('og.png'), Astro.site).toString();
 
     <meta property="og:type" content={type} />
     <meta property="og:site_name" content="KHARONTE" />
+    <meta property="og:locale" content={OG_LOCALE[lang]} />
     <meta property="og:title" content={fullTitle} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />

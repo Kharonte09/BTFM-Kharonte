@@ -1,14 +1,12 @@
+import type { UiKey } from '@/i18n/ui';
+
 export const SITE = {
   name: 'KHARONTE',
-  title: 'KHARONTE — Blue Team Field Manual',
-  tagline: 'A practical reference for DFIR, detection and malware analysis.',
-  description:
-    'Open-source Blue Team field manual: artifacts, tools, playbooks and cheatsheets for DFIR, detection engineering and malware analysis.',
 } as const;
 
-export const NAV = [
-  { label: 'Artifacts', href: '/artifacts/' },
-  { label: 'Tools', href: '/tools/' },
-  { label: 'Playbooks', href: '/playbooks/' },
-  { label: 'Cheatsheets', href: '/cheatsheets/' },
-] as const;
+export const NAV: readonly { key: UiKey; href: string }[] = [
+  { key: 'nav.artifacts', href: '/artifacts/' },
+  { key: 'nav.tools', href: '/tools/' },
+  { key: 'nav.playbooks', href: '/playbooks/' },
+  { key: 'nav.cheatsheets', href: '/cheatsheets/' },
+];

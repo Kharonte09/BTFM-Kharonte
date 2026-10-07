@@ -11,12 +11,14 @@
  *     [data-search-hint]      (shown when the query is empty)
  */
 import type Fuse from 'fuse.js';
-import { KIND_LABEL, KIND_ORDER, type SearchDoc, type SearchKind } from '@/lib/search-types';
+import { KIND_ORDER, type SearchDoc, type SearchKind, type SearchStrings } from '@/lib/search-types';
 
-let engine: Promise<Fuse<SearchDoc>> | undefined;
+const engines = new Map<string, Promise<Fuse<SearchDoc>>>();
 
 function loadEngine(indexUrl: string): Promise<Fuse<SearchDoc>> {
-  engine ??= Promise.all([
+  const cached = engines.get(indexUrl);
+  if (cached) return cached;
+  const engine = Promise.all([
     import('fuse.js').then((m) => m.default),
     fetch(indexUrl).then((r) => {
       if (!r.ok) throw new Error(`Search index: HTTP ${r.status}`);
@@ -35,10 +37,13 @@ function loadEngine(indexUrl: string): Promise<Fuse<SearchDoc>> {
         ],
         threshold: 0.3,
         ignoreLocation: true,
+        ignoreDiacritics: true,
         minMatchCharLength: 2,
         includeScore: true,
       }),
   );
+  engines.set(indexUrl, engine);
+  engine.catch(() => engines.delete(indexUrl));
   return engine;
 }
 
@@ -62,6 +67,7 @@ function initRoot(root: HTMLElement) {
   if (!input || !list || !status || !indexUrl) return;
 
   const mode = root.dataset.mode ?? 'inline';
+  const str = JSON.parse(root.dataset.strings ?? '{}') as SearchStrings;
   const perKind = mode === 'page' ? 25 : 5;
   const idBase = list.id;
   let options: HTMLAnchorElement[] = [];
@@ -104,9 +110,10 @@ function initRoot(root: HTMLElement) {
     }
     if (results.length === 0) {
       const empty = el('p', 'px-4 py-6 text-sm text-mute');
-      empty.append('No matches for ', el('span', 'font-mono text-paper', `“${q}”`), '. Try a tool, artifact, event ID or technique.');
+      const [before = '', after = ''] = str.none.split('{q}');
+      empty.append(before, el('span', 'font-mono text-paper', q), after);
       list.append(empty);
-      status.textContent = 'No results';
+      status.textContent = str.none.replace('{q}', q);
       return;
     }
 
@@ -124,7 +131,7 @@ function initRoot(root: HTMLElement) {
       group.setAttribute('role', 'group');
       const labelId = `${idBase}-g-${kind}`;
       group.setAttribute('aria-labelledby', labelId);
-      const label = el('p', 'label px-4 pt-1 pb-1.5', KIND_LABEL[kind]);
+      const label = el('p', 'label px-4 pt-1 pb-1.5', str.kinds[kind]);
       label.id = labelId;
       group.append(label);
 
@@ -161,7 +168,7 @@ function initRoot(root: HTMLElement) {
     ].filter((t) => t.toLowerCase() !== q.toLowerCase()).slice(0, 8);
     if (related.length) {
       const wrap = el('div', 'flex flex-wrap items-center gap-2 border-t border-ink-700 px-4 py-3');
-      wrap.append(el('span', 'label mr-1', 'Related'));
+      wrap.append(el('span', 'label mr-1', str.related));
       for (const tag of related) {
         const b = el('button', 'chip cursor-pointer hover:border-ember/60 hover:text-paper', tag);
         b.type = 'button';
@@ -172,7 +179,7 @@ function initRoot(root: HTMLElement) {
     }
 
     const total = options.length;
-    status.textContent = `${total} result${total === 1 ? '' : 's'}`;
+    status.textContent = (total === 1 ? str.one : str.many).replace('{n}', String(total));
   };
 
   const run = async () => {
@@ -191,7 +198,7 @@ function initRoot(root: HTMLElement) {
       render(q, fuse.search(q, { limit: 120 }));
     } catch (err) {
       console.error(err);
-      status.textContent = 'Search index could not be loaded.';
+      status.textContent = str.error;
     }
   };
 

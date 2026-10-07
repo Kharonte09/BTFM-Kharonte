@@ -1,13 +1,42 @@
 import { getCollection, type CollectionEntry } from 'astro:content';
+import { DEFAULT_LANG, type Lang } from '@/i18n/ui';
 import { getArtifactCategory, getToolCategory } from './taxonomy';
-import { url } from './url';
+import { href } from './url';
+
+/**
+ * Content is stored per language: src/content/<collection>/<lang>/<slug>.md
+ * Entry ids are therefore "<lang>/<slug>". Every accessor here takes a `lang`
+ * and returns, for each slug, the translation in that language — or the
+ * default-language entry as a fallback (see isFallback()).
+ */
 
 export type Tool = CollectionEntry<'tools'>;
 export type Artifact = CollectionEntry<'artifacts'>;
 export type Playbook = CollectionEntry<'playbooks'>;
 export type Cheatsheet = CollectionEntry<'cheatsheets'>;
+type AnyEntry = Tool | Artifact | Playbook | Cheatsheet;
+type CollectionName = 'tools' | 'artifacts' | 'playbooks' | 'cheatsheets';
 
 export type EntryKind = 'artifact' | 'tool' | 'playbook' | 'cheatsheet';
+
+export const slugOf = (e: AnyEntry) => e.id.slice(e.id.indexOf('/') + 1);
+export const langOf = (e: AnyEntry) => e.id.slice(0, e.id.indexOf('/')) as Lang;
+/** True when the entry is shown in `lang` but only exists in the default language. */
+export const isFallback = (e: AnyEntry, lang: Lang) => langOf(e) !== lang;
+
+async function localized<C extends CollectionName>(
+  name: C,
+  lang: Lang,
+): Promise<CollectionEntry<C>[]> {
+  const all = (await getCollection(name)) as CollectionEntry<C>[];
+  const bySlug = new Map<string, CollectionEntry<C>>();
+  for (const e of all) {
+    const l = langOf(e as AnyEntry);
+    const slug = slugOf(e as AnyEntry);
+    if (l === lang || (l === DEFAULT_LANG && !bySlug.has(slug))) bySlug.set(slug, e);
+  }
+  return [...bySlug.values()];
+}
 
 const byName = (a: { data: { name: string } }, b: { data: { name: string } }) =>
   a.data.name.localeCompare(b.data.name, 'en', { sensitivity: 'base' });
@@ -17,31 +46,32 @@ const byOrder = (
   b: { data: { order: number; name: string } },
 ) => a.data.order - b.data.order || byName(a, b);
 
-export const getTools = async () => (await getCollection('tools')).sort(byName);
-export const getArtifacts = async () => (await getCollection('artifacts')).sort(byName);
-export const getPlaybooks = async () => (await getCollection('playbooks')).sort(byOrder);
-export const getCheatsheets = async () => (await getCollection('cheatsheets')).sort(byOrder);
+export const getTools = async (lang: Lang) => (await localized('tools', lang)).sort(byName);
+export const getArtifacts = async (lang: Lang) => (await localized('artifacts', lang)).sort(byName);
+export const getPlaybooks = async (lang: Lang) => (await localized('playbooks', lang)).sort(byOrder);
+export const getCheatsheets = async (lang: Lang) =>
+  (await localized('cheatsheets', lang)).sort(byOrder);
 
-/* ---------- URLs ---------- */
+/* ---------- Paths (unlocalised; wrap with href(lang, …)) ---------- */
 
-export const toolPath = (t: Tool) => `/tools/${t.data.category}/${t.id}/`;
-export const artifactPath = (a: Artifact) => `/artifacts/${a.data.category}/${a.id}/`;
-export const playbookPath = (p: Playbook) => `/playbooks/${p.id}/`;
-export const cheatsheetPath = (c: Cheatsheet) => `/cheatsheets/${c.id}/`;
+export const toolPath = (t: Tool) => `/tools/${t.data.category}/${slugOf(t)}/`;
+export const artifactPath = (a: Artifact) => `/artifacts/${a.data.category}/${slugOf(a)}/`;
+export const playbookPath = (p: Playbook) => `/playbooks/${slugOf(p)}/`;
+export const cheatsheetPath = (c: Cheatsheet) => `/cheatsheets/${slugOf(c)}/`;
 
 /* ---------- Reference codes (field-manual style identifiers) ---------- */
 
-export function refCode(kind: EntryKind, id: string, category?: string): string {
-  const slug = id.toUpperCase().replace(/[^A-Z0-9]+/g, '-');
+export function refCode(kind: EntryKind, slug: string, category?: string): string {
+  const s = slug.toUpperCase().replace(/[^A-Z0-9]+/g, '-');
   switch (kind) {
     case 'artifact':
-      return `ART/${getArtifactCategory(category!).code}/${slug}`;
+      return `ART/${getArtifactCategory(category!).code}/${s}`;
     case 'tool':
-      return `TL/${getToolCategory(category!).code}/${slug}`;
+      return `TL/${getToolCategory(category!).code}/${s}`;
     case 'playbook':
-      return `PB/${slug}`;
+      return `PB/${s}`;
     case 'cheatsheet':
-      return `CS/${slug}`;
+      return `CS/${s}`;
   }
 }
 
@@ -53,67 +83,89 @@ export interface ResolvedRef {
   kind?: EntryKind;
 }
 
-type RefTarget = Omit<ResolvedRef, 'label'> & { label: string };
-
-let refIndex: Promise<Map<string, RefTarget>> | undefined;
-
 const norm = (s: string) => s.trim().toLowerCase();
+type Target = { kind: EntryKind; slug: string };
 
-async function buildRefIndex(): Promise<Map<string, RefTarget>> {
-  const map = new Map<string, RefTarget>();
-  const add = (keys: string[], target: RefTarget) => {
-    for (const k of keys) if (!map.has(norm(k))) map.set(norm(k), target);
-  };
-  for (const t of await getTools()) {
-    add([t.id, t.data.name, ...t.data.aliases], {
-      label: t.data.name,
-      href: url(toolPath(t)),
-      kind: 'tool',
-    });
-  }
-  for (const a of await getArtifacts()) {
-    add([a.id, a.data.name, ...a.data.aliases], {
-      label: a.data.name,
-      href: url(artifactPath(a)),
-      kind: 'artifact',
-    });
-  }
-  for (const p of await getPlaybooks()) {
-    add([p.id, p.data.name], { label: p.data.name, href: url(playbookPath(p)), kind: 'playbook' });
-  }
-  return map;
+let keyIndex: Promise<Map<string, Target>> | undefined;
+
+/** Maps every slug, name and alias (in every language) to its entry. */
+function buildKeyIndex(): Promise<Map<string, Target>> {
+  return (async () => {
+    const map = new Map<string, Target>();
+    const add = (keys: string[], t: Target) => {
+      for (const k of keys) if (!map.has(norm(k))) map.set(norm(k), t);
+    };
+    const [tools, artifacts, playbooks] = await Promise.all([
+      getCollection('tools'),
+      getCollection('artifacts'),
+      getCollection('playbooks'),
+    ]);
+    // Default language first so its names win on collisions.
+    const ordered = <T extends AnyEntry>(xs: T[]) =>
+      [...xs].sort((a, b) => Number(langOf(a) !== DEFAULT_LANG) - Number(langOf(b) !== DEFAULT_LANG));
+    for (const t of ordered(tools)) add([slugOf(t), t.data.name, ...t.data.aliases], { kind: 'tool', slug: slugOf(t) });
+    for (const a of ordered(artifacts))
+      add([slugOf(a), a.data.name, ...a.data.aliases], { kind: 'artifact', slug: slugOf(a) });
+    for (const p of ordered(playbooks)) add([slugOf(p), p.data.name], { kind: 'playbook', slug: slugOf(p) });
+    return map;
+  })();
+}
+
+async function lookup(ref: string): Promise<Target | undefined> {
+  keyIndex ??= buildKeyIndex();
+  return (await keyIndex).get(norm(ref));
 }
 
 /**
  * Resolve a free-text reference to an internal entry when possible.
  * Unknown references are returned as plain labels (no link).
  */
-export async function resolveRef(ref: string): Promise<ResolvedRef> {
-  refIndex ??= buildRefIndex();
-  const hit = (await refIndex).get(norm(ref));
-  return hit ? { ...hit } : { label: ref };
+export async function resolveRef(ref: string, lang: Lang): Promise<ResolvedRef> {
+  const hit = await lookup(ref);
+  if (!hit) return { label: ref };
+  if (hit.kind === 'tool') {
+    const t = (await getTools(lang)).find((x) => slugOf(x) === hit.slug)!;
+    return { label: t.data.name, href: href(lang, toolPath(t)), kind: 'tool' };
+  }
+  if (hit.kind === 'artifact') {
+    const a = (await getArtifacts(lang)).find((x) => slugOf(x) === hit.slug)!;
+    return { label: a.data.name, href: href(lang, artifactPath(a)), kind: 'artifact' };
+  }
+  const p = (await getPlaybooks(lang)).find((x) => slugOf(x) === hit.slug)!;
+  return { label: p.data.name, href: href(lang, playbookPath(p)), kind: 'playbook' };
 }
 
-export const resolveRefs = (refs: string[]) => Promise.all(refs.map(resolveRef));
+export const resolveRefs = (refs: string[], lang: Lang) =>
+  Promise.all(refs.map((r) => resolveRef(r, lang)));
+
+/** Do any of these references point to the entry with this slug? */
+async function refersTo(refs: string[], slug: string): Promise<boolean> {
+  for (const r of refs) if ((await lookup(r))?.slug === slug) return true;
+  return false;
+}
 
 /* ---------- Reverse relations ---------- */
 
-/** Tools whose `related_artifacts` mention this artifact, or listed by the artifact itself. */
-export async function toolsForArtifact(a: Artifact): Promise<Tool[]> {
-  const keys = new Set([a.id, a.data.name, ...a.data.aliases].map(norm));
-  return (await getTools()).filter((t) => t.data.related_artifacts.some((r) => keys.has(norm(r))));
-}
-
-/** Playbooks that reference an entry (tool or artifact) in any step. */
-export async function playbooksReferencing(entry: Tool | Artifact): Promise<Playbook[]> {
-  const keys = new Set([entry.id, entry.data.name, ...entry.data.aliases].map(norm));
-  return (await getPlaybooks()).filter((p) =>
-    p.data.steps.some((s) => [...s.tools, ...s.artifacts].some((r) => keys.has(norm(r)))),
-  );
+/** Tools whose `related_artifacts` mention this artifact. */
+export async function toolsForArtifact(a: Artifact, lang: Lang): Promise<Tool[]> {
+  const out: Tool[] = [];
+  for (const t of await getTools(lang)) if (await refersTo(t.data.related_artifacts, slugOf(a))) out.push(t);
+  return out;
 }
 
 /** Artifacts that list this tool in their `tools`. */
-export async function artifactsForTool(t: Tool): Promise<Artifact[]> {
-  const keys = new Set([t.id, t.data.name, ...t.data.aliases].map(norm));
-  return (await getArtifacts()).filter((a) => a.data.tools.some((r) => keys.has(norm(r))));
+export async function artifactsForTool(t: Tool, lang: Lang): Promise<Artifact[]> {
+  const out: Artifact[] = [];
+  for (const a of await getArtifacts(lang)) if (await refersTo(a.data.tools, slugOf(t))) out.push(a);
+  return out;
+}
+
+/** Playbooks that reference an entry (tool or artifact) in any step. */
+export async function playbooksReferencing(entry: Tool | Artifact, lang: Lang): Promise<Playbook[]> {
+  const out: Playbook[] = [];
+  for (const p of await getPlaybooks(lang)) {
+    const refs = p.data.steps.flatMap((s) => [...s.tools, ...s.artifacts]);
+    if (await refersTo(refs, slugOf(entry))) out.push(p);
+  }
+  return out;
 }

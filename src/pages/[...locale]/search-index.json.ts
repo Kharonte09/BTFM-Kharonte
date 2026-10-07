@@ -1,4 +1,4 @@
-import type { APIRoute } from 'astro';
+import type { APIRoute, GetStaticPaths } from 'astro';
 import {
   artifactPath,
   cheatsheetPath,
@@ -12,21 +12,28 @@ import {
 import { plain } from '@/lib/inline';
 import type { SearchDoc } from '@/lib/search-types';
 import { getArtifactCategory, getToolCategory } from '@/lib/taxonomy';
-import { url } from '@/lib/url';
+import { href } from '@/lib/url';
+import { localeStaticPaths } from '@/i18n/routing';
+import { useTranslations, type Lang } from '@/i18n/ui';
+
+/** One index per language: /search-index.json, /es/search-index.json */
+export const getStaticPaths = (() => localeStaticPaths()) satisfies GetStaticPaths;
 
 const words = (...parts: (string | string[] | undefined)[]) =>
   plain(parts.flat().filter(Boolean).join(' · '));
 
-export const GET: APIRoute = async () => {
+export const GET: APIRoute = async ({ props }) => {
+  const lang = (props as { lang: Lang }).lang;
+  const t = useTranslations(lang);
   const docs: SearchDoc[] = [];
 
-  for (const a of await getArtifacts()) {
+  for (const a of await getArtifacts(lang)) {
     const d = a.data;
     docs.push({
       k: 'artifact',
       t: d.name,
-      u: url(artifactPath(a)),
-      c: getArtifactCategory(d.category).label,
+      u: href(lang, artifactPath(a)),
+      c: getArtifactCategory(d.category).label[lang],
       s: d.summary,
       a: d.aliases,
       g: d.tags,
@@ -34,13 +41,13 @@ export const GET: APIRoute = async () => {
     });
   }
 
-  for (const t of await getTools()) {
-    const d = t.data;
+  for (const x of await getTools(lang)) {
+    const d = x.data;
     docs.push({
       k: 'tool',
       t: d.name,
-      u: url(toolPath(t)),
-      c: getToolCategory(d.category).label,
+      u: href(lang, toolPath(x)),
+      c: getToolCategory(d.category).label[lang],
       s: d.summary,
       a: d.aliases,
       g: d.tags,
@@ -48,13 +55,13 @@ export const GET: APIRoute = async () => {
     });
   }
 
-  for (const p of await getPlaybooks()) {
+  for (const p of await getPlaybooks(lang)) {
     const d = p.data;
     docs.push({
       k: 'playbook',
       t: d.name,
-      u: url(playbookPath(p)),
-      c: 'Playbook',
+      u: href(lang, playbookPath(p)),
+      c: t('kind.playbookOne'),
       s: d.summary,
       a: [],
       g: d.tags,
@@ -67,13 +74,13 @@ export const GET: APIRoute = async () => {
     });
   }
 
-  for (const c of await getCheatsheets()) {
+  for (const c of await getCheatsheets(lang)) {
     const d = c.data;
     docs.push({
       k: 'cheatsheet',
       t: d.name,
-      u: url(cheatsheetPath(c)),
-      c: 'Cheatsheet',
+      u: href(lang, cheatsheetPath(c)),
+      c: t('kind.cheatsheetOne'),
       s: d.summary,
       a: [],
       g: d.tags,
@@ -86,7 +93,7 @@ export const GET: APIRoute = async () => {
         docs.push({
           k: 'reference',
           t: plain(first),
-          u: url(`${cheatsheetPath(c)}#${section.id}-${i + 1}`),
+          u: href(lang, `${cheatsheetPath(c)}#${section.id}-${i + 1}`),
           c: `${d.name} · ${section.title}`,
           s: plain(rest.filter(Boolean).join(' — ')),
           a: [],

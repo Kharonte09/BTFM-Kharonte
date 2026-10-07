@@ -8,56 +8,65 @@ import Flow from '@/components/Flow.astro';
 import RefList from '@/components/RefList.astro';
 import type { TocItem } from '@/components/Toc.astro';
 import { inline } from '@/lib/inline';
-import { getPlaybooks, refCode, type Playbook } from '@/lib/content';
+import { getPlaybooks, isFallback, refCode, slugOf, type Playbook } from '@/lib/content';
+import { perLocale } from '@/i18n/routing';
+import { useTranslations, type Lang } from '@/i18n/ui';
 
-export const getStaticPaths = (async () => {
-  const playbooks = await getPlaybooks();
-  return playbooks.map((playbook) => ({ params: { slug: playbook.id }, props: { playbook } }));
-}) satisfies GetStaticPaths;
+export const getStaticPaths = (() =>
+  perLocale(async (lang) =>
+    (await getPlaybooks(lang)).map((playbook) => ({ params: { slug: slugOf(playbook) }, props: { playbook } })),
+  )) satisfies GetStaticPaths;
 
 interface Props {
   playbook: Playbook;
+  lang: Lang;
 }
 
-const { playbook } = Astro.props;
+const { playbook, lang } = Astro.props;
+const t = useTranslations(lang);
 const d = playbook.data;
 const { Content } = await render(playbook);
 const hasBody = Boolean(playbook.body?.trim());
 
 const sections: (TocItem & { show: boolean })[] = [
-  { id: 'start', label: 'Start here when', show: true },
-  { id: 'steps', label: 'Workflow', show: true },
-  { id: 'iocs', label: 'IOCs to extract', show: d.iocs.length > 0 },
-  { id: 'escalate', label: 'Escalate when', show: d.escalate_when.length > 0 },
-  { id: 'notes', label: 'Notes', show: hasBody },
-  { id: 'related', label: 'Related playbooks', show: d.related_playbooks.length > 0 },
+  { id: 'start', label: t('sec.start'), show: true },
+  { id: 'steps', label: t('sec.steps'), show: true },
+  { id: 'iocs', label: t('sec.iocs'), show: d.iocs.length > 0 },
+  { id: 'escalate', label: t('sec.escalateWhen'), show: d.escalate_when.length > 0 },
+  { id: 'notes', label: t('sec.pbNotes'), show: hasBody },
+  { id: 'related', label: t('sec.relatedPlaybooks'), show: d.related_playbooks.length > 0 },
 ];
 const toc = sections.filter((s) => s.show);
 const n = (id: string) => toc.findIndex((s) => s.id === id) + 1;
+const label = (id: string) => toc.find((s) => s.id === id)?.label ?? id;
 ---
 
 <EntryLayout
   title={d.name}
   summary={d.summary}
-  code={refCode('playbook', playbook.id)}
-  crumbs={[{ label: 'Playbooks', href: '/playbooks/' }, { label: d.name }]}
+  code={refCode('playbook', slugOf(playbook))}
+  crumbs={[{ label: t('nav.playbooks'), href: '/playbooks/' }, { label: d.name }]}
   meta={[
-    { label: 'Steps', value: String(d.steps.length) },
-    { label: 'Tags', value: d.tags },
+    { label: t('meta.steps'), value: String(d.steps.length) },
+    { label: t('meta.tags'), value: d.tags },
   ]}
   toc={toc}
   review={d.review}
+  fallback={isFallback(playbook, lang)}
   updated={d.updated}
 >
   <div slot="header" class="mt-6">
     <Flow steps={d.steps.map((s) => s.title)} compact links />
   </div>
 
-  <Section id="start" title="Start here when" index={n('start')}>
-    <p class="leading-relaxed text-paper-dim [&_code]:font-mono [&_code]:text-paper" set:html={inline(d.trigger)} />
+  <Section id="start" title={label('start')} index={n('start')}>
+    <p
+      class="leading-relaxed text-paper-dim [&_code]:font-mono [&_code]:text-paper [&_strong]:text-paper"
+      set:html={inline(d.trigger)}
+    />
   </Section>
 
-  <Section id="steps" title="Workflow" index={n('steps')}>
+  <Section id="steps" title={label('steps')} index={n('steps')}>
     <ol class="space-y-4">
       {
         d.steps.map((step, i) => (
@@ -73,21 +82,21 @@ const n = (id: string) => toc.findIndex((s) => s.id === id) + 1;
                 <div class="grid gap-4 border-t border-ink-800 pt-4 sm:grid-cols-2">
                   {step.tools.length > 0 && (
                     <div>
-                      <p class="label mb-2">Tools</p>
+                      <p class="label mb-2">{t('step.tools')}</p>
                       <RefList refs={step.tools} />
                     </div>
                   )}
                   {step.artifacts.length > 0 && (
                     <div>
-                      <p class="label mb-2">Artifacts</p>
+                      <p class="label mb-2">{t('step.artifacts')}</p>
                       <RefList refs={step.artifacts} />
                     </div>
                   )}
                 </div>
               )}
               {step.escalate && (
-                <p class="border-l-2 border-ember pl-3 text-sm text-paper-dim">
-                  <span class="label mr-2 text-ember">Escalate</span>
+                <p class="border-l-2 border-ember pl-3 text-sm text-paper-dim [&_strong]:text-paper">
+                  <span class="label mr-2 text-ember">{t('step.escalate')}</span>
                   <span set:html={inline(step.escalate)} />
                 </p>
               )}
@@ -100,7 +109,7 @@ const n = (id: string) => toc.findIndex((s) => s.id === id) + 1;
 
   {
     d.iocs.length > 0 && (
-      <Section id="iocs" title="IOCs to extract" index={n('iocs')}>
+      <Section id="iocs" title={label('iocs')} index={n('iocs')}>
         <BulletList items={d.iocs} />
       </Section>
     )
@@ -108,7 +117,7 @@ const n = (id: string) => toc.findIndex((s) => s.id === id) + 1;
 
   {
     d.escalate_when.length > 0 && (
-      <Section id="escalate" title="Escalate when" index={n('escalate')}>
+      <Section id="escalate" title={label('escalate')} index={n('escalate')}>
         <BulletList items={d.escalate_when} />
       </Section>
     )
@@ -116,7 +125,7 @@ const n = (id: string) => toc.findIndex((s) => s.id === id) + 1;
 
   {
     hasBody && (
-      <Section id="notes" title="Notes" index={n('notes')}>
+      <Section id="notes" title={label('notes')} index={n('notes')}>
         <div class="prose-k">
           <Content />
         </div>
@@ -126,7 +135,7 @@ const n = (id: string) => toc.findIndex((s) => s.id === id) + 1;
 
   {
     d.related_playbooks.length > 0 && (
-      <Section id="related" title="Related playbooks" index={n('related')}>
+      <Section id="related" title={label('related')} index={n('related')}>
         <RefList refs={d.related_playbooks} />
       </Section>
     )

@@ -1,39 +1,43 @@
 ---
-import { Menu, Search, X } from '@lucide/astro';
+import { Menu, Moon, Search, Sun, X } from '@lucide/astro';
 import Logo from './Logo.astro';
 import { NAV } from '@/lib/site';
-import { url } from '@/lib/url';
+import { getLang, href, unlocalizedPath } from '@/lib/url';
+import { LANG_NAMES, LOCALES, useTranslations } from '@/i18n/ui';
 
-const current = Astro.url.pathname;
-const isActive = (href: string) => current.startsWith(url(href));
+const lang = getLang(Astro.url);
+const t = useTranslations(lang);
+const current = unlocalizedPath(Astro.url.pathname);
+const isActive = (path: string) => current.startsWith(path);
 ---
 
 <header class="sticky top-0 z-40 border-b border-ink-700 bg-ink-950/90 backdrop-blur-md">
   <a
     href="#main"
     class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:bg-ember focus:px-3 focus:py-2 focus:text-ink-950"
-    >Skip to content</a
+    >{t('nav.skip')}</a
   >
-  <div class="mx-auto flex h-14 max-w-page items-center gap-6 px-4 sm:px-6">
-    <a href={url('/')} class="flex items-center gap-2.5 text-paper" aria-label="KHARONTE — home">
+  <div class="mx-auto flex h-14 max-w-page items-center gap-3 px-4 sm:gap-6 sm:px-6">
+    <a href={href(lang, '/')} class="flex items-center gap-2.5 text-paper" aria-label={t('nav.home')}>
       <Logo size={22} />
       <span class="font-mono text-sm font-semibold tracking-[0.22em]">KHARONTE</span>
-      <span class="hidden border-l border-ink-600 pl-2.5 font-mono text-[0.6875rem] tracking-[0.14em] text-faint uppercase md:inline"
-        >Blue Team Field Manual</span
+      <span
+        class="hidden border-l border-ink-600 pl-2.5 font-mono text-[0.6875rem] tracking-[0.14em] text-faint uppercase xl:inline"
+        >{t('nav.subtitle')}</span
       >
     </a>
 
-    <nav aria-label="Main" class="ml-auto hidden md:block">
+    <nav aria-label={t('nav.main')} class="ml-auto hidden md:block">
       <ul class="flex items-center gap-1">
         {
           NAV.map((item) => (
             <li>
               <a
-                href={url(item.href)}
+                href={href(lang, item.href)}
                 aria-current={isActive(item.href) ? 'page' : undefined}
                 class="relative px-3 py-2 text-sm text-mute transition-colors hover:text-paper aria-[current=page]:text-paper aria-[current=page]:after:absolute aria-[current=page]:after:inset-x-3 aria-[current=page]:after:-bottom-[0.6875rem] aria-[current=page]:after:h-px aria-[current=page]:after:bg-ember"
               >
-                {item.label}
+                {t(item.key)}
               </a>
             </li>
           ))
@@ -41,42 +45,79 @@ const isActive = (href: string) => current.startsWith(url(href));
       </ul>
     </nav>
 
-    <a
-      href={url('/search/')}
-      data-open-search
-      class="ml-auto flex items-center gap-2 border border-ink-600 bg-ink-900 px-2.5 py-1.5 text-sm text-mute transition-colors hover:border-ink-500 hover:text-paper md:ml-0"
-      aria-label="Search (press / or Ctrl+K)"
-    >
-      <Search size={15} stroke-width={1.5} aria-hidden="true" />
-      <span class="hidden lg:inline">Search</span>
-      <span class="kbd hidden lg:inline-flex" aria-hidden="true">Ctrl K</span>
-    </a>
+    <div class="ml-auto flex items-center gap-2 md:ml-0">
+      <a
+        href={href(lang, '/search/')}
+        data-open-search
+        class="flex h-8 items-center gap-2 border border-ink-600 bg-ink-900 px-2.5 text-sm text-mute transition-colors hover:border-ink-500 hover:text-paper"
+        aria-label={t('nav.searchAria')}
+      >
+        <Search size={15} stroke-width={1.5} aria-hidden="true" />
+        <span class="hidden lg:inline">{t('nav.search')}</span>
+        <span class="kbd hidden lg:inline-flex" aria-hidden="true">Ctrl K</span>
+      </a>
 
-    <button
-      type="button"
-      class="-mr-1 p-1.5 text-mute hover:text-paper md:hidden"
-      aria-controls="mobile-nav"
-      aria-expanded="false"
-      data-menu-toggle
-    >
-      <span class="sr-only">Menu</span>
-      <Menu size={20} stroke-width={1.5} aria-hidden="true" data-menu-open />
-      <X size={20} stroke-width={1.5} aria-hidden="true" data-menu-close class="hidden" />
-    </button>
+      <nav aria-label={t('lang.label')}>
+        <ul class="flex h-8 items-center border border-ink-600 font-mono text-[0.6875rem]">
+          {
+            LOCALES.map((l) => (
+              <li class="h-full">
+                <a
+                  href={href(l, current)}
+                  hreflang={l}
+                  lang={l}
+                  title={LANG_NAMES[l]}
+                  aria-current={l === lang ? 'true' : undefined}
+                  data-lang-switch={l}
+                  class="flex h-full items-center px-2 tracking-wider text-faint uppercase transition-colors hover:text-paper aria-[current=true]:bg-ink-800 aria-[current=true]:text-paper"
+                >
+                  {l}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </nav>
+
+      <button
+        type="button"
+        data-theme-toggle
+        data-label-light={t('theme.toLight')}
+        data-label-dark={t('theme.toDark')}
+        aria-label={t('theme.toLight')}
+        title={t('theme.toLight')}
+        class="flex size-8 items-center justify-center border border-ink-600 text-mute transition-colors hover:border-ink-500 hover:text-paper"
+      >
+        <Sun size={15} stroke-width={1.5} aria-hidden="true" class="light:hidden" />
+        <Moon size={15} stroke-width={1.5} aria-hidden="true" class="hidden light:block" />
+      </button>
+
+      <button
+        type="button"
+        class="-mr-1 p-1.5 text-mute hover:text-paper md:hidden"
+        aria-controls="mobile-nav"
+        aria-expanded="false"
+        data-menu-toggle
+      >
+        <span class="sr-only">{t('nav.menu')}</span>
+        <Menu size={20} stroke-width={1.5} aria-hidden="true" data-menu-open />
+        <X size={20} stroke-width={1.5} aria-hidden="true" data-menu-close class="hidden" />
+      </button>
+    </div>
   </div>
 
-  <nav id="mobile-nav" aria-label="Main" hidden class="border-t border-ink-700 bg-ink-950 md:hidden">
+  <nav id="mobile-nav" aria-label={t('nav.main')} hidden class="border-t border-ink-700 bg-ink-950 md:hidden">
     <ul class="mx-auto max-w-page divide-y divide-ink-800 px-4">
       {
         NAV.map((item, i) => (
           <li>
             <a
-              href={url(item.href)}
+              href={href(lang, item.href)}
               aria-current={isActive(item.href) ? 'page' : undefined}
               class="flex items-center gap-4 py-3.5 text-paper-dim aria-[current=page]:text-paper"
             >
               <span class="font-mono text-xs text-ember">{String(i + 1).padStart(2, '0')}</span>
-              <span class="text-base">{item.label}</span>
+              <span class="text-base">{t(item.key)}</span>
             </a>
           </li>
         ))
@@ -86,11 +127,12 @@ const isActive = (href: string) => current.startsWith(url(href));
 </header>
 
 <script>
+  // Mobile menu
   const toggle = document.querySelector<HTMLButtonElement>('[data-menu-toggle]');
   const panel = document.getElementById('mobile-nav');
   if (toggle && panel) {
     const set = (open: boolean) => {
-      panel.hidden = !open;
+      panel.toggleAttribute('hidden', !open);
       toggle.setAttribute('aria-expanded', String(open));
       toggle.querySelector('[data-menu-open]')?.classList.toggle('hidden', open);
       toggle.querySelector('[data-menu-close]')?.classList.toggle('hidden', !open);
@@ -104,4 +146,40 @@ const isActive = (href: string) => current.startsWith(url(href));
     });
     matchMedia('(min-width: 48rem)').addEventListener('change', (e) => e.matches && set(false));
   }
+
+  // Theme toggle (dark is the default; the choice is remembered per browser)
+  const themeBtn = document.querySelector<HTMLButtonElement>('[data-theme-toggle]');
+  if (themeBtn) {
+    const root = document.documentElement;
+    const sync = () => {
+      const light = root.dataset.theme === 'light';
+      const label = (light ? themeBtn.dataset.labelDark : themeBtn.dataset.labelLight) ?? '';
+      themeBtn.setAttribute('aria-label', label);
+      themeBtn.title = label;
+      document.querySelector('meta[name="theme-color"]')?.setAttribute('content', light ? '#f6f4ef' : '#09090a');
+    };
+    sync();
+    themeBtn.addEventListener('click', () => {
+      const next = root.dataset.theme === 'light' ? 'dark' : 'light';
+      root.dataset.theme = next;
+      root.style.colorScheme = next;
+      try {
+        localStorage.setItem('kh-theme', next);
+      } catch {
+        /* storage unavailable: the choice lasts for this page only */
+      }
+      sync();
+    });
+  }
+
+  // Remember the language chosen with the switch.
+  document.querySelectorAll<HTMLAnchorElement>('[data-lang-switch]').forEach((a) =>
+    a.addEventListener('click', () => {
+      try {
+        localStorage.setItem('kh-lang', a.dataset.langSwitch ?? 'en');
+      } catch {
+        /* ignore */
+      }
+    }),
+  );
 </script>

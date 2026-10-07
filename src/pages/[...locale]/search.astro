@@ -1,0 +1,23 @@
+---
+import type { GetStaticPaths } from 'astro';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import PageHeader from '@/components/PageHeader.astro';
+import SearchPanel from '@/components/SearchPanel.astro';
+import { localeStaticPaths } from '@/i18n/routing';
+import { useTranslations, type Lang } from '@/i18n/ui';
+
+export const getStaticPaths = (() => localeStaticPaths()) satisfies GetStaticPaths;
+
+const { lang } = Astro.props as { lang: Lang };
+const t = useTranslations(lang);
+---
+
+<BaseLayout title={t('search.title')} description={t('search.description')}>
+  <PageHeader title={t('search.title')} summary={t('search.summary')} crumbs={[{ label: t('search.title') }]} />
+  <div class="mt-8 max-w-3xl">
+    <SearchPanel id="page-search" mode="page" size="lg" primary />
+  </div>
+  <noscript>
+    <p class="mt-6 text-sm text-mute">{t('search.noscript')}</p>
+  </noscript>
+</BaseLayout>

@@ -1,19 +1,19 @@
 ---
 import { resolveRefs } from '@/lib/content';
+import { getLang } from '@/lib/url';
+import { useTranslations } from '@/i18n/ui';
 
 /** Renders cross references as chips; known entries become links. */
 interface Props {
   refs: string[];
-  empty?: string;
 }
-const { refs, empty } = Astro.props;
-const resolved = await resolveRefs(refs);
+const lang = getLang(Astro.url);
+const t = useTranslations(lang);
+const resolved = await resolveRefs(Astro.props.refs, lang);
 ---
 
 {
-  resolved.length === 0 ? (
-    empty && <p class="text-sm text-faint">{empty}</p>
-  ) : (
+  resolved.length > 0 && (
     <ul class="flex flex-wrap gap-2">
       {resolved.map((r) => (
         <li>
@@ -25,7 +25,7 @@ const resolved = await resolveRefs(refs);
               {r.label}
             </a>
           ) : (
-            <span class="chip border-dashed text-mute" title="Not documented in Kharonte yet">
+            <span class="chip border-dashed text-mute" title={t('ref.missing')}>
               {r.label}
             </span>
           )}

@@ -1,5 +1,7 @@
 ---
 import { inline } from '@/lib/inline';
+import { getLang } from '@/lib/url';
+import { useTranslations } from '@/i18n/ui';
 
 /**
  * Workflow diagram. Vertical by default (readable on mobile);
@@ -12,11 +14,12 @@ interface Props {
 }
 const { steps, compact = false, links = false } = Astro.props;
 const anchor = (i: number) => `step-${i + 1}`;
+const flowLabel = useTranslations(getLang(Astro.url))('flow.label');
 ---
 
 {
   compact ? (
-    <ol class="flex flex-wrap items-center gap-x-1.5 gap-y-2 font-mono text-xs" aria-label="Workflow">
+    <ol class="flex flex-wrap items-center gap-x-1.5 gap-y-2 font-mono text-xs" aria-label={flowLabel}>
       {steps.map((s, i) => (
         <li class="flex items-center gap-1.5">
           {links ? (
@@ -38,7 +41,7 @@ const anchor = (i: number) => `step-${i + 1}`;
       ))}
     </ol>
   ) : (
-    <ol class="font-mono text-sm" aria-label="Workflow">
+    <ol class="font-mono text-sm" aria-label={flowLabel}>
       {steps.map((s, i) => (
         <li class="relative pb-3 pl-9 last:pb-0">
           {i < steps.length - 1 && (

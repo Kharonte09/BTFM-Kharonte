@@ -21,7 +21,13 @@ export default defineConfig({
   base,
   trailingSlash: 'ignore',
   build: { format: 'directory' },
-  integrations: [sitemap()],
+  // Languages are routed by src/pages/[...locale]/ (English at /, Spanish at /es/).
+  integrations: [
+    sitemap({
+      i18n: { defaultLocale: 'en', locales: { en: 'en', es: 'es' } },
+      filter: (page) => !page.endsWith('/404/'),
+    }),
+  ],
   vite: {
     plugins: [tailwindcss()],
   },

@@ -6,7 +6,7 @@ export interface SearchDoc {
   k: SearchKind;
   /** title */
   t: string;
-  /** url (already base-prefixed) */
+  /** url (already base- and locale-prefixed) */
   u: string;
   /** context label: category or cheatsheet section */
   c: string;
@@ -20,12 +20,16 @@ export interface SearchDoc {
   w: string;
 }
 
-export const KIND_LABEL: Record<SearchKind, string> = {
-  artifact: 'Artifacts',
-  tool: 'Tools',
-  playbook: 'Playbooks',
-  cheatsheet: 'Cheatsheets',
-  reference: 'Reference',
-};
+/** Localised strings the client-side search needs (passed via data-strings). */
+export interface SearchStrings {
+  kinds: Record<SearchKind, string>;
+  /** "{q}" is replaced with the query */
+  none: string;
+  related: string;
+  /** "{n}" is replaced with the count */
+  one: string;
+  many: string;
+  error: string;
+}
 
 export const KIND_ORDER: SearchKind[] = ['artifact', 'tool', 'playbook', 'cheatsheet', 'reference'];

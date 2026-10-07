@@ -8,75 +8,83 @@ import RefList from '@/components/RefList.astro';
 import type { TocItem } from '@/components/Toc.astro';
 import {
   getArtifacts,
+  isFallback,
   playbookPath,
   playbooksReferencing,
   refCode,
+  slugOf,
   toolsForArtifact,
   type Artifact,
 } from '@/lib/content';
 import { getArtifactCategory } from '@/lib/taxonomy';
-import { url } from '@/lib/url';
+import { href } from '@/lib/url';
+import { perLocale } from '@/i18n/routing';
+import { useTranslations, type Lang } from '@/i18n/ui';
 
-export const getStaticPaths = (async () => {
-  const artifacts = await getArtifacts();
-  return artifacts.map((artifact) => ({
-    params: { category: artifact.data.category, slug: artifact.id },
-    props: { artifact },
-  }));
-}) satisfies GetStaticPaths;
+export const getStaticPaths = (() =>
+  perLocale(async (lang) =>
+    (await getArtifacts(lang)).map((artifact) => ({
+      params: { category: artifact.data.category, slug: slugOf(artifact) },
+      props: { artifact },
+    })),
+  )) satisfies GetStaticPaths;
 
 interface Props {
   artifact: Artifact;
+  lang: Lang;
 }
 
-const { artifact } = Astro.props;
+const { artifact, lang } = Astro.props;
+const t = useTranslations(lang);
 const d = artifact.data;
 const category = getArtifactCategory(d.category);
 const { Content } = await render(artifact);
 
 // Tools listed by the artifact, plus tools whose page points back to it.
-const tools = [...new Set([...d.tools, ...(await toolsForArtifact(artifact)).map((t) => t.data.name)])];
-const playbooks = await playbooksReferencing(artifact);
+const tools = [...new Set([...d.tools, ...(await toolsForArtifact(artifact, lang)).map((x) => slugOf(x))])];
+const playbooks = await playbooksReferencing(artifact, lang);
 
 const sections: (TocItem & { show: boolean })[] = [
-  { id: 'what', label: 'What is it?', show: true },
-  { id: 'evidence', label: 'Evidence provided', show: d.evidence.length > 0 },
-  { id: 'location', label: 'Where to find it', show: d.locations.length > 0 },
-  { id: 'questions', label: 'Questions answered', show: d.questions.length > 0 },
-  { id: 'tools', label: 'Tools', show: tools.length > 0 },
-  { id: 'look-for', label: 'Look for', show: d.look_for.length > 0 },
-  { id: 'limitations', label: 'Limitations', show: d.limitations.length > 0 },
-  { id: 'related', label: 'Related', show: d.related_artifacts.length > 0 || playbooks.length > 0 },
+  { id: 'what', label: t('sec.what'), show: true },
+  { id: 'evidence', label: t('sec.evidence'), show: d.evidence.length > 0 },
+  { id: 'location', label: t('sec.location'), show: d.locations.length > 0 },
+  { id: 'questions', label: t('sec.questions'), show: d.questions.length > 0 },
+  { id: 'tools', label: t('sec.tools'), show: tools.length > 0 },
+  { id: 'look-for', label: t('sec.lookFor'), show: d.look_for.length > 0 },
+  { id: 'limitations', label: t('sec.limitations'), show: d.limitations.length > 0 },
+  { id: 'related', label: t('sec.related'), show: d.related_artifacts.length > 0 || playbooks.length > 0 },
 ];
 const toc = sections.filter((s) => s.show);
 const n = (id: string) => toc.findIndex((s) => s.id === id) + 1;
+const label = (id: string) => toc.find((s) => s.id === id)?.label ?? id;
 ---
 
 <EntryLayout
   title={d.name}
   summary={d.summary}
-  code={refCode('artifact', artifact.id, d.category)}
+  code={refCode('artifact', slugOf(artifact), d.category)}
   crumbs={[
-    { label: 'Artifacts', href: '/artifacts/' },
-    { label: category.label, href: `/artifacts/${category.id}/` },
+    { label: t('nav.artifacts'), href: '/artifacts/' },
+    { label: category.label[lang], href: `/artifacts/${category.id}/` },
     { label: d.name },
   ]}
   meta={[
-    { label: 'Category', value: category.label },
-    { label: 'Also', value: d.aliases },
-    { label: 'Tags', value: d.tags },
+    { label: t('meta.category'), value: category.label[lang] },
+    { label: t('meta.also'), value: d.aliases },
+    { label: t('meta.tags'), value: d.tags },
   ]}
   toc={toc}
   review={d.review}
+  fallback={isFallback(artifact, lang)}
   updated={d.updated}
 >
-  <Section id="what" title="What is it?" index={n('what')}>
+  <Section id="what" title={label('what')} index={n('what')}>
     <div class="prose-k"><Content /></div>
   </Section>
 
   {
     d.evidence.length > 0 && (
-      <Section id="evidence" title="Evidence provided" index={n('evidence')}>
+      <Section id="evidence" title={label('evidence')} index={n('evidence')}>
         <BulletList items={d.evidence} />
       </Section>
     )
@@ -84,11 +92,11 @@ const n = (id: string) => toc.findIndex((s) => s.id === id) + 1;
 
   {
     d.locations.length > 0 && (
-      <Section id="location" title="Where to find it" index={n('location')}>
+      <Section id="location" title={label('location')} index={n('location')}>
         <ul class="divide-y divide-ink-800 border border-ink-700 bg-ink-900">
           {d.locations.map((l) => (
             <li class="flex flex-col gap-1 px-3 py-2.5 sm:flex-row sm:items-baseline sm:gap-4">
-              {l.label && <span class="label w-40 shrink-0 normal-case tracking-normal">{l.label}</span>}
+              {l.label && <span class="label w-40 shrink-0 tracking-normal normal-case">{l.label}</span>}
               <code class="font-mono text-[0.8125rem] break-all text-paper">{l.path}</code>
             </li>
           ))}
@@ -99,7 +107,7 @@ const n = (id: string) => toc.findIndex((s) => s.id === id) + 1;
 
   {
     d.questions.length > 0 && (
-      <Section id="questions" title="Questions answered" index={n('questions')}>
+      <Section id="questions" title={label('questions')} index={n('questions')}>
         <BulletList items={d.questions} />
       </Section>
     )
@@ -107,7 +115,7 @@ const n = (id: string) => toc.findIndex((s) => s.id === id) + 1;
 
   {
     tools.length > 0 && (
-      <Section id="tools" title="Tools" index={n('tools')}>
+      <Section id="tools" title={label('tools')} index={n('tools')}>
         <RefList refs={tools} />
       </Section>
     )
@@ -115,7 +123,7 @@ const n = (id: string) => toc.findIndex((s) => s.id === id) + 1;
 
   {
     d.look_for.length > 0 && (
-      <Section id="look-for" title="Look for" index={n('look-for')}>
+      <Section id="look-for" title={label('look-for')} index={n('look-for')}>
         <BulletList items={d.look_for} />
       </Section>
     )
@@ -123,7 +131,7 @@ const n = (id: string) => toc.findIndex((s) => s.id === id) + 1;
 
   {
     d.limitations.length > 0 && (
-      <Section id="limitations" title="Limitations" index={n('limitations')}>
+      <Section id="limitations" title={label('limitations')} index={n('limitations')}>
         <BulletList items={d.limitations} />
       </Section>
     )
@@ -131,21 +139,21 @@ const n = (id: string) => toc.findIndex((s) => s.id === id) + 1;
 
   {
     (d.related_artifacts.length > 0 || playbooks.length > 0) && (
-      <Section id="related" title="Related" index={n('related')}>
+      <Section id="related" title={label('related')} index={n('related')}>
         <div class="space-y-5">
           {d.related_artifacts.length > 0 && (
             <div>
-              <p class="mb-2 text-sm text-mute">Artifacts</p>
+              <p class="mb-2 text-sm text-mute">{t('related.artifacts')}</p>
               <RefList refs={d.related_artifacts} />
             </div>
           )}
           {playbooks.length > 0 && (
             <div>
-              <p class="mb-2 text-sm text-mute">Used in playbooks</p>
+              <p class="mb-2 text-sm text-mute">{t('related.usedIn')}</p>
               <ul class="flex flex-wrap gap-2">
                 {playbooks.map((p) => (
                   <li>
-                    <a href={url(playbookPath(p))} class="chip">
+                    <a href={href(lang, playbookPath(p))} class="chip">
                       <span aria-hidden="true" class="text-ember">→</span>
                       {p.data.name}
                     </a>

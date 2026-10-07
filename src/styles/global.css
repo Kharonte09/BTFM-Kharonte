@@ -30,6 +30,34 @@
   --container-page: 76rem;
 }
 
+/* `light:` variant, e.g. class="light:hidden" */
+@custom-variant light (&:where([data-theme='light'], [data-theme='light'] *));
+
+/*
+ * Light theme: same token names, remapped values. Dark is the default
+ * (set on <html data-theme="dark">); the header toggle switches and saves it.
+ * The ink scale is inverted (950 = page background), paper becomes ink.
+ */
+:root[data-theme='light'] {
+  color-scheme: light;
+  --color-ink-950: #f6f4ef;
+  --color-ink-900: #eeebe4;
+  --color-ink-850: #e8e4db;
+  --color-ink-800: #e1dcd1;
+  --color-ink-700: #d2ccbf;
+  --color-ink-600: #bfb8a9;
+  --color-ink-500: #9d9585;
+
+  --color-paper: #16161a;
+  --color-paper-dim: #3a3935;
+  --color-mute: #5d5a54;
+  --color-faint: #726e67;
+
+  --color-ember: #c13b0b;
+  --color-ember-soft: #d9531f;
+  --color-ember-deep: #8f2a06;
+}
+
 @layer base {
   :root {
     color-scheme: dark;

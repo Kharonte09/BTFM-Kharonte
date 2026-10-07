@@ -1,3 +1,5 @@
+import type { Lang } from '@/i18n/ui';
+
 /**
  * Fixed taxonomy for the field manual. Categories are code, not content:
  * adding a new category is a deliberate structural change.
@@ -16,56 +18,76 @@ export type IconName =
   | 'reversing'
   | 'general';
 
+export type Localized = Record<Lang, string>;
+
 export interface Category {
   id: string;
-  label: string;
+  label: Localized;
   /** Short code used in reference identifiers, e.g. ART/WIN/PREFETCH */
   code: string;
-  description: string;
+  description: Localized;
   icon: IconName;
 }
 
 export const ARTIFACT_CATEGORIES = [
   {
     id: 'windows',
-    label: 'Windows',
+    label: { en: 'Windows', es: 'Windows' },
     code: 'WIN',
-    description: 'Event logs, registry, execution and persistence artifacts on Windows endpoints.',
+    description: {
+      en: 'Event logs, registry, execution and persistence artifacts on Windows endpoints.',
+      es: 'Registros de eventos, registro, ejecución y persistencia en endpoints Windows.',
+    },
     icon: 'windows',
   },
   {
     id: 'email',
-    label: 'Email',
+    label: { en: 'Email', es: 'Correo' },
     code: 'EML',
-    description: 'Messages, headers, authentication results, links and attachments.',
+    description: {
+      en: 'Messages, headers, authentication results, links and attachments.',
+      es: 'Mensajes, cabeceras, resultados de autenticación, enlaces y adjuntos.',
+    },
     icon: 'email',
   },
   {
     id: 'documents',
-    label: 'Documents',
+    label: { en: 'Documents', es: 'Documentos' },
     code: 'DOC',
-    description: 'Office files, OLE containers, macros and PDF.',
+    description: {
+      en: 'Office files, OLE containers, macros and PDF.',
+      es: 'Ficheros Office, contenedores OLE, macros y PDF.',
+    },
     icon: 'documents',
   },
   {
     id: 'binaries',
-    label: 'Binaries',
+    label: { en: 'Binaries', es: 'Binarios' },
     code: 'BIN',
-    description: 'PE executables, DLLs, .NET assemblies and scripts.',
+    description: {
+      en: 'PE executables, DLLs, .NET assemblies and scripts.',
+      es: 'Ejecutables PE, DLL, ensamblados .NET y scripts.',
+    },
     icon: 'binaries',
   },
   {
     id: 'network',
-    label: 'Network',
+    label: { en: 'Network', es: 'Red' },
     code: 'NET',
-    description: 'Packet captures, DNS, HTTP, TLS and infrastructure indicators.',
+    description: {
+      en: 'Packet captures, DNS, HTTP, TLS and infrastructure indicators.',
+      es: 'Capturas de tráfico, DNS, HTTP, TLS e indicadores de infraestructura.',
+    },
     icon: 'network',
   },
   {
     id: 'memory',
-    label: 'Memory',
+    label: { en: 'Memory', es: 'Memoria' },
     code: 'MEM',
-    description: 'RAM images: processes, connections, injected code and handles.',
+    description: {
+      en: 'RAM images: processes, connections, injected code and handles.',
+      es: 'Imágenes de RAM: procesos, conexiones, código inyectado y handles.',
+    },
     icon: 'memory',
   },
 ] as const satisfies readonly Category[];
@@ -73,44 +95,59 @@ export const ARTIFACT_CATEGORIES = [
 export const TOOL_CATEGORIES = [
   {
     id: 'dfir',
-    label: 'DFIR',
+    label: { en: 'DFIR', es: 'DFIR' },
     code: 'DFIR',
-    description: 'Collection, triage and forensic acquisition.',
+    description: {
+      en: 'Collection, triage and forensic acquisition.',
+      es: 'Recolección, triaje y adquisición forense.',
+    },
     icon: 'dfir',
   },
   {
     id: 'windows',
-    label: 'Windows Forensics',
+    label: { en: 'Windows Forensics', es: 'Forense Windows' },
     code: 'WIN',
-    description: 'Parsers for Windows artifacts — mostly Eric Zimmerman tools.',
+    description: {
+      en: 'Parsers for Windows artifacts — mostly Eric Zimmerman tools.',
+      es: 'Parsers de artefactos Windows, sobre todo las herramientas de Eric Zimmerman.',
+    },
     icon: 'windows',
   },
   {
     id: 'malware-analysis',
-    label: 'Malware Analysis',
+    label: { en: 'Malware Analysis', es: 'Análisis de malware' },
     code: 'MAL',
-    description: 'File identification, static analysis, rules and reputation.',
+    description: {
+      en: 'File identification, static analysis, rules and reputation.',
+      es: 'Identificación de ficheros, análisis estático, reglas y reputación.',
+    },
     icon: 'malware',
   },
   {
     id: 'network',
-    label: 'Network',
+    label: { en: 'Network', es: 'Red' },
     code: 'NET',
-    description: 'Packet and protocol analysis.',
+    description: { en: 'Packet and protocol analysis.', es: 'Análisis de paquetes y protocolos.' },
     icon: 'network',
   },
   {
     id: 'reversing',
-    label: 'Reversing',
+    label: { en: 'Reversing', es: 'Reversing' },
     code: 'REV',
-    description: 'Disassemblers, decompilers and debuggers.',
+    description: {
+      en: 'Disassemblers, decompilers and debuggers.',
+      es: 'Desensambladores, descompiladores y depuradores.',
+    },
     icon: 'reversing',
   },
   {
     id: 'general',
-    label: 'General',
+    label: { en: 'General', es: 'General' },
     code: 'GEN',
-    description: 'Decoding, data wrangling and shell utilities.',
+    description: {
+      en: 'Decoding, data wrangling and shell utilities.',
+      es: 'Decodificación, tratamiento de datos y utilidades de shell.',
+    },
     icon: 'general',
   },
 ] as const satisfies readonly Category[];

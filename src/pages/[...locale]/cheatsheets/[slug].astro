@@ -6,18 +6,22 @@ import Section from '@/components/Section.astro';
 import ReviewNotice from '@/components/ReviewNotice.astro';
 import { Search } from '@lucide/astro';
 import { inline } from '@/lib/inline';
-import { getCheatsheets, refCode, type Cheatsheet } from '@/lib/content';
+import { getCheatsheets, isFallback, refCode, slugOf, type Cheatsheet } from '@/lib/content';
+import { perLocale } from '@/i18n/routing';
+import { useTranslations, type Lang } from '@/i18n/ui';
 
-export const getStaticPaths = (async () => {
-  const sheets = await getCheatsheets();
-  return sheets.map((sheet) => ({ params: { slug: sheet.id }, props: { sheet } }));
-}) satisfies GetStaticPaths;
+export const getStaticPaths = (() =>
+  perLocale(async (lang) =>
+    (await getCheatsheets(lang)).map((sheet) => ({ params: { slug: slugOf(sheet) }, props: { sheet } })),
+  )) satisfies GetStaticPaths;
 
 interface Props {
   sheet: Cheatsheet;
+  lang: Lang;
 }
 
-const { sheet } = Astro.props;
+const { sheet, lang } = Astro.props;
+const t = useTranslations(lang);
 const d = sheet.data;
 ---
 
@@ -25,10 +29,10 @@ const d = sheet.data;
   <PageHeader
     title={d.name}
     summary={d.summary}
-    code={refCode('cheatsheet', sheet.id)}
-    crumbs={[{ label: 'Cheatsheets', href: '/cheatsheets/' }, { label: d.name }]}
+    code={refCode('cheatsheet', slugOf(sheet))}
+    crumbs={[{ label: t('nav.cheatsheets'), href: '/cheatsheets/' }, { label: d.name }]}
   >
-    <nav aria-label="Sections" class="mt-6">
+    <nav aria-label={t('cheatsheets.sections')} class="mt-6">
       <ul class="flex flex-wrap gap-2">
         {
           d.sections.map((s) => (
@@ -46,20 +50,21 @@ const d = sheet.data;
   <div class="sticky top-14 z-20 -mx-4 border-b border-ink-700 bg-ink-950/95 px-4 py-3 backdrop-blur-md sm:-mx-6 sm:px-6">
     <div class="flex max-w-xl items-center gap-3 border border-ink-600 bg-ink-900 px-3 py-2 focus-within:border-ember/70">
       <Search size={16} stroke-width={1.5} class="shrink-0 text-mute" aria-hidden="true" />
-      <label for="sheet-filter" class="sr-only">Filter rows</label>
+      <label for="sheet-filter" class="sr-only">{t('cheatsheets.filter')}</label>
       <input
         id="sheet-filter"
         type="search"
         autocomplete="off"
         spellcheck="false"
-        placeholder="Filter rows… (e.g. 4624, logon, Get-WinEvent)"
+        placeholder={t('cheatsheets.filterPlaceholder')}
         class="w-full bg-transparent text-sm text-paper placeholder:text-faint focus:outline-none"
       />
-      <span id="sheet-count" class="shrink-0 font-mono text-[0.6875rem] text-faint" aria-live="polite"></span>
+      <span id="sheet-count" data-template={t('cheatsheets.rows')} class="shrink-0 font-mono text-[0.6875rem] text-faint" aria-live="polite"></span>
     </div>
   </div>
 
   <div class="mt-8 space-y-12">
+    {isFallback(sheet, lang) && <ReviewNotice kind="fallback" />}
     {d.review && <ReviewNotice />}
     {
       d.sections.map((s, si) => {
@@ -122,7 +127,7 @@ const d = sheet.data;
       section.hidden = shown === 0;
       visible += shown;
     }
-    if (count) count.textContent = q ? `${visible} rows` : '';
+    if (count) count.textContent = q ? (count.dataset.template ?? '{n}').replace('{n}', String(visible)) : '';
   };
   input?.addEventListener('input', apply);
 </script>

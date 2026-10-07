@@ -5,6 +5,8 @@ import MetaList, { type MetaItem } from '@/components/MetaList.astro';
 import ReviewNotice from '@/components/ReviewNotice.astro';
 import Toc, { type TocItem } from '@/components/Toc.astro';
 import type { Crumb } from '@/components/Breadcrumbs.astro';
+import { getLang } from '@/lib/url';
+import { useTranslations } from '@/i18n/ui';
 
 /** Two-column reference layout shared by tools, artifacts and playbooks. */
 interface Props {
@@ -15,10 +17,13 @@ interface Props {
   meta: MetaItem[];
   toc: TocItem[];
   review?: boolean;
+  /** Entry is shown in the default language because no translation exists. */
+  fallback?: boolean;
   updated?: Date | undefined;
 }
 
-const { title, summary, code, crumbs, meta, toc, review = false, updated } = Astro.props;
+const { title, summary, code, crumbs, meta, toc, review = false, fallback = false, updated } = Astro.props;
+const t = useTranslations(getLang(Astro.url));
 const updatedLabel = updated?.toISOString().slice(0, 10);
 ---
 
@@ -28,15 +33,20 @@ const updatedLabel = updated?.toISOString().slice(0, 10);
   </PageHeader>
 
   <div class="mt-8 grid gap-10 lg:grid-cols-[minmax(0,1fr)_17rem] lg:gap-14">
-    <aside class="space-y-8 lg:order-2" aria-label="Entry details">
+    <aside class="space-y-8 lg:order-2" aria-label={t('entry.details')}>
       <div class="space-y-8 lg:sticky lg:top-24">
-        <MetaList items={[...meta, { label: 'Updated', value: updatedLabel }]} />
+        <MetaList items={[...meta, { label: t('meta.updated'), value: updatedLabel }]} />
         <Toc items={toc} />
       </div>
     </aside>
 
     <article class="min-w-0 space-y-12 lg:order-1">
-      {review && <ReviewNotice />}
+      {(fallback || review) && (
+        <div class="space-y-3">
+          {fallback && <ReviewNotice kind="fallback" />}
+          {review && <ReviewNotice kind="review" />}
+        </div>
+      )}
       <slot />
     </article>
   </div>

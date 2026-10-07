@@ -1,7 +1,12 @@
 ---
 import Logo from './Logo.astro';
 import { NAV } from '@/lib/site';
-import { url } from '@/lib/url';
+import { getLang, href } from '@/lib/url';
+import { useTranslations } from '@/i18n/ui';
+
+const lang = getLang(Astro.url);
+const t = useTranslations(lang);
+const links = [...NAV, { key: 'nav.search', href: '/search/' }, { key: 'nav.about', href: '/about/' }] as const;
 ---
 
 <footer class="mt-24 border-t border-ink-700">
@@ -11,31 +16,20 @@ import { url } from '@/lib/url';
         <Logo size={18} />
         <span class="font-mono text-xs font-semibold tracking-[0.22em]">KHARONTE</span>
       </p>
-      <p class="text-sm leading-relaxed text-mute">
-        A technical reference to support analysis — not a replacement for the analyst. Verify against
-        primary sources before acting on any entry.
-      </p>
-      <p class="font-mono text-[0.6875rem] text-faint">
-        Static · No tracking · No external APIs · Open source
-      </p>
+      <p class="text-sm leading-relaxed text-mute">{t('footer.disclaimer')}</p>
+      <p class="font-mono text-[0.6875rem] text-faint">{t('footer.meta')}</p>
     </div>
-    <nav aria-label="Footer">
+    <nav aria-label={t('nav.footer')}>
       <ul class="grid grid-cols-2 gap-x-10 gap-y-2 text-sm">
         {
-          NAV.map((item) => (
+          links.map((item) => (
             <li>
-              <a href={url(item.href)} class="text-mute transition-colors hover:text-paper">
-                {item.label}
+              <a href={href(lang, item.href)} class="text-mute transition-colors hover:text-paper">
+                {t(item.key)}
               </a>
             </li>
           ))
         }
-        <li>
-          <a href={url('/search/')} class="text-mute transition-colors hover:text-paper">Search</a>
-        </li>
-        <li>
-          <a href={url('/about/')} class="text-mute transition-colors hover:text-paper">About</a>
-        </li>
       </ul>
     </nav>
   </div>

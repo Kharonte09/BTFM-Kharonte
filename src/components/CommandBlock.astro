@@ -1,5 +1,7 @@
 ---
 import { Copy } from '@lucide/astro';
+import { getLang } from '@/lib/url';
+import { useTranslations } from '@/i18n/ui';
 
 /** A labelled command with a copy button. Content is never executed. */
 interface Props {
@@ -7,19 +9,22 @@ interface Props {
   command: string;
 }
 const { label, command } = Astro.props;
+const t = useTranslations(getLang(Astro.url));
 ---
 
 <figure class="border border-ink-700 bg-ink-900">
   <figcaption class="flex items-center justify-between gap-3 border-b border-ink-700 px-3 py-1.5">
-    <span class="label normal-case tracking-normal">{label}</span>
+    <span class="label tracking-normal normal-case">{label}</span>
     <button
       type="button"
       data-copy
+      data-copied={t('copy.copied')}
+      data-failed={t('copy.failed')}
       class="flex items-center gap-1.5 font-mono text-[0.6875rem] text-faint transition-colors hover:text-paper"
-      aria-label={`Copy command: ${label}`}
+      aria-label={`${t('copy.aria')}: ${label}`}
     >
       <Copy size={13} stroke-width={1.5} aria-hidden="true" />
-      <span data-copy-label>copy</span>
+      <span data-copy-label>{t('copy.copy')}</span>
     </button>
   </figcaption>
   <pre class="overflow-x-auto p-3 text-[0.8125rem] leading-relaxed text-paper"><code>{command}</code></pre>
@@ -27,16 +32,17 @@ const { label, command } = Astro.props;
 
 <script>
   document.querySelectorAll<HTMLButtonElement>('[data-copy]').forEach((btn) => {
+    const label = btn.querySelector('[data-copy-label]');
+    const idle = label?.textContent ?? 'copy';
     btn.addEventListener('click', async () => {
       const code = btn.closest('figure')?.querySelector('code')?.textContent ?? '';
-      const label = btn.querySelector('[data-copy-label]');
       try {
         await navigator.clipboard.writeText(code);
-        if (label) label.textContent = 'copied';
+        if (label) label.textContent = btn.dataset.copied ?? 'copied';
       } catch {
-        if (label) label.textContent = 'failed';
+        if (label) label.textContent = btn.dataset.failed ?? 'failed';
       }
-      setTimeout(() => label && (label.textContent = 'copy'), 1500);
+      setTimeout(() => label && (label.textContent = idle), 1500);
     });
   });
 </script>

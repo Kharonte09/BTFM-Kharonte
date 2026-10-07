@@ -1,0 +1,57 @@
+---
+import type { GetStaticPaths } from 'astro';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import PageHeader from '@/components/PageHeader.astro';
+import CategoryBlock from '@/components/CategoryBlock.astro';
+import Icon from '@/components/Icon.astro';
+import { getTools, refCode, slugOf, toolPath } from '@/lib/content';
+import { TOOL_CATEGORIES } from '@/lib/taxonomy';
+import { localeStaticPaths } from '@/i18n/routing';
+import { useTranslations, type Lang } from '@/i18n/ui';
+
+export const getStaticPaths = (() => localeStaticPaths()) satisfies GetStaticPaths;
+
+const { lang } = Astro.props as { lang: Lang };
+const t = useTranslations(lang);
+const tools = await getTools(lang);
+const used = TOOL_CATEGORIES.filter((c) => tools.some((x) => x.data.category === c.id));
+---
+
+<BaseLayout title={t('tools.title')} description={t('tools.summary')}>
+  <PageHeader title={t('tools.title')} summary={t('tools.summary')} crumbs={[{ label: t('tools.title') }]}>
+    <nav aria-label={t('cat.nav.tools')} class="mt-6">
+      <ul class="flex flex-wrap gap-2">
+        {
+          used.map((c) => (
+            <li>
+              <a href={`#${c.id}`} class="chip">
+                <Icon name={c.icon} size={13} class="text-ember" />
+                {c.label[lang]}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+  </PageHeader>
+
+  <div class="mt-10 space-y-14">
+    {
+      used.map((c) => (
+        <CategoryBlock
+          category={c}
+          href={`/tools/${c.id}/`}
+          entries={tools
+            .filter((x) => x.data.category === c.id)
+            .map((x) => ({
+              href: toolPath(x),
+              title: x.data.name,
+              summary: x.data.summary,
+              code: refCode('tool', slugOf(x), x.data.category),
+              meta: x.data.type,
+            }))}
+        />
+      ))
+    }
+  </div>
+</BaseLayout>

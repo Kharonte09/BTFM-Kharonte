@@ -1,0 +1,42 @@
+---
+import type { GetStaticPaths } from 'astro';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import PageHeader from '@/components/PageHeader.astro';
+import CategoryBlock from '@/components/CategoryBlock.astro';
+import { artifactPath, getArtifacts, refCode, slugOf } from '@/lib/content';
+import { ARTIFACT_CATEGORIES, type Category } from '@/lib/taxonomy';
+import { perLocale } from '@/i18n/routing';
+import { useTranslations, type Lang } from '@/i18n/ui';
+
+export const getStaticPaths = (() =>
+  perLocale(() =>
+    ARTIFACT_CATEGORIES.map((category) => ({
+      params: { category: category.id },
+      props: { category: category as Category },
+    })),
+  )) satisfies GetStaticPaths;
+
+const { category, lang } = Astro.props as { category: Category; lang: Lang };
+const t = useTranslations(lang);
+const artifacts = (await getArtifacts(lang)).filter((a) => a.data.category === category.id);
+const title = t('artifacts.catTitle', { label: category.label[lang] });
+---
+
+<BaseLayout title={title} description={category.description[lang]}>
+  <PageHeader
+    title={title}
+    summary={category.description[lang]}
+    crumbs={[{ label: t('artifacts.title'), href: '/artifacts/' }, { label: category.label[lang] }]}
+  />
+  <div class="mt-10">
+    <CategoryBlock
+      category={category}
+      entries={artifacts.map((a) => ({
+        href: artifactPath(a),
+        title: a.data.name,
+        summary: a.data.summary,
+        code: refCode('artifact', slugOf(a), a.data.category),
+      }))}
+    />
+  </div>
+</BaseLayout>

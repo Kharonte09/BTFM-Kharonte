@@ -1,8 +1,10 @@
 ---
-import { url, absoluteUrl } from '@/lib/url';
+import { absoluteUrl, getLang, href, localePath } from '@/lib/url';
+import { useTranslations } from '@/i18n/ui';
 
 export interface Crumb {
   label: string;
+  /** Unlocalised path, e.g. /tools/ */
   href?: string;
 }
 
@@ -10,8 +12,9 @@ interface Props {
   items: Crumb[];
 }
 
-const { items } = Astro.props;
-const all: Crumb[] = [{ label: 'Index', href: '/' }, ...items];
+const lang = getLang(Astro.url);
+const t = useTranslations(lang);
+const all: Crumb[] = [{ label: t('crumb.index'), href: '/' }, ...Astro.props.items];
 
 const jsonLd = {
   '@context': 'https://schema.org',
@@ -20,12 +23,12 @@ const jsonLd = {
     '@type': 'ListItem',
     position: i + 1,
     name: c.label,
-    ...(c.href ? { item: absoluteUrl(c.href, Astro.site) } : {}),
+    ...(c.href ? { item: absoluteUrl(localePath(lang, c.href), Astro.site) } : {}),
   })),
 };
 ---
 
-<nav aria-label="Breadcrumb" class="font-mono text-xs text-mute">
+<nav aria-label={t('crumb.label')} class="font-mono text-xs text-mute">
   <ol class="flex flex-wrap items-center gap-x-2 gap-y-1">
     {
       all.map((c, i) => (
@@ -36,7 +39,7 @@ const jsonLd = {
             </span>
           )}
           {c.href && i < all.length - 1 ? (
-            <a href={url(c.href)} class="transition-colors hover:text-paper">
+            <a href={href(lang, c.href)} class="transition-colors hover:text-paper">
               {c.label}
             </a>
           ) : (

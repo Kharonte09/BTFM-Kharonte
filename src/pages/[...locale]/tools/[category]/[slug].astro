@@ -1,0 +1,182 @@
+---
+import type { GetStaticPaths } from 'astro';
+import { render } from 'astro:content';
+import EntryLayout from '@/layouts/EntryLayout.astro';
+import Section from '@/components/Section.astro';
+import BulletList from '@/components/BulletList.astro';
+import Flow from '@/components/Flow.astro';
+import RefList from '@/components/RefList.astro';
+import CommandBlock from '@/components/CommandBlock.astro';
+import type { TocItem } from '@/components/Toc.astro';
+import {
+  artifactsForTool,
+  getTools,
+  isFallback,
+  playbookPath,
+  playbooksReferencing,
+  refCode,
+  slugOf,
+  type Tool,
+} from '@/lib/content';
+import { getToolCategory } from '@/lib/taxonomy';
+import { href } from '@/lib/url';
+import { perLocale } from '@/i18n/routing';
+import { useTranslations, type Lang } from '@/i18n/ui';
+
+export const getStaticPaths = (() =>
+  perLocale(async (lang) =>
+    (await getTools(lang)).map((tool) => ({
+      params: { category: tool.data.category, slug: slugOf(tool) },
+      props: { tool },
+    })),
+  )) satisfies GetStaticPaths;
+
+interface Props {
+  tool: Tool;
+  lang: Lang;
+}
+
+const { tool, lang } = Astro.props;
+const t = useTranslations(lang);
+const d = tool.data;
+const category = getToolCategory(d.category);
+const { Content } = await render(tool);
+
+// Artifacts mentioned by this tool, plus artifacts that list this tool.
+const reverseArtifacts = (await artifactsForTool(tool, lang)).map((a) => slugOf(a));
+const relatedArtifacts = [...new Set([...d.related_artifacts, ...reverseArtifacts])];
+const playbooks = await playbooksReferencing(tool, lang);
+
+const sections: (TocItem & { show: boolean })[] = [
+  { id: 'what', label: t('sec.what'), show: true },
+  { id: 'use-when', label: t('sec.useWhen'), show: d.use_when.length > 0 },
+  { id: 'look-for', label: t('sec.lookFor'), show: d.look_for.length > 0 },
+  { id: 'workflow', label: t('sec.workflow'), show: d.workflow.length > 0 },
+  { id: 'examples', label: t('sec.examples'), show: d.examples.length > 0 },
+  { id: 'output', label: t('sec.output'), show: d.outputs.length > 0 },
+  { id: 'notes', label: t('sec.notes'), show: d.notes.length > 0 },
+  { id: 'complements', label: t('sec.complements'), show: d.complements.length > 0 },
+  { id: 'related', label: t('sec.related'), show: relatedArtifacts.length > 0 || playbooks.length > 0 },
+];
+const toc = sections.filter((s) => s.show);
+const n = (id: string) => toc.findIndex((s) => s.id === id) + 1;
+const label = (id: string) => toc.find((s) => s.id === id)?.label ?? id;
+---
+
+<EntryLayout
+  title={d.name}
+  summary={d.summary}
+  code={refCode('tool', slugOf(tool), d.category)}
+  crumbs={[
+    { label: t('nav.tools'), href: '/tools/' },
+    { label: category.label[lang], href: `/tools/${category.id}/` },
+    { label: d.name },
+  ]}
+  meta={[
+    { label: t('meta.category'), value: category.label[lang] },
+    { label: t('meta.type'), value: d.type },
+    { label: t('meta.platform'), value: d.platforms },
+    { label: t('meta.license'), value: d.license },
+    { label: t('meta.level'), value: t(`difficulty.${d.difficulty}`) },
+    { label: t('meta.also'), value: d.aliases },
+    { label: t('meta.official'), value: d.homepage?.replace(/^https?:\/\//, ''), href: d.homepage },
+  ]}
+  toc={toc}
+  review={d.review}
+  fallback={isFallback(tool, lang)}
+  updated={d.updated}
+>
+  <Section id="what" title={label('what')} index={n('what')}>
+    <div class="prose-k"><Content /></div>
+  </Section>
+
+  {
+    d.use_when.length > 0 && (
+      <Section id="use-when" title={label('use-when')} index={n('use-when')}>
+        <BulletList items={d.use_when} />
+      </Section>
+    )
+  }
+
+  {
+    d.look_for.length > 0 && (
+      <Section id="look-for" title={label('look-for')} index={n('look-for')}>
+        <BulletList items={d.look_for} />
+      </Section>
+    )
+  }
+
+  {
+    d.workflow.length > 0 && (
+      <Section id="workflow" title={label('workflow')} index={n('workflow')}>
+        <Flow steps={d.workflow} />
+      </Section>
+    )
+  }
+
+  {
+    d.examples.length > 0 && (
+      <Section id="examples" title={label('examples')} index={n('examples')}>
+        <div class="space-y-3">
+          {d.examples.map((e) => (
+            <CommandBlock label={e.label} command={e.command} />
+          ))}
+        </div>
+      </Section>
+    )
+  }
+
+  {
+    d.outputs.length > 0 && (
+      <Section id="output" title={label('output')} index={n('output')}>
+        <BulletList items={d.outputs} />
+      </Section>
+    )
+  }
+
+  {
+    d.notes.length > 0 && (
+      <Section id="notes" title={label('notes')} index={n('notes')}>
+        <BulletList items={d.notes} />
+      </Section>
+    )
+  }
+
+  {
+    d.complements.length > 0 && (
+      <Section id="complements" title={label('complements')} index={n('complements')}>
+        <RefList refs={d.complements} />
+      </Section>
+    )
+  }
+
+  {
+    (relatedArtifacts.length > 0 || playbooks.length > 0) && (
+      <Section id="related" title={label('related')} index={n('related')}>
+        <div class="space-y-5">
+          {relatedArtifacts.length > 0 && (
+            <div>
+              <p class="mb-2 text-sm text-mute">{t('related.artifacts')}</p>
+              <RefList refs={relatedArtifacts} />
+            </div>
+          )}
+          {playbooks.length > 0 && (
+            <div>
+              <p class="mb-2 text-sm text-mute">{t('related.usedIn')}</p>
+              <ul class="flex flex-wrap gap-2">
+                {playbooks.map((p) => (
+                  <li>
+                    <a href={href(lang, playbookPath(p))} class="chip">
+                      <span aria-hidden="true" class="text-ember">→</span>
+                      {p.data.name}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+      </Section>
+    )
+  }
+</EntryLayout>
