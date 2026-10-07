@@ -37,7 +37,7 @@ limitations:
   - Without transaction logs, recent changes may be missing from a dirty hive.
   - Live system hives are locked — collect with a forensic tool (KAPE, Velociraptor, FTK Imager).
   - Many artifacts are version-specific; verify the Windows build before interpreting.
-related_artifacts: [shimcache, amcache, scheduled-tasks, windows-event-logs]
+related_artifacts: [scheduled-tasks, windows-event-logs]
 ---
 
 The registry is stored in **hive** files. System-wide hives live under `C:\Windows\System32\config\`, and each user has `NTUSER.DAT` and `UsrClass.dat` in their profile. `CurrentControlSet` is a runtime link — in an offline `SYSTEM` hive, check `Select\Current` to know which `ControlSet00X` was active.

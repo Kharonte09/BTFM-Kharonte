@@ -1,7 +1,7 @@
 ---
 name: Documentos PDF
 summary: Ficheros Portable Document Format. Se usan en phishing para enlaces maliciosos y códigos QR, y con menos frecuencia para JavaScript o ficheros embebidos.
-category: documents
+category: phishing
 aliases: [PDF Documents, PDF]
 tags: [phishing, javascript, ficheros embebidos, urls, maldoc]
 evidence:

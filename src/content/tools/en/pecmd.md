@@ -24,7 +24,7 @@ workflow:
   - PECmd → CSV
   - Sort by last run time
   - Pivot on suspicious executables
-  - Correlate with Amcache, Shimcache and event logs
+  - Correlate with event logs and LNK files
 examples:
   - label: Parse a whole Prefetch directory to CSV
     command: 'PECmd.exe -d "C:\Cases\triage\C\Windows\Prefetch" --csv "C:\Cases\out" --csvf prefetch.csv'
@@ -43,8 +43,8 @@ notes:
   - Windows 10/11 Prefetch is compressed; parse it on Windows 8+ or use a parser that implements the decompression.
   - Timestamps are UTC. Keep everything in UTC through the timeline.
   - Absence of a .pf file is not proof that a program did not run (see Prefetch limitations).
-complements: [KAPE, Timeline Explorer, AmcacheParser, EvtxECmd]
-related_artifacts: [prefetch, amcache, shimcache]
+complements: [KAPE, Timeline Explorer, EvtxECmd]
+related_artifacts: [prefetch]
 ---
 
 PECmd is part of **Eric Zimmerman's tools** (EZ Tools). It parses Windows Prefetch (`.pf`) files, which the operating system creates to speed up application start-up and which, as a side effect, record evidence of program execution.

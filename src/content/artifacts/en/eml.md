@@ -1,7 +1,7 @@
 ---
 name: Email Message (EML / MSG)
 summary: A raw email with full headers, body parts and attachments. The starting point of any phishing investigation.
-category: email
+category: phishing
 aliases: [EML, MSG, Email, Email headers, Phishing email]
 tags: [phishing, headers, spf, dkim, dmarc, attachments, urls, initial access]
 evidence:

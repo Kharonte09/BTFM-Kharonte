@@ -1,7 +1,7 @@
 ---
 name: Correo electrónico (EML / MSG)
 summary: Un correo en bruto con headers completos, partes del cuerpo y adjuntos. El punto de partida de cualquier investigación de phishing.
-category: email
+category: phishing
 aliases: [Email Message (EML / MSG), EML, MSG, Email, Email headers, Phishing email, Correo, Cabeceras de correo]
 tags: [phishing, headers, spf, dkim, dmarc, adjuntos, urls, acceso inicial]
 evidence:

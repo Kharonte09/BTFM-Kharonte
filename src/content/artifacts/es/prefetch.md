@@ -33,7 +33,7 @@ limitations:
   - Registra ejecución, no éxito. No prueba que el programa completara su tarea.
   - El hash del nombre depende de la ruta del ejecutable (y, en procesos anfitriones, de la línea de comandos); no es un hash del fichero.
   - Las técnicas antiforenses pueden borrar los .pf; su ausencia no prueba que algo no se ejecutara.
-related_artifacts: [amcache, shimcache, windows-event-logs, registry]
+related_artifacts: [windows-event-logs, registry]
 ---
 
 Prefetch es una función de rendimiento de Windows. Cuando arranca una aplicación, el Cache Manager vigila los ficheros que carga y los registra en un `.pf` para que el siguiente arranque sea más rápido.

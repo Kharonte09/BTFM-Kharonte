@@ -33,7 +33,7 @@ limitations:
   - Records execution, not success. It does not prove the program completed its task.
   - The hash in the file name depends on the executable path (and, for hosting processes, the command line), so it is not a file hash.
   - Anti-forensics can delete .pf files; absence is not proof that something did not run.
-related_artifacts: [amcache, shimcache, windows-event-logs, registry]
+related_artifacts: [windows-event-logs, registry]
 ---
 
 Prefetch is a Windows performance feature. When an application starts, the Cache Manager monitors the files it loads and records them in a `.pf` file so the next launch is faster.

@@ -34,7 +34,7 @@ notes:
   - Recolecta siempre los logs de transacciones junto a los hives; si no, pueden faltar cambios recientes.
   - La última escritura se aplica a la clave, no a cada valor.
 complements: [Registry Explorer, KAPE, Timeline Explorer, RegRipper]
-related_artifacts: [registry, shimcache, amcache, services]
+related_artifacts: [registry, services]
 review: true
 ---
 

@@ -37,7 +37,7 @@ limitations:
   - Sin los logs de transacciones, un hive sucio puede no contener los cambios recientes.
   - Los hives del sistema en vivo están bloqueados — recolecta con una herramienta forense (KAPE, Velociraptor, FTK Imager).
   - Muchos artefactos dependen de la versión; verifica la build de Windows antes de interpretarlos.
-related_artifacts: [shimcache, amcache, scheduled-tasks, windows-event-logs]
+related_artifacts: [scheduled-tasks, windows-event-logs]
 ---
 
 El registro se almacena en ficheros **hive**. Los hives del sistema están en `C:\Windows\System32\config\`, y cada usuario tiene `NTUSER.DAT` y `UsrClass.dat` en su perfil. `CurrentControlSet` es un enlace en tiempo de ejecución — en un hive `SYSTEM` offline, mira `Select\Current` para saber qué `ControlSet00X` estaba activo.

@@ -1,7 +1,7 @@
 ---
 name: PDF Documents
 summary: Portable Document Format files. Used in phishing for malicious links and QR codes, and less often for JavaScript or embedded files.
-category: documents
+category: phishing
 aliases: [PDF]
 tags: [phishing, javascript, embedded files, urls, maldoc]
 evidence:

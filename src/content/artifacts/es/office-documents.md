@@ -1,7 +1,7 @@
 ---
 name: Documentos Office y macros
 summary: Ficheros Word/Excel/PowerPoint en formato OOXML u OLE antiguo. Pueden contener macros VBA o XLM, objetos embebidos, enlaces externos y plantillas.
-category: documents
+category: phishing
 aliases: [Office Documents & Macros, DOCX, DOCM, XLSX, XLSM, DOC, XLS, OLE, VBA, macros, XLM, Excel 4.0 macros]
 tags: [phishing, macros, vba, xlm, ole, acceso inicial, maldoc]
 evidence:

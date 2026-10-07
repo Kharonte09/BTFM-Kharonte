@@ -42,24 +42,14 @@ export const ARTIFACT_CATEGORIES = [
     icon: 'windows',
   },
   {
-    id: 'email',
-    label: { en: 'Email', es: 'Correo' },
-    code: 'EML',
+    id: 'phishing',
+    label: { en: 'Phishing', es: 'Phishing' },
+    code: 'PHI',
     description: {
-      en: 'Messages, headers, authentication results, links and attachments.',
-      es: 'Mensajes, cabeceras, resultados de autenticación, enlaces y adjuntos.',
+      en: 'Emails, headers, authentication results, links and attachments (Office documents, PDF).',
+      es: 'Correos, headers, resultados de autenticación, enlaces y adjuntos (documentos Office, PDF).',
     },
     icon: 'email',
-  },
-  {
-    id: 'documents',
-    label: { en: 'Documents', es: 'Documentos' },
-    code: 'DOC',
-    description: {
-      en: 'Office files, OLE containers, macros and PDF.',
-      es: 'Ficheros Office, contenedores OLE, macros y PDF.',
-    },
-    icon: 'documents',
   },
   {
     id: 'binaries',

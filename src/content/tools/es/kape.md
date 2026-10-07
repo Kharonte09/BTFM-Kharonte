@@ -37,8 +37,8 @@ notes:
   - Ejecutarlo sobre un sistema en vivo lo modifica (y requiere privilegios de administrador). Documenta la recolección como acción en las notas del caso.
   - '`gkape.exe` es la interfaz gráfica; construye la misma línea de comandos, que puedes copiar para ejecuciones repetibles.'
   - Ten en cuenta la licencia si usas KAPE para terceros.
-complements: [Velociraptor, EvtxECmd, PECmd, RECmd, MFTECmd, AmcacheParser]
-related_artifacts: [windows-event-logs, registry, prefetch, amcache]
+complements: [Velociraptor, EvtxECmd, PECmd, RECmd, MFTECmd]
+related_artifacts: [windows-event-logs, registry, prefetch]
 review: true
 ---
 

@@ -15,7 +15,7 @@ locations:
   - label: Common drop locations
     path: '%TEMP% · %APPDATA% · %LOCALAPPDATA% · C:\ProgramData · C:\Users\Public · Downloads'
   - label: Evidence of past presence
-    path: Amcache · Shimcache · Prefetch · $MFT
+    path: Prefetch · $MFT · event logs
 questions:
   - Is this file known (malicious or benign)?
   - Is it packed, .NET, an installer, or signed?
@@ -34,7 +34,7 @@ limitations:
   - Static analysis cannot see what a packed or downloaded stage does — escalate to sandbox or reversing.
   - Compile timestamps and version info are trivially forged.
   - A valid signature can come from a stolen or abused certificate.
-related_artifacts: [amcache, prefetch, memory-dump]
+related_artifacts: [prefetch, memory-dump]
 ---
 
 The Portable Executable (PE) format is used by Windows for executables, DLLs and drivers. The header describes sections, imports, exports, resources and the entry point — each of which can reveal how the file was built and what it intends to do.

@@ -20,8 +20,8 @@ steps:
     actions:
       - Review process trees (EDR, Sysmon `1`, `4688`, memory).
       - Check execution artifacts for binaries run in the window.
-    tools: [PECmd, AmcacheParser]
-    artifacts: [prefetch, amcache, shimcache, sysmon, memory-dump]
+    tools: [PECmd]
+    artifacts: [prefetch, sysmon, memory-dump]
   - title: Logons
     goal: Determine which accounts were used and from where.
     actions:
@@ -53,7 +53,7 @@ steps:
     actions:
       - Autostarts, services, IFEO, COM hijacks; BAM, UserAssist; USB devices.
     tools: [RECmd]
-    artifacts: [registry, shimcache]
+    artifacts: [registry]
   - title: User activity
     goal: Understand what the user (or attacker as the user) did.
     actions:

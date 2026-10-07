@@ -37,8 +37,8 @@ notes:
   - Running against a live system modifies it (and needs admin rights). Document the collection as an action in your case notes.
   - '`gkape.exe` is the GUI; it builds the same command line, which you can copy for repeatable runs.'
   - Mind the licensing terms if you use KAPE on behalf of third parties.
-complements: [Velociraptor, EvtxECmd, PECmd, RECmd, MFTECmd, AmcacheParser]
-related_artifacts: [windows-event-logs, registry, prefetch, amcache]
+complements: [Velociraptor, EvtxECmd, PECmd, RECmd, MFTECmd]
+related_artifacts: [windows-event-logs, registry, prefetch]
 review: true
 ---
 

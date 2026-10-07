@@ -15,7 +15,7 @@ locations:
   - label: Ubicaciones habituales de drop
     path: '%TEMP% · %APPDATA% · %LOCALAPPDATA% · C:\ProgramData · C:\Users\Public · Downloads'
   - label: Evidencia de presencia pasada
-    path: Amcache · Shimcache · Prefetch · $MFT
+    path: Prefetch · $MFT · event logs
 questions:
   - ¿Es conocido este fichero (malicioso o legítimo)?
   - ¿Está empaquetado, es .NET, es un instalador o está firmado?
@@ -34,7 +34,7 @@ limitations:
   - El análisis estático no ve lo que hace una muestra empaquetada o una etapa descargada — escala a sandbox o reversing.
   - Las fechas de compilación y la información de versión se falsifican trivialmente.
   - Una firma válida puede venir de un certificado robado o abusado.
-related_artifacts: [amcache, prefetch, memory-dump]
+related_artifacts: [prefetch, memory-dump]
 ---
 
 Windows usa el formato Portable Executable (PE) para ejecutables, DLL y drivers. La cabecera describe secciones, imports, exports, recursos y el punto de entrada, y cada uno de ellos puede revelar cómo se construyó el fichero y qué pretende hacer.

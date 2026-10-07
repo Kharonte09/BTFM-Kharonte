@@ -34,7 +34,7 @@ notes:
   - Always collect transaction logs alongside hives; otherwise recent changes can be missing.
   - Key last-write times apply to the key, not to individual values.
 complements: [Registry Explorer, KAPE, Timeline Explorer, RegRipper]
-related_artifacts: [registry, shimcache, amcache, services]
+related_artifacts: [registry, services]
 review: true
 ---
 
