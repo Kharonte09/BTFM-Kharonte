@@ -7,19 +7,18 @@ import BulletList from '@/components/BulletList.astro';
 import Flow from '@/components/Flow.astro';
 import RefList from '@/components/RefList.astro';
 import CommandBlock from '@/components/CommandBlock.astro';
+import UsedInPlaybooks from '@/components/UsedInPlaybooks.astro';
 import type { TocItem } from '@/components/Toc.astro';
 import {
   artifactsForTool,
   getTools,
   isFallback,
-  playbookPath,
   playbooksReferencing,
   refCode,
   slugOf,
   type Tool,
 } from '@/lib/content';
 import { getToolCategory } from '@/lib/taxonomy';
-import { href } from '@/lib/url';
 import { perLocale } from '@/i18n/routing';
 import { useTranslations, type Lang } from '@/i18n/ui';
 
@@ -56,7 +55,7 @@ const sections: (TocItem & { show: boolean })[] = [
   { id: 'output', label: t('sec.output'), show: d.outputs.length > 0 },
   { id: 'notes', label: t('sec.notes'), show: d.notes.length > 0 },
   { id: 'complements', label: t('sec.complements'), show: d.complements.length > 0 },
-  { id: 'related', label: t('sec.related'), show: relatedArtifacts.length > 0 || playbooks.length > 0 },
+  { id: 'related', label: t('sec.related'), show: relatedArtifacts.length > 0 },
 ];
 const toc = sections.filter((s) => s.show);
 const n = (id: string) => toc.findIndex((s) => s.id === id) + 1;
@@ -86,6 +85,8 @@ const label = (id: string) => toc.find((s) => s.id === id)?.label ?? id;
   fallback={isFallback(tool, lang)}
   updated={d.updated}
 >
+  <UsedInPlaybooks slot="header" playbooks={playbooks} />
+
   <Section id="what" title={label('what')} index={n('what')}>
     <div class="prose-k"><Content /></div>
   </Section>
@@ -151,28 +152,13 @@ const label = (id: string) => toc.find((s) => s.id === id)?.label ?? id;
   }
 
   {
-    (relatedArtifacts.length > 0 || playbooks.length > 0) && (
+    relatedArtifacts.length > 0 && (
       <Section id="related" title={label('related')} index={n('related')}>
         <div class="space-y-5">
           {relatedArtifacts.length > 0 && (
             <div>
               <p class="mb-2 text-sm text-mute">{t('related.artifacts')}</p>
               <RefList refs={relatedArtifacts} />
-            </div>
-          )}
-          {playbooks.length > 0 && (
-            <div>
-              <p class="mb-2 text-sm text-mute">{t('related.usedIn')}</p>
-              <ul class="flex flex-wrap gap-2">
-                {playbooks.map((p) => (
-                  <li>
-                    <a href={href(lang, playbookPath(p))} class="chip">
-                      <span aria-hidden="true" class="text-ember">→</span>
-                      {p.data.name}
-                    </a>
-                  </li>
-                ))}
-              </ul>
             </div>
           )}
         </div>
