@@ -155,6 +155,17 @@ function initRoot(root: HTMLElement) {
         );
         body.append(head);
         if (doc.s) body.append(el('span', 'mt-0.5 block truncate text-sm text-mute', doc.s));
+        // "What to do": playbooks this entry is used in, and tools to start with.
+        const relations: [string, string[] | undefined][] = [
+          [str.usefulFor, doc.p],
+          [str.tools, doc.x],
+        ];
+        for (const [labelText, values] of relations) {
+          if (!values?.length) continue;
+          const line = el('span', 'mt-1 block truncate font-mono text-[0.6875rem] text-faint');
+          line.append(el('span', 'text-ember', `${labelText}: `), values.join(' · '));
+          body.append(line);
+        }
         a.append(marker, body);
         group.append(a);
         options.push(a);

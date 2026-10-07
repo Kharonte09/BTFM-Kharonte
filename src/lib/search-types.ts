@@ -18,6 +18,10 @@ export interface SearchDoc {
   g: string[];
   /** extra keywords (look_for, questions, steps...) */
   w: string;
+  /** "Useful for": playbooks that use this entry */
+  p?: string[];
+  /** "Tools": tools to start with */
+  x?: string[];
 }
 
 /** Localised strings the client-side search needs (passed via data-strings). */
@@ -26,6 +30,8 @@ export interface SearchStrings {
   /** "{q}" is replaced with the query */
   none: string;
   related: string;
+  usefulFor: string;
+  tools: string;
   /** "{n}" is replaced with the count */
   one: string;
   many: string;
