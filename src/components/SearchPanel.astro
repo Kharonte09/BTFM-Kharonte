@@ -14,14 +14,12 @@ interface Props {
   examples?: string[];
 }
 
-const {
-  id,
-  mode = 'inline',
-  size = 'md',
-  primary = false,
-  examples = ['prefetch', '4624', 'encodedcommand', 'macro', 'pcap', 'persistence', 'capa', 'base64'],
-} = Astro.props;
 const lang = getLang(Astro.url);
+const DEFAULT_EXAMPLES = {
+  en: ['prefetch', '4624', 'encodedcommand', 'macro', 'pcap', 'persistence', 'capa', 'base64'],
+  es: ['prefetch', '4624', 'encodedcommand', 'macro', 'pcap', 'persistencia', 'capa', 'base64'],
+};
+const { id, mode = 'inline', size = 'md', primary = false, examples = DEFAULT_EXAMPLES[lang] } = Astro.props;
 const t = useTranslations(lang);
 const listId = `${id}-results`;
 

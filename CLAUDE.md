@@ -5,9 +5,11 @@ Este fichero contiene la especificación original del proyecto. Es la fuente de 
 ## Notas operativas (para Claude)
 
 - Stack: Astro + TypeScript + Tailwind CSS + Content Collections (Markdown/YAML) + Fuse.js (búsqueda client-side). Sitio 100 % estático.
-- El contenido vive en `src/content/{tools,artifacts,playbooks,cheatsheets}`; los esquemas en `src/content.config.ts`. Nunca hardcodear contenido en componentes.
+- El contenido vive en `src/content/{tools,artifacts,playbooks,cheatsheets}/{en,es}/` (mismo nombre de fichero en ambos idiomas = mismo slug); los esquemas en `src/content.config.ts`. Nunca hardcodear contenido en componentes.
+- i18n: inglés por defecto en `/`, español en `/es/`. Rutas en `src/pages/[...locale]/`; textos de interfaz en `src/i18n/ui.ts`; enlaces de página con `href(lang, path)`. Si falta la traducción se muestra la versión inglesa con aviso. Toda ficha nueva debe crearse en los dos idiomas.
+- Tema: oscuro por defecto, claro opcional (`data-theme` en `<html>`, tokens redefinidos en `src/styles/global.css`, variante `light:`).
 - Las relaciones entre entradas se hacen por slug (`tools: [pecmd]`, `related_artifacts: [prefetch]`). El build falla si un slug no existe.
-- Todos los enlaces internos deben pasar por `url()` (`src/lib/url.ts`) para respetar `base` en GitHub Pages (project pages).
+- Todos los enlaces internos deben pasar por `href(lang, path)` (páginas) o `url()` (assets) de `src/lib/url.ts` para respetar `base` en GitHub Pages (project pages).
 - Base/site se controlan con `SITE_URL` y `BASE_PATH` (ver `astro.config.mjs` y el workflow).
 - Reglas de contenido: no inventar funcionalidades. Lo dudoso se marca con `review: true` en el frontmatter (se muestra un aviso "Pending review").
 - Comandos: `npm run dev`, `npm run build` (incluye `astro check`), `npm run preview`.

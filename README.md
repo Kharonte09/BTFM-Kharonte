@@ -29,6 +29,8 @@ Help an analyst, during a real investigation, answer:
 - **Cheatsheets** — Windows Event IDs, Common DFIR Commands, Persistence Locations; filterable tables with deep links to each row.
 - **Search** — client-side fuzzy search (Fuse.js) over tools, artifacts, playbooks, cheatsheets **and individual cheatsheet rows** (search `4624`, `Get-WinEvent`, `T1053.005`). Grouped results, "related" tag suggestions, full keyboard support (`/` or `Ctrl K`, `↑ ↓`, `Enter`, `Esc`).
 - **Cross-linking** — references between tools, artifacts and playbooks are resolved automatically, including reverse relations ("used in playbooks").
+- **English / Spanish** — full content in both languages. English at `/`, Spanish at `/es/`; the header switch keeps you on the same page and remembers the choice. Missing translations fall back to English with a notice.
+- **Dark / light theme** — dark by default; the header toggle switches and remembers it (no flash on load).
 - **Pending review flag** — entries with content that still needs verification show a visible notice.
 - Responsive, accessible (semantic HTML, skip link, visible focus, ARIA combobox/listbox search, `prefers-reduced-motion`), SEO-ready (canonical, Open Graph, sitemap, robots.txt, breadcrumbs JSON-LD).
 
@@ -58,11 +60,14 @@ No backend, database, external APIs, analytics, CMS or authentication.
 │   └── og-image.mjs               # Regenerates public/og.png
 ├── src/
 │   ├── content.config.ts          # Content model (Zod schemas)
-│   ├── content/
-│   │   ├── artifacts/*.md
-│   │   ├── tools/*.md
-│   │   ├── playbooks/*.md
-│   │   └── cheatsheets/*.yaml
+│   ├── content/                   # One folder per language: en/ and es/
+│   │   ├── artifacts/{en,es}/*.md
+│   │   ├── tools/{en,es}/*.md
+│   │   ├── playbooks/{en,es}/*.md
+│   │   └── cheatsheets/{en,es}/*.yaml
+│   ├── i18n/
+│   │   ├── ui.ts                  # Interface strings (EN/ES)
+│   │   └── routing.ts             # Per-language static paths
 │   ├── components/                # Reusable UI (Section, Flow, RefList, SearchPanel…)
 │   ├── layouts/                   # BaseLayout (SEO shell), EntryLayout (2-column reference)
 │   ├── lib/
@@ -70,7 +75,7 @@ No backend, database, external APIs, analytics, CMS or authentication.
 │   │   ├── content.ts             # Queries, URLs, cross-reference resolution
 │   │   ├── url.ts                 # Base-path aware URL helper
 │   │   └── …
-│   ├── pages/                     # Routes (+ search-index.json, robots.txt endpoints)
+│   ├── pages/[...locale]/         # Routes for every language (+ search-index.json per language)
 │   ├── scripts/search.ts          # Client-side search
 │   └── styles/global.css          # Design tokens + base styles
 ├── astro.config.mjs
@@ -78,7 +83,7 @@ No backend, database, external APIs, analytics, CMS or authentication.
 └── CNAME.example
 ```
 
-Routes:
+Routes (English at the root; prefix everything with `/es` for Spanish):
 
 ```text
 /                                  Home
@@ -158,7 +163,9 @@ Then enable Pages with **Source: GitHub Actions** as described above.
 
 ## Adding content
 
-All content lives in `src/content/`. Components never contain entry-specific text. The schemas in `src/content.config.ts` are the source of truth; the build tells you exactly which field is wrong.
+All content lives in `src/content/<collection>/<lang>/`. Components never contain entry-specific text; interface strings live in `src/i18n/ui.ts`.
+
+**Languages.** Every entry exists as `en/<slug>` and, ideally, `es/<slug>` with the **same file name**. The slug (file name) is the URL and the cross-reference key, so never translate it. Keep commands, paths, event IDs and tool names identical; translate the prose. If the Spanish file is missing, the Spanish site shows the English entry with a "not translated yet" notice. To add a new language, add it to `LOCALES` and the dictionaries in `src/i18n/ui.ts`, the `Localized` labels in `src/lib/taxonomy.ts`, and create the content folders. The schemas in `src/content.config.ts` are the source of truth; the build tells you exactly which field is wrong.
 
 **Cross references** (`tools`, `complements`, `related_artifacts`, `related_playbooks`, playbook step `tools`/`artifacts`) are plain strings. If the string matches an entry's slug, name or alias, it becomes a link; otherwise it renders as a dashed "not documented yet" chip. You can mention tools that do not have a page yet.
 
@@ -166,7 +173,7 @@ Text fields support inline `` `code` `` and `**bold**`. Quote YAML strings that 
 
 Set `review: true` on any entry that still needs expert verification.
 
-### New tool — `src/content/tools/<slug>.md`
+### New tool — `src/content/tools/en/<slug>.md` (+ `es/<slug>.md`)
 
 ```yaml
 ---
@@ -196,7 +203,7 @@ review: true
 Short "What is it?" explanation in Markdown.
 ```
 
-### New artifact — `src/content/artifacts/<slug>.md`
+### New artifact — `src/content/artifacts/en/<slug>.md` (+ `es/<slug>.md`)
 
 ```yaml
 ---
@@ -219,7 +226,7 @@ related_artifacts: [lnk]
 Markdown body (tables allowed).
 ```
 
-### New playbook — `src/content/playbooks/<slug>.md`
+### New playbook — `src/content/playbooks/en/<slug>.md` (+ `es/<slug>.md`)
 
 ```yaml
 ---
@@ -243,7 +250,7 @@ related_playbooks: [windows-endpoint-investigation]
 Optional notes.
 ```
 
-### New cheatsheet — `src/content/cheatsheets/<slug>.yaml`
+### New cheatsheet — `src/content/cheatsheets/en/<slug>.yaml` (+ `es/<slug>.yaml`)
 
 ```yaml
 name: Linux Artifacts
@@ -264,7 +271,7 @@ Every row is indexed by search and deep-linkable (`/cheatsheets/<slug>/#<section
 
 ### New category
 
-Categories are defined in `src/lib/taxonomy.ts` (label, short code, description, icon). Adding one there makes it available to the schema, routes, navigation and home page.
+Categories are defined in `src/lib/taxonomy.ts` (label and description per language, short code, icon). Adding one there makes it available to the schema, routes, navigation and home page.
 
 ## Content rules
 

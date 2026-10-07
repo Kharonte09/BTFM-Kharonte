@@ -8,6 +8,8 @@ import { LANG_NAMES, LOCALES, useTranslations } from '@/i18n/ui';
 const lang = getLang(Astro.url);
 const t = useTranslations(lang);
 const current = unlocalizedPath(Astro.url.pathname);
+// The 404 page has no per-language twin: send the switch to the home page.
+const switchPath = /^\/404(\.html)?\/?$/.test(current) ? '/' : current;
 const isActive = (path: string) => current.startsWith(path);
 ---
 
@@ -63,7 +65,7 @@ const isActive = (path: string) => current.startsWith(path);
             LOCALES.map((l) => (
               <li class="h-full">
                 <a
-                  href={href(l, current)}
+                  href={href(l, switchPath)}
                   hreflang={l}
                   lang={l}
                   title={LANG_NAMES[l]}

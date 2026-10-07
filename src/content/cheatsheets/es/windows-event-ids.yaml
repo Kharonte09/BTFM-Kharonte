@@ -1,0 +1,111 @@
+name: Windows Event IDs
+summary: Event IDs de Windows de alto valor para investigaciones — Security, System, PowerShell, Sysmon, Task Scheduler, RDP y Defender.
+order: 1
+tags: [registros de eventos, evtx, sysmon, inicios de sesión, detección]
+sections:
+  - id: security
+    title: Registro Security
+    note: Muchos dependen de la política de auditoría. `4688` solo incluye la línea de comandos si está activado «Incluir la línea de comandos en los eventos de creación de procesos».
+    columns: [ID, Evento, Por qué importa]
+    rows:
+      - ['4624', 'Se inició sesión correctamente en una cuenta', 'Quién, cuándo y desde dónde. Revisa `LogonType`, IP/estación de origen y el logon ID para correlacionar.']
+      - ['4625', 'Error al iniciar sesión en una cuenta', 'Fuerza bruta / password spraying. Revisa los códigos de estado del fallo y el origen.']
+      - ['4634', 'Se cerró la sesión de una cuenta', 'Fin de sesión; empareja con `4624` mediante el logon ID.']
+      - ['4647', 'Cierre de sesión iniciado por el usuario', 'Fin de una sesión interactiva.']
+      - ['4648', 'Se intentó un inicio de sesión con credenciales explícitas', '`runas`, tareas programadas, herramientas de movimiento lateral con credenciales alternativas.']
+      - ['4672', 'Privilegios especiales asignados a un nuevo inicio de sesión', 'Inicio de sesión equivalente a administrador. Correlaciona con el logon ID de `4624`.']
+      - ['4688', 'Se creó un nuevo proceso', 'Ejecución de procesos con su padre; línea de comandos si está activada.']
+      - ['4697', 'Se instaló un servicio en el sistema', 'Persistencia por servicio / ejecución remota (equivalente en Security de `7045`).']
+      - ['4698', 'Se creó una tarea programada', 'Persistencia por tarea; incluye el XML de la tarea. Requiere la subcategoría de auditoría "Other Object Access Events".']
+      - ['4699', 'Se eliminó una tarea programada', 'Limpieza tras la ejecución.']
+      - ['4700 / 4701', 'Se habilitó / deshabilitó una tarea programada', 'Manipulación de tareas.']
+      - ['4702', 'Se actualizó una tarea programada', 'Modificación de tareas existentes para persistencia.']
+      - ['4720', 'Se creó una cuenta de usuario', 'Cuentas puerta trasera.']
+      - ['4722', 'Se habilitó una cuenta de usuario', 'Cuentas inactivas reactivadas.']
+      - ['4724', 'Se intentó restablecer la contraseña de una cuenta', 'Toma de control de cuentas por un actor con nivel de administrador.']
+      - ['4728 / 4732 / 4756', 'Se agregó un miembro a un grupo de seguridad global / local / universal', 'Escalada de privilegios (p. ej. Domain Admins, Administradores).']
+      - ['4738', 'Se cambió una cuenta de usuario', 'Cambios de atributos (p. ej. la contraseña nunca caduca).']
+      - ['4740', 'Se bloqueó una cuenta de usuario', 'Indicador de fuerza bruta; la estación de origen está en el evento.']
+      - ['4768', 'Se solicitó un TGT de Kerberos', 'Autenticación de dominio en los DC; el tipo de cifrado puede indicar degradación.']
+      - ['4769', 'Se solicitó un ticket de servicio de Kerberos', 'Kerberoasting (muchas peticiones, cifrado RC4).']
+      - ['4771', 'Error en la autenticación previa de Kerberos', 'Adivinación de contraseñas contra Kerberos.']
+      - ['4776', 'El equipo intentó validar las credenciales de una cuenta', 'Autenticación NTLM (en los DC o en local para cuentas locales).']
+      - ['4778 / 4779', 'Se reconectó / desconectó una sesión de una estación de ventana', 'Reconexión / desconexión de RDP.']
+      - ['5140', 'Se accedió a un objeto de recurso compartido de red', 'Acceso a `ADMIN$`, `C$`, `IPC$` — movimiento lateral.']
+      - ['5145', 'Se comprobó si el cliente puede obtener el acceso deseado a un objeto de recurso compartido de red', 'Acceso detallado a ficheros compartidos (ruidoso).']
+      - ['1102', 'Se borró el registro de auditoría', 'Antiforense.']
+  - id: system
+    title: Registro System
+    columns: [ID, Evento, Por qué importa]
+    rows:
+      - ['7045', 'Se instaló un servicio en el sistema', 'Ejecución remota tipo PsExec y persistencia por servicio. Revisa `ImagePath`.']
+      - ['7036', 'El servicio entró en estado en ejecución / detenido', 'Timeline de arranques/paradas de servicios; herramientas de seguridad detenidas.']
+      - ['7040', 'Cambió el tipo de inicio de un servicio', 'Desactivación de servicios de seguridad o activación de persistencia.']
+      - ['104', 'Se borró el registro de eventos', 'Antiforense (registros distintos de Security).']
+      - ['6005 / 6006', 'Se inició / detuvo el servicio de registro de eventos', 'Marcadores de arranque / apagado.']
+      - ['1074', 'Apagado o reinicio iniciado por un proceso/usuario', 'Quién o qué reinició el equipo.']
+  - id: powershell
+    title: PowerShell
+    note: '`4103`/`4104` están en `Microsoft-Windows-PowerShell/Operational`; `400`/`403`/`600`/`800` en el registro clásico `Windows PowerShell`.'
+    columns: [ID, Evento, Por qué importa]
+    rows:
+      - ['4104', 'Registro de script blocks', 'Contenido del script desofuscado. Los bloques sospechosos se registran con nivel Warning incluso sin política.']
+      - ['4103', 'Registro de módulos / pipeline', 'Cmdlets ejecutados con sus parámetros.']
+      - ['400 / 403', 'El motor pasó a estado Available / Stopped', 'Arranque/parada de PowerShell, aplicación anfitriona y línea de comandos; versión del motor (degradación a v2).']
+      - ['600', 'Se inició un proveedor', 'Ciclo de vida de proveedores; incluye detalles de la aplicación anfitriona.']
+      - ['800', 'Detalles de ejecución de la pipeline', 'Detalle de comandos cuando el registro de módulos está activo.']
+  - id: sysmon
+    title: Sysmon
+    note: Canal `Microsoft-Windows-Sysmon/Operational`. La cobertura depende por completo de la configuración desplegada.
+    columns: [ID, Evento, Por qué importa]
+    rows:
+      - ['1', 'Creación de proceso', 'Línea de comandos, hashes, proceso padre, usuario.']
+      - ['2', 'Un proceso cambió la fecha de creación de un fichero', 'Timestomping.']
+      - ['3', 'Conexión de red', 'Conexiones atribuidas a procesos (a menudo filtradas).']
+      - ['4', 'Cambio de estado del servicio Sysmon', 'Sysmon detenido / iniciado.']
+      - ['5', 'Proceso terminado', 'Duración de los procesos.']
+      - ['6', 'Driver cargado', 'Drivers maliciosos o vulnerables.']
+      - ['7', 'Imagen cargada', 'Carga de DLL — side-loading (ruidoso).']
+      - ['8', 'CreateRemoteThread', 'Inyección de código.']
+      - ['9', 'RawAccessRead', 'Lecturas en bruto del disco (técnicas de robo de credenciales/NTDS).']
+      - ['10', 'ProcessAccess', 'Acceso a `lsass.exe` — volcado de credenciales.']
+      - ['11', 'FileCreate', 'Ficheros soltados.']
+      - ['12 / 13 / 14', 'Registro — crear/borrar objeto · establecer valor · renombrar clave/valor', 'Persistencia en el registro.']
+      - ['15', 'FileCreateStreamHash', 'Flujos de datos alternativos, p. ej. `Zone.Identifier` (Mark of the Web).']
+      - ['16', 'Cambio de configuración de Sysmon', 'Manipulación de la monitorización.']
+      - ['17 / 18', 'Pipe creada / conectada', 'Named pipes usadas por frameworks de C2 y movimiento lateral.']
+      - ['19 / 20 / 21', 'WMI filter / consumer / binding', 'Persistencia por suscripción de eventos WMI.']
+      - ['22', 'Consulta DNS', 'DNS atribuido a procesos.']
+      - ['23', 'FileDelete (archivado)', 'Ficheros borrados conservados en el directorio de archivo.']
+      - ['24', 'Cambio del portapapeles', 'Captura del portapapeles (si está configurado).']
+      - ['25', 'Manipulación de procesos', 'Process hollowing / herpaderping.']
+      - ['26', 'FileDeleteDetected', 'Borrados de ficheros registrados sin archivarlos.']
+      - ['27 / 28', 'FileBlockExecutable / FileBlockShredding', 'Escrituras de ejecutables / borrado seguro bloqueados.']
+      - ['29', 'FileExecutableDetected', 'Se escribió un fichero ejecutable.']
+  - id: tasks-rdp-defender
+    title: Task Scheduler · RDP · WMI · Defender
+    columns: [ID, Registro, Por qué importa]
+    rows:
+      - ['106', 'TaskScheduler/Operational — tarea registrada', 'Nueva tarea programada.']
+      - ['140', 'TaskScheduler/Operational — tarea actualizada', 'Modificación de tareas.']
+      - ['141', 'TaskScheduler/Operational — tarea eliminada', 'Limpieza.']
+      - ['200 / 201', 'TaskScheduler/Operational — acción iniciada / completada', 'Ejecución de la tarea.']
+      - ['1149', 'TerminalServices-RemoteConnectionManager/Operational', 'Autenticación de usuario RDP correcta (IP de origen).']
+      - ['21 / 22', 'TerminalServices-LocalSessionManager/Operational', 'Inicio de sesión RDP / inicio del shell.']
+      - ['24 / 25', 'TerminalServices-LocalSessionManager/Operational', 'Sesión RDP desconectada / reconectada.']
+      - ['5861', 'WMI-Activity/Operational', 'Se registró un consumidor de eventos WMI permanente (persistencia).']
+      - ['1116 / 1117', 'Windows Defender/Operational', 'Malware detectado / acción realizada.']
+      - ['5001', 'Windows Defender/Operational', 'Protección en tiempo real desactivada.']
+  - id: logon-types
+    title: Tipos de inicio de sesión
+    columns: [Tipo, Nombre, Origen típico]
+    rows:
+      - ['2', 'Interactive', 'Inicio de sesión en consola.']
+      - ['3', 'Network', 'SMB, unidades mapeadas, PsExec, WMI y muchas herramientas de administración remota.']
+      - ['4', 'Batch', 'Tareas programadas.']
+      - ['5', 'Service', 'Servicios que se ejecutan con una cuenta.']
+      - ['7', 'Unlock', 'Desbloqueo de la estación.']
+      - ['8', 'NetworkCleartext', 'Credenciales enviadas en claro (p. ej. autenticación básica de IIS).']
+      - ['9', 'NewCredentials', '`runas /netonly`, algunas herramientas de pass-the-hash.']
+      - ['10', 'RemoteInteractive', 'RDP.']
+      - ['11', 'CachedInteractive', 'Inicio de sesión con credenciales de dominio en caché.']
