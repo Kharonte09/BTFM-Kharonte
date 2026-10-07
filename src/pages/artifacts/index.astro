@@ -1,0 +1,50 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import PageHeader from '@/components/PageHeader.astro';
+import CategoryBlock from '@/components/CategoryBlock.astro';
+import Icon from '@/components/Icon.astro';
+import { artifactPath, getArtifacts, refCode } from '@/lib/content';
+import { ARTIFACT_CATEGORIES } from '@/lib/taxonomy';
+
+const artifacts = await getArtifacts();
+const summary =
+  'Evidence you will meet during an investigation: what it is, where it lives, which questions it answers and which tools parse it.';
+---
+
+<BaseLayout title="Artifacts" description={summary}>
+  <PageHeader title="Artifacts" summary={summary} crumbs={[{ label: 'Artifacts' }]}>
+    <nav aria-label="Artifact categories" class="mt-6">
+      <ul class="flex flex-wrap gap-2">
+        {
+          ARTIFACT_CATEGORIES.map((c) => (
+            <li>
+              <a href={`#${c.id}`} class="chip">
+                <Icon name={c.icon} size={13} class="text-ember" />
+                {c.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+  </PageHeader>
+
+  <div class="mt-10 space-y-14">
+    {
+      ARTIFACT_CATEGORIES.map((c) => (
+        <CategoryBlock
+          category={c}
+          href={`/artifacts/${c.id}/`}
+          entries={artifacts
+            .filter((a) => a.data.category === c.id)
+            .map((a) => ({
+              href: artifactPath(a),
+              title: a.data.name,
+              summary: a.data.summary,
+              code: refCode('artifact', a.id, a.data.category),
+            }))}
+        />
+      ))
+    }
+  </div>
+</BaseLayout>

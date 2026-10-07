@@ -1,0 +1,123 @@
+---
+import type { GetStaticPaths } from 'astro';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import PageHeader from '@/components/PageHeader.astro';
+import Section from '@/components/Section.astro';
+import ReviewNotice from '@/components/ReviewNotice.astro';
+import { Search } from '@lucide/astro';
+import { inline } from '@/lib/inline';
+import { getCheatsheets, refCode, type Cheatsheet } from '@/lib/content';
+
+export const getStaticPaths = (async () => {
+  const sheets = await getCheatsheets();
+  return sheets.map((sheet) => ({ params: { slug: sheet.id }, props: { sheet } }));
+}) satisfies GetStaticPaths;
+
+interface Props {
+  sheet: Cheatsheet;
+}
+
+const { sheet } = Astro.props;
+const d = sheet.data;
+---
+
+<BaseLayout title={d.name} description={d.summary} type="article">
+  <PageHeader
+    title={d.name}
+    summary={d.summary}
+    code={refCode('cheatsheet', sheet.id)}
+    crumbs={[{ label: 'Cheatsheets', href: '/cheatsheets/' }, { label: d.name }]}
+  >
+    <nav aria-label="Sections" class="mt-6">
+      <ul class="flex flex-wrap gap-2">
+        {
+          d.sections.map((s) => (
+            <li>
+              <a href={`#${s.id}`} class="chip">
+                {s.title}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+  </PageHeader>
+
+  <div class="sticky top-14 z-20 -mx-4 border-b border-ink-700 bg-ink-950/95 px-4 py-3 backdrop-blur-md sm:-mx-6 sm:px-6">
+    <div class="flex max-w-xl items-center gap-3 border border-ink-600 bg-ink-900 px-3 py-2 focus-within:border-ember/70">
+      <Search size={16} stroke-width={1.5} class="shrink-0 text-mute" aria-hidden="true" />
+      <label for="sheet-filter" class="sr-only">Filter rows</label>
+      <input
+        id="sheet-filter"
+        type="search"
+        autocomplete="off"
+        spellcheck="false"
+        placeholder="Filter rows… (e.g. 4624, logon, Get-WinEvent)"
+        class="w-full bg-transparent text-sm text-paper placeholder:text-faint focus:outline-none"
+      />
+      <span id="sheet-count" class="shrink-0 font-mono text-[0.6875rem] text-faint" aria-live="polite"></span>
+    </div>
+  </div>
+
+  <div class="mt-8 space-y-12">
+    {d.review && <ReviewNotice />}
+    {
+      d.sections.map((s, si) => (
+        <Section id={s.id} title={s.title} index={si + 1} class="sheet-section">
+          {s.note && <p class="mb-4 max-w-3xl text-sm leading-relaxed text-mute [&_code]:font-mono [&_code]:text-paper" set:html={inline(s.note)} />}
+          <div class="overflow-x-auto border border-ink-700">
+            <table class="w-full min-w-[36rem] border-collapse text-sm">
+              <thead class="bg-ink-900">
+                <tr>
+                  {s.columns.map((c) => (
+                    <th scope="col" class="label border-b border-ink-700 px-3 py-2 text-left">
+                      {c}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {s.rows.map((row, ri) => (
+                  <tr id={`${s.id}-${ri + 1}`} class="border-b border-ink-800 last:border-0 target:bg-ember/10 hover:bg-ink-900">
+                    {row.map((cell, ci) => (
+                      <td
+                        class:list={[
+                          'px-3 py-2 align-top [&_code]:font-mono [&_code]:text-paper',
+                          s.mono.includes(ci) ? 'font-mono text-[0.8125rem] whitespace-pre-wrap text-paper' : 'text-paper-dim',
+                          ci === 0 && 'w-px whitespace-nowrap',
+                        ]}
+                        set:html={inline(cell)}
+                      />
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Section>
+      ))
+    }
+  </div>
+</BaseLayout>
+
+<script>
+  const input = document.getElementById('sheet-filter') as HTMLInputElement | null;
+  const count = document.getElementById('sheet-count');
+  const sections = [...document.querySelectorAll<HTMLElement>('.sheet-section')];
+  const apply = () => {
+    const q = (input?.value ?? '').trim().toLowerCase();
+    let visible = 0;
+    for (const section of sections) {
+      let shown = 0;
+      section.querySelectorAll<HTMLTableRowElement>('tbody tr').forEach((tr) => {
+        const match = !q || (tr.textContent ?? '').toLowerCase().includes(q);
+        tr.hidden = !match;
+        if (match) shown++;
+      });
+      section.hidden = shown === 0;
+      visible += shown;
+    }
+    if (count) count.textContent = q ? `${visible} rows` : '';
+  };
+  input?.addEventListener('input', apply);
+</script>

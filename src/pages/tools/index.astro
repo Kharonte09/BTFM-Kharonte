@@ -1,0 +1,52 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import PageHeader from '@/components/PageHeader.astro';
+import CategoryBlock from '@/components/CategoryBlock.astro';
+import Icon from '@/components/Icon.astro';
+import { getTools, refCode, toolPath } from '@/lib/content';
+import { TOOL_CATEGORIES } from '@/lib/taxonomy';
+
+const tools = await getTools();
+const summary =
+  'Tool reference cards: when to reach for each tool, what to look for in its output and what to run next.';
+const used = TOOL_CATEGORIES.filter((c) => tools.some((t) => t.data.category === c.id));
+---
+
+<BaseLayout title="Tools" description={summary}>
+  <PageHeader title="Tools" summary={summary} crumbs={[{ label: 'Tools' }]}>
+    <nav aria-label="Tool categories" class="mt-6">
+      <ul class="flex flex-wrap gap-2">
+        {
+          used.map((c) => (
+            <li>
+              <a href={`#${c.id}`} class="chip">
+                <Icon name={c.icon} size={13} class="text-ember" />
+                {c.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+  </PageHeader>
+
+  <div class="mt-10 space-y-14">
+    {
+      used.map((c) => (
+        <CategoryBlock
+          category={c}
+          href={`/tools/${c.id}/`}
+          entries={tools
+            .filter((t) => t.data.category === c.id)
+            .map((t) => ({
+              href: toolPath(t),
+              title: t.data.name,
+              summary: t.data.summary,
+              code: refCode('tool', t.id, t.data.category),
+              meta: t.data.type,
+            }))}
+        />
+      ))
+    }
+  </div>
+</BaseLayout>

@@ -1,0 +1,134 @@
+---
+import type { GetStaticPaths } from 'astro';
+import { render } from 'astro:content';
+import EntryLayout from '@/layouts/EntryLayout.astro';
+import Section from '@/components/Section.astro';
+import BulletList from '@/components/BulletList.astro';
+import Flow from '@/components/Flow.astro';
+import RefList from '@/components/RefList.astro';
+import type { TocItem } from '@/components/Toc.astro';
+import { inline } from '@/lib/inline';
+import { getPlaybooks, refCode, type Playbook } from '@/lib/content';
+
+export const getStaticPaths = (async () => {
+  const playbooks = await getPlaybooks();
+  return playbooks.map((playbook) => ({ params: { slug: playbook.id }, props: { playbook } }));
+}) satisfies GetStaticPaths;
+
+interface Props {
+  playbook: Playbook;
+}
+
+const { playbook } = Astro.props;
+const d = playbook.data;
+const { Content } = await render(playbook);
+const hasBody = Boolean(playbook.body?.trim());
+
+const sections: (TocItem & { show: boolean })[] = [
+  { id: 'start', label: 'Start here when', show: true },
+  { id: 'steps', label: 'Workflow', show: true },
+  { id: 'iocs', label: 'IOCs to extract', show: d.iocs.length > 0 },
+  { id: 'escalate', label: 'Escalate when', show: d.escalate_when.length > 0 },
+  { id: 'notes', label: 'Notes', show: hasBody },
+  { id: 'related', label: 'Related playbooks', show: d.related_playbooks.length > 0 },
+];
+const toc = sections.filter((s) => s.show);
+const n = (id: string) => toc.findIndex((s) => s.id === id) + 1;
+---
+
+<EntryLayout
+  title={d.name}
+  summary={d.summary}
+  code={refCode('playbook', playbook.id)}
+  crumbs={[{ label: 'Playbooks', href: '/playbooks/' }, { label: d.name }]}
+  meta={[
+    { label: 'Steps', value: String(d.steps.length) },
+    { label: 'Tags', value: d.tags },
+  ]}
+  toc={toc}
+  review={d.review}
+  updated={d.updated}
+>
+  <div slot="header" class="mt-6">
+    <Flow steps={d.steps.map((s) => s.title)} compact links />
+  </div>
+
+  <Section id="start" title="Start here when" index={n('start')}>
+    <p class="leading-relaxed text-paper-dim [&_code]:font-mono [&_code]:text-paper" set:html={inline(d.trigger)} />
+  </Section>
+
+  <Section id="steps" title="Workflow" index={n('steps')}>
+    <ol class="space-y-4">
+      {
+        d.steps.map((step, i) => (
+          <li id={`step-${i + 1}`} class="scroll-mt-24 border border-ink-700 bg-ink-900">
+            <div class="flex items-baseline gap-3 border-b border-ink-700 px-4 py-3">
+              <span class="font-mono text-xs text-ember">{String(i + 1).padStart(2, '0')}</span>
+              <h3 class="font-semibold text-paper">{step.title}</h3>
+            </div>
+            <div class="space-y-4 p-4">
+              <p class="text-sm leading-relaxed text-paper" set:html={inline(step.goal)} />
+              {step.actions.length > 0 && <BulletList items={step.actions} />}
+              {(step.tools.length > 0 || step.artifacts.length > 0) && (
+                <div class="grid gap-4 border-t border-ink-800 pt-4 sm:grid-cols-2">
+                  {step.tools.length > 0 && (
+                    <div>
+                      <p class="label mb-2">Tools</p>
+                      <RefList refs={step.tools} />
+                    </div>
+                  )}
+                  {step.artifacts.length > 0 && (
+                    <div>
+                      <p class="label mb-2">Artifacts</p>
+                      <RefList refs={step.artifacts} />
+                    </div>
+                  )}
+                </div>
+              )}
+              {step.escalate && (
+                <p class="border-l-2 border-ember pl-3 text-sm text-paper-dim">
+                  <span class="label mr-2 text-ember">Escalate</span>
+                  <span set:html={inline(step.escalate)} />
+                </p>
+              )}
+            </div>
+          </li>
+        ))
+      }
+    </ol>
+  </Section>
+
+  {
+    d.iocs.length > 0 && (
+      <Section id="iocs" title="IOCs to extract" index={n('iocs')}>
+        <BulletList items={d.iocs} />
+      </Section>
+    )
+  }
+
+  {
+    d.escalate_when.length > 0 && (
+      <Section id="escalate" title="Escalate when" index={n('escalate')}>
+        <BulletList items={d.escalate_when} />
+      </Section>
+    )
+  }
+
+  {
+    hasBody && (
+      <Section id="notes" title="Notes" index={n('notes')}>
+        <div class="prose-k">
+          <Content />
+        </div>
+      </Section>
+    )
+  }
+
+  {
+    d.related_playbooks.length > 0 && (
+      <Section id="related" title="Related playbooks" index={n('related')}>
+        <RefList refs={d.related_playbooks} />
+      </Section>
+    )
+  }
+</EntryLayout>

@@ -1,0 +1,37 @@
+---
+import type { GetStaticPaths } from 'astro';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import PageHeader from '@/components/PageHeader.astro';
+import CategoryBlock from '@/components/CategoryBlock.astro';
+import { getTools, refCode, toolPath } from '@/lib/content';
+import { TOOL_CATEGORIES } from '@/lib/taxonomy';
+
+export const getStaticPaths = (() =>
+  TOOL_CATEGORIES.map((category) => ({
+    params: { category: category.id },
+    props: { category },
+  }))) satisfies GetStaticPaths;
+
+const { category } = Astro.props;
+const tools = (await getTools()).filter((t) => t.data.category === category.id);
+---
+
+<BaseLayout title={`${category.label} tools`} description={category.description}>
+  <PageHeader
+    title={`${category.label} tools`}
+    summary={category.description}
+    crumbs={[{ label: 'Tools', href: '/tools/' }, { label: category.label }]}
+  />
+  <div class="mt-10">
+    <CategoryBlock
+      category={category}
+      entries={tools.map((t) => ({
+        href: toolPath(t),
+        title: t.data.name,
+        summary: t.data.summary,
+        code: refCode('tool', t.id, t.data.category),
+        meta: t.data.type,
+      }))}
+    />
+  </div>
+</BaseLayout>

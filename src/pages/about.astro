@@ -1,0 +1,45 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import PageHeader from '@/components/PageHeader.astro';
+import Section from '@/components/Section.astro';
+import BulletList from '@/components/BulletList.astro';
+---
+
+<BaseLayout title="About" description="What Kharonte is, what it is not, and how its content is written.">
+  <PageHeader
+    title="About this manual"
+    summary="Kharonte is an open-source reference for Blue Team, DFIR and malware analysis work. It helps you decide what to look at next — it does not analyse anything for you."
+    crumbs={[{ label: 'About' }]}
+  />
+
+  <div class="mt-10 max-w-3xl space-y-12">
+    <Section id="principles" title="Principles" index={1}>
+      <BulletList
+        items={[
+          '**Reference, not an analyst.** Entries describe what to check, which tools help and what output matters. The judgement stays with you.',
+          '**Workflow first.** Every page answers: what is this, what do I check first, what next, what can I extract as an IOC, and when do I escalate.',
+          '**No invented capabilities.** Tool behaviour is described conservatively. Entries that still need verification carry a visible **Pending review** notice.',
+          '**Facts vs. recommendations.** “Look for” and “Operational notes” are analyst guidance; “Evidence”, “Where to find it” and “Output” are factual.',
+        ]}
+      />
+    </Section>
+
+    <Section id="safety" title="Safety" index={2}>
+      <BulletList
+        items={[
+          'The site is fully static. It does not execute samples or scripts and does not call external APIs.',
+          'Commands are shown for reference only. Run them in an appropriate, isolated environment.',
+          'Uploading a file to public services (e.g. VirusTotal, public sandboxes) can disclose it. Check your organisation’s policy and prefer hash lookups.',
+          'The repository contains no samples, secrets or personal data.',
+        ]}
+      />
+    </Section>
+
+    <Section id="contribute" title="Contributing" index={3}>
+      <p class="leading-relaxed text-paper-dim">
+        Content lives in Markdown/YAML files under <code class="font-mono text-paper">src/content/</code>. See the
+        repository README for the content model and how to add tools, artifacts, playbooks and cheatsheets.
+      </p>
+    </Section>
+  </div>
+</BaseLayout>

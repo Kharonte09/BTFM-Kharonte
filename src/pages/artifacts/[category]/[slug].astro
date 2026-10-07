@@ -1,0 +1,161 @@
+---
+import type { GetStaticPaths } from 'astro';
+import { render } from 'astro:content';
+import EntryLayout from '@/layouts/EntryLayout.astro';
+import Section from '@/components/Section.astro';
+import BulletList from '@/components/BulletList.astro';
+import RefList from '@/components/RefList.astro';
+import type { TocItem } from '@/components/Toc.astro';
+import {
+  getArtifacts,
+  playbookPath,
+  playbooksReferencing,
+  refCode,
+  toolsForArtifact,
+  type Artifact,
+} from '@/lib/content';
+import { getArtifactCategory } from '@/lib/taxonomy';
+import { url } from '@/lib/url';
+
+export const getStaticPaths = (async () => {
+  const artifacts = await getArtifacts();
+  return artifacts.map((artifact) => ({
+    params: { category: artifact.data.category, slug: artifact.id },
+    props: { artifact },
+  }));
+}) satisfies GetStaticPaths;
+
+interface Props {
+  artifact: Artifact;
+}
+
+const { artifact } = Astro.props;
+const d = artifact.data;
+const category = getArtifactCategory(d.category);
+const { Content } = await render(artifact);
+
+// Tools listed by the artifact, plus tools whose page points back to it.
+const tools = [...new Set([...d.tools, ...(await toolsForArtifact(artifact)).map((t) => t.data.name)])];
+const playbooks = await playbooksReferencing(artifact);
+
+const sections: (TocItem & { show: boolean })[] = [
+  { id: 'what', label: 'What is it?', show: true },
+  { id: 'evidence', label: 'Evidence provided', show: d.evidence.length > 0 },
+  { id: 'location', label: 'Where to find it', show: d.locations.length > 0 },
+  { id: 'questions', label: 'Questions answered', show: d.questions.length > 0 },
+  { id: 'tools', label: 'Tools', show: tools.length > 0 },
+  { id: 'look-for', label: 'Look for', show: d.look_for.length > 0 },
+  { id: 'limitations', label: 'Limitations', show: d.limitations.length > 0 },
+  { id: 'related', label: 'Related', show: d.related_artifacts.length > 0 || playbooks.length > 0 },
+];
+const toc = sections.filter((s) => s.show);
+const n = (id: string) => toc.findIndex((s) => s.id === id) + 1;
+---
+
+<EntryLayout
+  title={d.name}
+  summary={d.summary}
+  code={refCode('artifact', artifact.id, d.category)}
+  crumbs={[
+    { label: 'Artifacts', href: '/artifacts/' },
+    { label: category.label, href: `/artifacts/${category.id}/` },
+    { label: d.name },
+  ]}
+  meta={[
+    { label: 'Category', value: category.label },
+    { label: 'Also', value: d.aliases },
+    { label: 'Tags', value: d.tags },
+  ]}
+  toc={toc}
+  review={d.review}
+  updated={d.updated}
+>
+  <Section id="what" title="What is it?" index={n('what')}>
+    <div class="prose-k"><Content /></div>
+  </Section>
+
+  {
+    d.evidence.length > 0 && (
+      <Section id="evidence" title="Evidence provided" index={n('evidence')}>
+        <BulletList items={d.evidence} />
+      </Section>
+    )
+  }
+
+  {
+    d.locations.length > 0 && (
+      <Section id="location" title="Where to find it" index={n('location')}>
+        <ul class="divide-y divide-ink-800 border border-ink-700 bg-ink-900">
+          {d.locations.map((l) => (
+            <li class="flex flex-col gap-1 px-3 py-2.5 sm:flex-row sm:items-baseline sm:gap-4">
+              {l.label && <span class="label w-40 shrink-0 normal-case tracking-normal">{l.label}</span>}
+              <code class="font-mono text-[0.8125rem] break-all text-paper">{l.path}</code>
+            </li>
+          ))}
+        </ul>
+      </Section>
+    )
+  }
+
+  {
+    d.questions.length > 0 && (
+      <Section id="questions" title="Questions answered" index={n('questions')}>
+        <BulletList items={d.questions} />
+      </Section>
+    )
+  }
+
+  {
+    tools.length > 0 && (
+      <Section id="tools" title="Tools" index={n('tools')}>
+        <RefList refs={tools} />
+      </Section>
+    )
+  }
+
+  {
+    d.look_for.length > 0 && (
+      <Section id="look-for" title="Look for" index={n('look-for')}>
+        <BulletList items={d.look_for} />
+      </Section>
+    )
+  }
+
+  {
+    d.limitations.length > 0 && (
+      <Section id="limitations" title="Limitations" index={n('limitations')}>
+        <BulletList items={d.limitations} />
+      </Section>
+    )
+  }
+
+  {
+    (d.related_artifacts.length > 0 || playbooks.length > 0) && (
+      <Section id="related" title="Related" index={n('related')}>
+        <div class="space-y-5">
+          {d.related_artifacts.length > 0 && (
+            <div>
+              <p class="mb-2 text-sm text-mute">Artifacts</p>
+              <RefList refs={d.related_artifacts} />
+            </div>
+          )}
+          {playbooks.length > 0 && (
+            <div>
+              <p class="mb-2 text-sm text-mute">Used in playbooks</p>
+              <ul class="flex flex-wrap gap-2">
+                {playbooks.map((p) => (
+                  <li>
+                    <a href={url(playbookPath(p))} class="chip">
+                      <span aria-hidden="true" class="text-ember">→</span>
+                      {p.data.name}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+      </Section>
+    )
+  }
+</EntryLayout>
