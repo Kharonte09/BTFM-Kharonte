@@ -1,0 +1,53 @@
+---
+import { inline } from '@/lib/inline';
+import CommandBlock from './CommandBlock.astro';
+
+/**
+ * The visually dominant "Start here" box: ordered first actions plus the
+ * commands to run. Used by artifacts (first 5 minutes), tools and playbooks
+ * (initial triage).
+ */
+interface Props {
+  id?: string;
+  title: string;
+  subtitle?: string;
+  steps?: string[];
+  commands?: { label: string; command: string }[];
+}
+
+const { id = 'start-here', title, subtitle, steps = [], commands = [] } = Astro.props;
+---
+
+<section
+  id={id}
+  aria-labelledby={`${id}-h`}
+  class="scroll-mt-24 border border-ember/50 bg-ember/[0.04] shadow-[inset_3px_0_0_0_var(--color-ember)]"
+>
+  <h2 id={`${id}-h`} class="flex flex-wrap items-baseline gap-x-3 gap-y-1 border-b border-ember/25 px-5 py-3">
+    <span class="font-mono text-xs font-semibold tracking-[0.16em] text-ember uppercase">▸ {title}</span>
+    {subtitle && <span class="label text-mute">{subtitle}</span>}
+  </h2>
+  <div class="space-y-5 p-5">
+    {
+      steps.length > 0 && (
+        <ol class="space-y-2.5">
+          {steps.map((s, i) => (
+            <li class="flex gap-3 leading-relaxed text-paper [&_code]:rounded-sm [&_code]:bg-ink-800 [&_code]:px-1 [&_code]:font-mono [&_code]:text-[0.85em]">
+              <span class="mt-0.5 w-5 shrink-0 font-mono text-xs text-ember">{i + 1}.</span>
+              <span set:html={inline(s)} />
+            </li>
+          ))}
+        </ol>
+      )
+    }
+    {
+      commands.length > 0 && (
+        <div class="space-y-3">
+          {commands.map((c) => (
+            <CommandBlock label={c.label} command={c.command} />
+          ))}
+        </div>
+      )
+    }
+  </div>
+</section>

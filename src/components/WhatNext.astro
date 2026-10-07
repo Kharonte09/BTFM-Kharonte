@@ -1,0 +1,58 @@
+---
+import Icon from './Icon.astro';
+import RefList from './RefList.astro';
+import { playbookPath, type Playbook } from '@/lib/content';
+import { getLang, href } from '@/lib/url';
+import { useTranslations } from '@/i18n/ui';
+
+/** "What next?": related playbooks, artifacts and tools — the knowledge network. */
+interface Props {
+  playbooks?: Playbook[];
+  artifacts?: string[];
+  tools?: string[];
+}
+
+const { playbooks = [], artifacts = [], tools = [] } = Astro.props;
+const lang = getLang(Astro.url);
+const t = useTranslations(lang);
+---
+
+<div class="grid gap-6 md:grid-cols-3">
+  {
+    playbooks.length > 0 && (
+      <div>
+        <p class="label mb-2 text-ember">{t('related.playbooks')}</p>
+        <ul class="space-y-2">
+          {playbooks.map((p) => (
+            <li>
+              <a
+                href={href(lang, playbookPath(p))}
+                class="group flex items-center gap-2.5 border border-ink-600 bg-ink-900 px-3 py-2 text-sm text-paper transition-colors hover:border-ember/60"
+              >
+                <Icon name={p.data.icon} size={15} class="shrink-0 text-ember" />
+                <span class="flex-1">{p.data.name}</span>
+                <span aria-hidden="true" class="text-ember transition-transform group-hover:translate-x-0.5">→</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+    )
+  }
+  {
+    artifacts.length > 0 && (
+      <div>
+        <p class="label mb-2">{t('related.artifacts')}</p>
+        <RefList refs={artifacts} />
+      </div>
+    )
+  }
+  {
+    tools.length > 0 && (
+      <div>
+        <p class="label mb-2">{t('related.tools')}</p>
+        <RefList refs={tools} />
+      </div>
+    )
+  }
+</div>

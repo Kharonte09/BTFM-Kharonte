@@ -6,6 +6,7 @@ import Section from '@/components/Section.astro';
 import BulletList from '@/components/BulletList.astro';
 import Flow from '@/components/Flow.astro';
 import RefList from '@/components/RefList.astro';
+import StartHere from '@/components/StartHere.astro';
 import type { TocItem } from '@/components/Toc.astro';
 import { inline } from '@/lib/inline';
 import { getPlaybooks, isFallback, refCode, slugOf, type Playbook } from '@/lib/content';
@@ -29,14 +30,25 @@ const { Content } = await render(playbook);
 const hasBody = Boolean(playbook.body?.trim());
 
 const sections: (TocItem & { show: boolean })[] = [
-  { id: 'start', label: t('sec.start'), show: true },
+  { id: 'trigger', label: `${t('sec.trigger')} · ${t('sec.objective')}`, show: true },
+  { id: 'start-here', label: t('sec.initialTriage'), show: d.initial_triage.length > 0 },
+  { id: 'evidence', label: t('sec.evidence'), show: d.evidence.length > 0 },
   { id: 'questions', label: t('sec.questions.pb'), show: d.questions.length > 0 },
   { id: 'steps', label: t('sec.steps'), show: true },
+  { id: 'correlation', label: t('sec.correlation'), show: d.correlation.length > 0 },
   { id: 'iocs', label: t('sec.iocs'), show: d.iocs.length > 0 },
-  { id: 'escalate', label: t('sec.escalateWhen'), show: d.escalate_when.length > 0 },
+  { id: 'decisions', label: t('sec.decisions'), show: d.decision_points.length > 0 },
+  { id: 'output', label: t('sec.pbOutput'), show: d.output.length > 0 },
   { id: 'notes', label: t('sec.pbNotes'), show: hasBody },
   { id: 'related', label: t('sec.relatedPlaybooks'), show: d.related_playbooks.length > 0 },
 ];
+
+const DECISION_STYLE = {
+  close: 'border-ink-500 text-paper-dim',
+  deeper: 'border-ink-500 text-paper',
+  escalate: 'border-ember/60 text-ember',
+  isolate: 'border-ember bg-ember/10 text-ember',
+} as const;
 const toc = sections.filter((s) => s.show);
 const n = (id: string) => toc.findIndex((s) => s.id === id) + 1;
 const label = (id: string) => toc.find((s) => s.id === id)?.label ?? id;
@@ -49,6 +61,7 @@ const label = (id: string) => toc.find((s) => s.id === id)?.label ?? id;
   crumbs={[{ label: t('nav.playbooks'), href: '/playbooks/' }, { label: d.name }]}
   meta={[
     { label: t('meta.steps'), value: String(d.steps.length) },
+    { label: t('meta.coverage'), value: t(`coverage.${d.coverage}`) },
     { label: t('meta.tags'), value: d.tags },
   ]}
   toc={toc}
@@ -80,12 +93,34 @@ const label = (id: string) => toc.find((s) => s.id === id)?.label ?? id;
     </div>
   </div>
 
-  <Section id="start" title={label('start')} index={n('start')}>
-    <p
-      class="leading-relaxed text-paper-dim [&_code]:font-mono [&_code]:text-paper [&_strong]:text-paper"
-      set:html={inline(d.trigger)}
-    />
+  <Section id="trigger" title={label('trigger')} index={n('trigger')}>
+    <dl class="grid gap-4 sm:grid-cols-2">
+      <div class="border border-ink-700 bg-ink-900 p-4">
+        <dt class="label mb-2">{t('sec.trigger')}</dt>
+        <dd
+          class="leading-relaxed text-paper-dim [&_code]:font-mono [&_code]:text-paper [&_strong]:text-paper"
+          set:html={inline(d.trigger)}
+        />
+      </div>
+      <div class="border border-ink-700 bg-ink-900 p-4">
+        <dt class="label mb-2 text-ember">{t('sec.objective')}</dt>
+        <dd
+          class="leading-relaxed text-paper [&_code]:font-mono [&_strong]:text-paper"
+          set:html={inline(d.objective)}
+        />
+      </div>
+    </dl>
   </Section>
+
+  {d.initial_triage.length > 0 && <StartHere title={t('sec.initialTriage')} steps={d.initial_triage} />}
+
+  {
+    d.evidence.length > 0 && (
+      <Section id="evidence" title={label('evidence')} index={n('evidence')}>
+        <BulletList items={d.evidence} />
+      </Section>
+    )
+  }
 
   {
     d.questions.length > 0 && (
@@ -165,6 +200,14 @@ const label = (id: string) => toc.find((s) => s.id === id)?.label ?? id;
   </Section>
 
   {
+    d.correlation.length > 0 && (
+      <Section id="correlation" title={label('correlation')} index={n('correlation')}>
+        <Flow steps={d.correlation} />
+      </Section>
+    )
+  }
+
+  {
     d.iocs.length > 0 && (
       <Section id="iocs" title={label('iocs')} index={n('iocs')}>
         <BulletList items={d.iocs} />
@@ -173,9 +216,34 @@ const label = (id: string) => toc.find((s) => s.id === id)?.label ?? id;
   }
 
   {
-    d.escalate_when.length > 0 && (
-      <Section id="escalate" title={label('escalate')} index={n('escalate')}>
-        <BulletList items={d.escalate_when} />
+    d.decision_points.length > 0 && (
+      <Section id="decisions" title={label('decisions')} index={n('decisions')}>
+        <ul class="divide-y divide-ink-800 border border-ink-700 bg-ink-900">
+          {d.decision_points.map((p) => (
+            <li class="grid gap-2 px-4 py-3 sm:grid-cols-[8.5rem_1fr] sm:items-baseline sm:gap-4">
+              <span
+                class:list={[
+                  'inline-flex w-fit items-center border px-2 py-0.5 font-mono text-[0.6875rem] tracking-wider uppercase',
+                  DECISION_STYLE[p.decision],
+                ]}
+              >
+                {t(`decision.${p.decision}`)}
+              </span>
+              <span
+                class="text-sm leading-relaxed text-paper-dim [&_code]:font-mono [&_code]:text-paper [&_strong]:text-paper"
+                set:html={inline(p.when)}
+              />
+            </li>
+          ))}
+        </ul>
+      </Section>
+    )
+  }
+
+  {
+    d.output.length > 0 && (
+      <Section id="output" title={label('output')} index={n('output')}>
+        <BulletList items={d.output} />
       </Section>
     )
   }

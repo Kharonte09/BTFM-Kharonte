@@ -1,0 +1,21 @@
+---
+import { TriangleAlert } from '@lucide/astro';
+import { inline } from '@/lib/inline';
+
+/** "Common mistakes": what not to do or misinterpret. */
+interface Props {
+  items: string[];
+}
+const { items } = Astro.props;
+---
+
+<ul class="space-y-2.5">
+  {
+    items.map((m) => (
+      <li class="flex gap-3 leading-relaxed text-paper-dim [&_code]:rounded-sm [&_code]:bg-ink-800 [&_code]:px-1 [&_code]:font-mono [&_code]:text-[0.85em] [&_code]:text-paper [&_strong]:text-paper">
+        <TriangleAlert size={16} stroke-width={1.5} class="mt-1 shrink-0 text-ember" aria-hidden="true" />
+        <span set:html={inline(m)} />
+      </li>
+    ))
+  }
+</ul>

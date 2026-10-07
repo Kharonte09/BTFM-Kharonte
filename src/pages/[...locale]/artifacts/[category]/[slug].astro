@@ -4,7 +4,11 @@ import { render } from 'astro:content';
 import EntryLayout from '@/layouts/EntryLayout.astro';
 import Section from '@/components/Section.astro';
 import BulletList from '@/components/BulletList.astro';
-import RefList from '@/components/RefList.astro';
+import Flow from '@/components/Flow.astro';
+import StartHere from '@/components/StartHere.astro';
+import ToolTiers from '@/components/ToolTiers.astro';
+import MistakeList from '@/components/MistakeList.astro';
+import WhatNext from '@/components/WhatNext.astro';
 import UsedInPlaybooks from '@/components/UsedInPlaybooks.astro';
 import type { TocItem } from '@/components/Toc.astro';
 import {
@@ -38,20 +42,26 @@ const t = useTranslations(lang);
 const d = artifact.data;
 const category = getArtifactCategory(d.category);
 const { Content } = await render(artifact);
+const hasBody = Boolean(artifact.body?.trim());
 
-// Tools listed by the artifact, plus tools whose page points back to it.
-const tools = [...new Set([...d.tools, ...(await toolsForArtifact(artifact, lang)).map((x) => slugOf(x))])];
+const allTools = [...d.tools_start, ...d.tools_deeper];
+// Tools whose own page points back to this artifact, not already listed here.
+const reverseTools = (await toolsForArtifact(artifact, lang)).map((x) => slugOf(x));
 const playbooks = await playbooksReferencing(artifact, lang);
+const nextTools = [...new Set([...allTools, ...reverseTools])];
 
 const sections: (TocItem & { show: boolean })[] = [
-  { id: 'what', label: t('sec.what'), show: true },
-  { id: 'evidence', label: t('sec.evidence'), show: d.evidence.length > 0 },
-  { id: 'location', label: t('sec.location'), show: d.locations.length > 0 },
-  { id: 'questions', label: t('sec.questions'), show: d.questions.length > 0 },
-  { id: 'tools', label: t('sec.tools'), show: tools.length > 0 },
+  { id: 'start-here', label: t('sec.startHere'), show: d.start_here.length > 0 || d.start_commands.length > 0 },
+  { id: 'why', label: t('sec.why'), show: d.why.length > 0 },
+  { id: 'questions', label: t('sec.firstQuestions'), show: d.questions.length > 0 },
   { id: 'look-for', label: t('sec.lookFor'), show: d.look_for.length > 0 },
-  { id: 'limitations', label: t('sec.limitations'), show: d.limitations.length > 0 },
-  { id: 'related', label: t('sec.related'), show: d.related_artifacts.length > 0 },
+  { id: 'location', label: t('sec.location'), show: d.locations.length > 0 },
+  { id: 'tools', label: t('sec.tools'), show: allTools.length > 0 },
+  { id: 'reference', label: t('sec.reference'), show: hasBody },
+  { id: 'correlate', label: t('sec.correlate'), show: d.correlate.length > 0 },
+  { id: 'extract', label: t('sec.extract'), show: d.extract.length > 0 },
+  { id: 'mistakes', label: t('sec.mistakes'), show: d.mistakes.length > 0 },
+  { id: 'next', label: t('sec.next'), show: playbooks.length > 0 || d.related_artifacts.length > 0 || nextTools.length > 0 },
 ];
 const toc = sections.filter((s) => s.show);
 const n = (id: string) => toc.findIndex((s) => s.id === id) + 1;
@@ -69,8 +79,7 @@ const label = (id: string) => toc.find((s) => s.id === id)?.label ?? id;
   ]}
   meta={[
     { label: t('meta.category'), value: category.label[lang] },
-    { label: t('meta.also'), value: d.aliases },
-    { label: t('meta.tags'), value: d.tags },
+    { label: t('meta.coverage'), value: t(`coverage.${d.coverage}`) },
   ]}
   toc={toc}
   review={d.review}
@@ -79,14 +88,37 @@ const label = (id: string) => toc.find((s) => s.id === id)?.label ?? id;
 >
   <UsedInPlaybooks slot="header" playbooks={playbooks} />
 
-  <Section id="what" title={label('what')} index={n('what')}>
-    <div class="prose-k"><Content /></div>
-  </Section>
+  {
+    (d.start_here.length > 0 || d.start_commands.length > 0) && (
+      <StartHere
+        title={t('sec.startHere')}
+        subtitle={t('sec.firstMinutes')}
+        steps={d.start_here}
+        commands={d.start_commands}
+      />
+    )
+  }
 
   {
-    d.evidence.length > 0 && (
-      <Section id="evidence" title={label('evidence')} index={n('evidence')}>
-        <BulletList items={d.evidence} />
+    d.why.length > 0 && (
+      <Section id="why" title={label('why')} index={n('why')}>
+        <BulletList items={d.why} />
+      </Section>
+    )
+  }
+
+  {
+    d.questions.length > 0 && (
+      <Section id="questions" title={label('questions')} index={n('questions')}>
+        <BulletList items={d.questions} />
+      </Section>
+    )
+  }
+
+  {
+    d.look_for.length > 0 && (
+      <Section id="look-for" title={label('look-for')} index={n('look-for')}>
+        <BulletList items={d.look_for} />
       </Section>
     )
   }
@@ -107,48 +139,51 @@ const label = (id: string) => toc.find((s) => s.id === id)?.label ?? id;
   }
 
   {
-    d.questions.length > 0 && (
-      <Section id="questions" title={label('questions')} index={n('questions')}>
-        <BulletList items={d.questions} />
-      </Section>
-    )
-  }
-
-  {
-    tools.length > 0 && (
+    allTools.length > 0 && (
       <Section id="tools" title={label('tools')} index={n('tools')}>
-        <RefList refs={tools} />
+        <ToolTiers start={d.tools_start} deeper={d.tools_deeper} questions={d.tool_questions} />
       </Section>
     )
   }
 
   {
-    d.look_for.length > 0 && (
-      <Section id="look-for" title={label('look-for')} index={n('look-for')}>
-        <BulletList items={d.look_for} />
-      </Section>
-    )
-  }
-
-  {
-    d.limitations.length > 0 && (
-      <Section id="limitations" title={label('limitations')} index={n('limitations')}>
-        <BulletList items={d.limitations} />
-      </Section>
-    )
-  }
-
-  {
-    d.related_artifacts.length > 0 && (
-      <Section id="related" title={label('related')} index={n('related')}>
-        <div class="space-y-5">
-          {d.related_artifacts.length > 0 && (
-            <div>
-              <p class="mb-2 text-sm text-mute">{t('related.artifacts')}</p>
-              <RefList refs={d.related_artifacts} />
-            </div>
-          )}
+    hasBody && (
+      <Section id="reference" title={label('reference')} index={n('reference')}>
+        <div class="prose-k">
+          <Content />
         </div>
+      </Section>
+    )
+  }
+
+  {
+    d.correlate.length > 0 && (
+      <Section id="correlate" title={label('correlate')} index={n('correlate')}>
+        <Flow steps={d.correlate} />
+      </Section>
+    )
+  }
+
+  {
+    d.extract.length > 0 && (
+      <Section id="extract" title={label('extract')} index={n('extract')}>
+        <BulletList items={d.extract} />
+      </Section>
+    )
+  }
+
+  {
+    d.mistakes.length > 0 && (
+      <Section id="mistakes" title={label('mistakes')} index={n('mistakes')}>
+        <MistakeList items={d.mistakes} />
+      </Section>
+    )
+  }
+
+  {
+    (playbooks.length > 0 || d.related_artifacts.length > 0 || nextTools.length > 0) && (
+      <Section id="next" title={label('next')} index={n('next')}>
+        <WhatNext playbooks={playbooks} artifacts={d.related_artifacts} tools={nextTools} />
       </Section>
     )
   }

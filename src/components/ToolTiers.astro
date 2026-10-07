@@ -1,0 +1,74 @@
+---
+import RefList from './RefList.astro';
+import { resolveRefs } from '@/lib/content';
+import { getLang } from '@/lib/url';
+import { useTranslations } from '@/i18n/ui';
+
+/**
+ * Tools for an artifact, split by depth ("Start with" / "Go deeper"),
+ * plus the question each tool answers.
+ */
+interface Props {
+  start: string[];
+  deeper: string[];
+  questions: { tool: string; question: string }[];
+}
+
+const { start, deeper, questions } = Astro.props;
+const lang = getLang(Astro.url);
+const t = useTranslations(lang);
+const qTools = await resolveRefs(
+  questions.map((q) => q.tool),
+  lang,
+);
+---
+
+<div class="space-y-5">
+  <div class="grid gap-5 sm:grid-cols-2">
+    {
+      start.length > 0 && (
+        <div>
+          <p class="label mb-2 text-ember">{t('tools.tierStart')}</p>
+          <RefList refs={start} />
+        </div>
+      )
+    }
+    {
+      deeper.length > 0 && (
+        <div>
+          <p class="label mb-2">{t('tools.tierDeeper')}</p>
+          <RefList refs={deeper} />
+        </div>
+      )
+    }
+  </div>
+  {
+    questions.length > 0 && (
+      <div>
+        <p class="label mb-2">{t('tools.answers')}</p>
+        <dl class="divide-y divide-ink-800 border border-ink-700 bg-ink-900">
+          {questions.map((q, i) => {
+            const r = qTools[i]!;
+            return (
+              <div class="grid gap-1 px-4 py-2.5 sm:grid-cols-[11rem_1fr] sm:gap-4">
+                <dt class="font-mono text-sm">
+                  {r.href ? (
+                    <a href={r.href} class="text-paper underline decoration-ink-500 underline-offset-4 hover:decoration-ember">
+                      {r.label}
+                    </a>
+                  ) : (
+                    <span class="text-paper">{r.label}</span>
+                  )}
+                </dt>
+                <dd class="text-sm text-paper-dim">
+                  <span aria-hidden="true" class="mr-2 text-ember">→</span>
+                  {q.question}
+                </dd>
+              </div>
+            );
+          })}
+        </dl>
+      </div>
+    )
+  }
+</div>
