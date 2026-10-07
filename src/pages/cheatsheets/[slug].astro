@@ -62,7 +62,10 @@ const d = sheet.data;
   <div class="mt-8 space-y-12">
     {d.review && <ReviewNotice />}
     {
-      d.sections.map((s, si) => (
+      d.sections.map((s, si) => {
+        // Keep a short first column (IDs, types) on one line; let long ones (commands) wrap.
+        const narrowFirst = s.rows.every((r) => (r[0]?.length ?? 0) <= 24);
+        return (
         <Section id={s.id} title={s.title} index={si + 1} class="sheet-section">
           {s.note && <p class="mb-4 max-w-3xl text-sm leading-relaxed text-mute [&_code]:font-mono [&_code]:text-paper" set:html={inline(s.note)} />}
           <div class="overflow-x-auto border border-ink-700">
@@ -83,8 +86,9 @@ const d = sheet.data;
                       <td
                         class:list={[
                           'px-3 py-2 align-top [&_code]:font-mono [&_code]:text-paper',
-                          s.mono.includes(ci) ? 'font-mono text-[0.8125rem] whitespace-pre-wrap text-paper' : 'text-paper-dim',
-                          ci === 0 && 'w-px whitespace-nowrap',
+                          s.mono.includes(ci) ? 'font-mono text-[0.8125rem] text-paper' : 'text-paper-dim',
+                          ci === 0 && narrowFirst ? 'w-px whitespace-nowrap' : 'break-words',
+                          ci === 0 && !narrowFirst && 'min-w-[20rem]',
                         ]}
                         set:html={inline(cell)}
                       />
@@ -95,7 +99,8 @@ const d = sheet.data;
             </table>
           </div>
         </Section>
-      ))
+        );
+      })
     }
   </div>
 </BaseLayout>

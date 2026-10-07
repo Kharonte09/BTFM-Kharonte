@@ -16,7 +16,8 @@ import { DIFFICULTY, artifactCategoryIds, toolCategoryIds } from './lib/taxonomy
  * It is rendered with a visible "pending review" notice.
  */
 
-const list = z.array(z.string()).default([]);
+// Coerce so that bare YAML numbers (e.g. an event ID like 4104) are accepted as strings.
+const list = z.array(z.coerce.string()).default([]);
 
 const common = {
   name: z.string(),
