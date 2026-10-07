@@ -2,6 +2,8 @@
 name: Investigación de phishing
 summary: De un correo reportado al alcance, los IOCs y una conclusión — headers, autenticación, enlaces, adjuntos, infraestructura e impacto en los usuarios.
 order: 1
+scenario: Un correo sospechoso
+icon: email
 trigger: Un usuario reporta un correo sospechoso, salta una alerta del mail gateway o un incidente apunta al correo como vector de acceso inicial. Consigue el **mensaje original en .eml/.msg**, no un reenvío.
 tags: [phishing, correo, acceso inicial, bec, robo de credenciales]
 steps:

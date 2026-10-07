@@ -1,7 +1,9 @@
 ---
 name: Network Traffic Analysis (PCAP)
 summary: Work through a packet capture from overview to IOCs — hosts, protocols, DNS, HTTP, TLS, transferred files, credentials, C2 and exfiltration.
-order: 6
+order: 2
+scenario: A .pcap / .pcapng capture
+icon: network
 trigger: You have a `.pcap` / `.pcapng` — from a sensor, a sandbox, an endpoint capture or a lab challenge — and need to explain what happened on the wire.
 tags: [pcap, wireshark, tshark, network, c2, exfiltration, btlo]
 questions:

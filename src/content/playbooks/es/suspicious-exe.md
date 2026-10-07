@@ -1,7 +1,9 @@
 ---
 name: EXE sospechoso
 summary: Triage de un ejecutable Windows del hash a los IOCs — identificar, analizar en estático, consultar reputación, observar el comportamiento y decidir si hacer reversing.
-order: 2
+order: 4
+scenario: Un .exe / .dll sospechoso
+icon: binaries
 trigger: Tienes un `.exe` / `.dll` sospechoso — de una alerta, un endpoint, un adjunto o una descarga. Cópialo a un entorno de análisis aislado (idealmente dentro de un archivo con contraseña, por convención `infected`).
 tags: [malware, pe, análisis estático, sandbox, triage]
 steps:

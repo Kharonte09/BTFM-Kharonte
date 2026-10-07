@@ -1,7 +1,9 @@
 ---
 name: PowerShell sospechoso
 summary: Decodificar, desofuscar y contextualizar un comando de PowerShell — y averiguar quién lo ejecutó, qué contactó y si dejó persistencia.
-order: 3
+order: 5
+scenario: PowerShell sospechoso en los logs
+icon: terminal
 trigger: Una alerta, una entrada de log o un evento del EDR muestra PowerShell con contenido codificado, ofuscado o de tipo descargar-y-ejecutar.
 tags: [powershell, desofuscación, living off the land, ejecución]
 steps:

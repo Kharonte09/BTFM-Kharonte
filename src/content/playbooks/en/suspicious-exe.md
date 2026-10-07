@@ -1,7 +1,9 @@
 ---
 name: Suspicious EXE
 summary: Triage a Windows executable from hash to IOCs — identify, analyse statically, check reputation, observe behaviour and decide whether to reverse.
-order: 2
+order: 4
+scenario: A suspicious .exe / .dll
+icon: binaries
 trigger: You have a suspicious `.exe` / `.dll` — from an alert, an endpoint, an email attachment or a download. Copy it to an isolated analysis environment (ideally inside a password-protected archive, conventionally `infected`).
 tags: [malware, pe, static analysis, sandbox, triage]
 steps:

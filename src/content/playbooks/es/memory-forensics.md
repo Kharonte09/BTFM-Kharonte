@@ -1,7 +1,9 @@
 ---
 name: Memory Forensics
 summary: Analizar una imagen de memoria de Windows con Volatility 3 — procesos, líneas de comandos, red, inyección, persistencia — y extraer artefactos e IOCs.
-order: 8
+order: 6
+scenario: Un volcado de memoria
+icon: memory
 trigger: Tienes una imagen de RAM (`.raw`, `.mem`, `.vmem`, `.dmp`) de una adquisición, un snapshot de VM o un reto de laboratorio, y necesitas saber qué se estaba ejecutando.
 tags: [memoria, volatility, procesos, inyección, btlo]
 questions:

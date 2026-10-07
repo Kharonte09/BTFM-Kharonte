@@ -1,7 +1,9 @@
 ---
 name: Investigación de endpoint Windows
 summary: Investigación estructurada de un equipo Windows posiblemente comprometido — timeline, procesos, logons, persistencia, red, ficheros, registro y actividad del usuario.
-order: 4
+order: 7
+scenario: Un equipo Windows comprometido
+icon: windows
 trigger: Se sospecha que un endpoint está comprometido (alerta del EDR, detección de malware, indicio de movimiento lateral, reporte de un usuario). Decide pronto si adquirir la **memoria** antes de contener o apagar.
 tags: [endpoint, dfir, windows, timeline, movimiento lateral, persistencia]
 steps:

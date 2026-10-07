@@ -1,7 +1,9 @@
 ---
 name: Documento Office malicioso
 summary: Triage estático de un Word/Excel/PowerPoint sospechoso — macros, XLM, objetos embebidos, plantillas remotas y DDE — y extracción de la siguiente etapa y los IOCs.
-order: 7
+order: 3
+scenario: Un documento Office sospechoso
+icon: documents
 trigger: Tienes un `.doc`, `.docm`, `.docx`, `.xls`, `.xlsm`, `.xlsb`, `.ppt` o `.rtf` sospechoso — de un correo, una descarga o un reto de laboratorio. Trabaja en una VM aislada y nunca habilites el contenido.
 tags: [maldoc, office, macros, vba, xlm, ole, phishing, btlo]
 questions:

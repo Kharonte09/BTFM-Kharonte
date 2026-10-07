@@ -2,6 +2,8 @@
 name: Phishing Investigation
 summary: From a reported email to scope, IOCs and a conclusion — headers, authentication, links, attachments, infrastructure and user impact.
 order: 1
+scenario: A suspicious email
+icon: email
 trigger: A user reports a suspicious email, a mail gateway alert fires, or an incident points to email as the initial access vector. Obtain the **original message as .eml/.msg** — not a forward.
 tags: [phishing, email, initial access, bec, credential phishing]
 steps:

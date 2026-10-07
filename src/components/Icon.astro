@@ -9,6 +9,7 @@ import {
   MemoryStick,
   Monitor,
   Network,
+  SquareTerminal,
   Wrench,
 } from '@lucide/astro';
 import type { IconName } from '@/lib/taxonomy';
@@ -32,6 +33,7 @@ const ICONS = {
   malware: Bug,
   reversing: Braces,
   general: Wrench,
+  terminal: SquareTerminal,
 } as const;
 
 const Component = ICONS[name];

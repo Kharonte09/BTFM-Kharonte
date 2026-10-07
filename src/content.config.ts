@@ -1,7 +1,7 @@
 import { defineCollection } from 'astro:content';
 import { glob } from 'astro/loaders';
 import { z } from 'astro/zod';
-import { DIFFICULTY, artifactCategoryIds, toolCategoryIds } from './lib/taxonomy';
+import { DIFFICULTY, ICON_NAMES, artifactCategoryIds, toolCategoryIds } from './lib/taxonomy';
 
 /**
  * Content model.
@@ -74,6 +74,9 @@ const playbooks = defineCollection({
   schema: z.object({
     ...common,
     order: z.number().default(100),
+    /** Short "I have…" label shown on playbook cards, e.g. "A .pcap / .pcapng capture". */
+    scenario: z.string(),
+    icon: z.enum(ICON_NAMES),
     trigger: z.string(),
     /** Questions the analysis should answer (BTLO / CTF-style). */
     questions: list,

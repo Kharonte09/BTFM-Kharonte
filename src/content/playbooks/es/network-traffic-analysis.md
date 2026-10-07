@@ -1,7 +1,9 @@
 ---
 name: Análisis de tráfico de red (PCAP)
 summary: Recorrer una captura de tráfico de la visión general a los IOCs — equipos, protocolos, DNS, HTTP, TLS, ficheros transferidos, credenciales, C2 y exfiltración.
-order: 6
+order: 2
+scenario: Una captura .pcap / .pcapng
+icon: network
 trigger: Tienes un `.pcap` / `.pcapng` — de un sensor, una sandbox, una captura en el endpoint o un reto de laboratorio — y necesitas explicar qué pasó en la red.
 tags: [pcap, wireshark, tshark, red, c2, exfiltración, btlo]
 questions:

@@ -1,7 +1,9 @@
 ---
 name: Windows Endpoint Investigation
 summary: Structured investigation of a potentially compromised Windows host — timeline, processes, logons, persistence, network, files, registry and user activity.
-order: 4
+order: 7
+scenario: A compromised Windows host
+icon: windows
 trigger: An endpoint is suspected compromised (EDR alert, malware detection, lateral movement indicator, user report). Decide early whether to acquire **memory** before containment or shutdown.
 tags: [endpoint, dfir, windows, timeline, lateral movement, persistence]
 steps:

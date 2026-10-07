@@ -1,7 +1,9 @@
 ---
 name: Suspicious PowerShell
 summary: Decode, deobfuscate and contextualise a PowerShell command — then find out who ran it, what it contacted and whether it persisted.
-order: 3
+order: 5
+scenario: Suspicious PowerShell in the logs
+icon: terminal
 trigger: An alert, log entry or EDR event shows PowerShell with encoded, obfuscated or download-and-execute content.
 tags: [powershell, deobfuscation, living off the land, execution]
 steps:

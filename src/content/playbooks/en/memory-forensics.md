@@ -1,7 +1,9 @@
 ---
 name: Memory Forensics
 summary: Analyse a Windows memory image with Volatility 3 — processes, command lines, network, injection, persistence — and extract artifacts and IOCs.
-order: 8
+order: 6
+scenario: A memory dump
+icon: memory
 trigger: You have a RAM image (`.raw`, `.mem`, `.vmem`, `.dmp`) from an acquisition, a VM snapshot or a lab challenge, and need to know what was running.
 tags: [memory, volatility, processes, injection, btlo]
 questions:

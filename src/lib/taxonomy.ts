@@ -16,7 +16,8 @@ export type IconName =
   | 'dfir'
   | 'malware'
   | 'reversing'
-  | 'general';
+  | 'general'
+  | 'terminal';
 
 export type Localized = Record<Lang, string>;
 
@@ -175,6 +176,20 @@ export function getToolCategory(id: string): Category {
   if (!found) throw new Error(`Unknown tool category: ${id}`);
   return found;
 }
+
+export const ICON_NAMES = [
+  'windows',
+  'email',
+  'documents',
+  'binaries',
+  'network',
+  'memory',
+  'dfir',
+  'malware',
+  'reversing',
+  'general',
+  'terminal',
+] as const satisfies readonly IconName[];
 
 export const DIFFICULTY = ['basic', 'intermediate', 'advanced'] as const;
 export type Difficulty = (typeof DIFFICULTY)[number];
