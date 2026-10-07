@@ -2,16 +2,9 @@
 import type { GetStaticPaths } from 'astro';
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import SearchPanel from '@/components/SearchPanel.astro';
+import PlaybookCard from '@/components/PlaybookCard.astro';
 import Icon from '@/components/Icon.astro';
-import Flow from '@/components/Flow.astro';
-import {
-  cheatsheetPath,
-  getArtifacts,
-  getCheatsheets,
-  getPlaybooks,
-  getTools,
-  playbookPath,
-} from '@/lib/content';
+import { cheatsheetPath, getArtifacts, getCheatsheets, getPlaybooks, getTools } from '@/lib/content';
 import { ARTIFACT_CATEGORIES, TOOL_CATEGORIES } from '@/lib/taxonomy';
 import { href } from '@/lib/url';
 import { localeStaticPaths } from '@/i18n/routing';
@@ -35,11 +28,14 @@ const countBy = <T extends { data: { category: string } }>(items: T[], id: strin
 const toolCategories = TOOL_CATEGORIES.filter((c) => countBy(tools, c.id) > 0);
 
 const stats = [
+  { label: t('nav.playbooks'), value: playbooks.length, href: '/playbooks/' },
   { label: t('nav.artifacts'), value: artifacts.length, href: '/artifacts/' },
   { label: t('nav.tools'), value: tools.length, href: '/tools/' },
-  { label: t('nav.playbooks'), value: playbooks.length, href: '/playbooks/' },
   { label: t('nav.cheatsheets'), value: sheets.length, href: '/cheatsheets/' },
 ];
+
+const refRow =
+  'group flex items-center gap-3 py-2.5 text-sm text-paper-dim transition-colors hover:text-paper sm:px-2 hover:bg-ink-900';
 ---
 
 <BaseLayout>
@@ -72,13 +68,13 @@ const stats = [
       aria-label={t('home.contents')}
     >
       {
-        stats.map((s) => (
+        stats.map((s, i) => (
           <li class="bg-ink-950">
             <a
               href={href(lang, s.href)}
               class="group flex items-baseline justify-between gap-2 px-4 py-3 transition-colors hover:bg-ink-900"
             >
-              <span class="label truncate group-hover:text-paper-dim">{s.label}</span>
+              <span class:list={['label truncate group-hover:text-paper-dim', i === 0 && 'text-ember']}>{s.label}</span>
               <span class="font-mono text-2xl text-paper tabular-nums">{String(s.value).padStart(2, '0')}</span>
             </a>
           </li>
@@ -87,126 +83,97 @@ const stats = [
     </ul>
   </section>
 
-  <!-- Start with an artifact -->
-  <section aria-labelledby="start-artifact" class="border-t border-ink-700 py-12">
+  <!-- Playbooks: the entry point -->
+  <section aria-labelledby="pick" class="border-t border-ink-700 py-12">
     <div class="mb-6 flex items-baseline justify-between gap-4">
-      <h2 id="start-artifact" class="label"><span class="mr-3 text-ember">01</span>{t('home.start')}</h2>
-      <a href={href(lang, '/artifacts/')} class="font-mono text-xs text-mute hover:text-paper">{t('home.allArtifacts')}</a>
+      <h2 id="pick" class="label"><span class="mr-3 text-ember">01</span>{t('home.pick')}</h2>
+      <a href={href(lang, '/playbooks/')} class="font-mono text-xs text-mute hover:text-paper">
+        {t('home.allPlaybooks')}
+      </a>
     </div>
-    <ul class="grid grid-cols-2 gap-px border border-ink-700 bg-ink-700 sm:grid-cols-3 lg:grid-cols-6">
-      {
-        ARTIFACT_CATEGORIES.map((c) => (
-          <li class="bg-ink-950">
-            <a
-              href={href(lang, `/artifacts/${c.id}/`)}
-              class="group flex h-full flex-col gap-6 p-4 transition-colors hover:bg-ink-900 sm:p-5"
-            >
-              <span class="flex items-center justify-between">
-                <Icon name={c.icon} size={20} class="text-mute transition-colors group-hover:text-ember" />
-                <span class="font-mono text-[0.6875rem] text-faint">
-                  {String(countBy(artifacts, c.id)).padStart(2, '0')}
-                </span>
-              </span>
-              <span>
-                <span class="block font-medium text-paper">{c.label[lang]}</span>
-                <span class="mt-1 hidden text-xs leading-snug text-mute sm:block">{c.description[lang]}</span>
-              </span>
-            </a>
-          </li>
-        ))
-      }
-    </ul>
-  </section>
-
-  <!-- Playbooks -->
-  <section aria-labelledby="pop-playbooks" class="border-t border-ink-700 py-12">
-    <div class="mb-6 flex items-baseline justify-between gap-4">
-      <h2 id="pop-playbooks" class="label"><span class="mr-3 text-ember">02</span>{t('home.playbooks')}</h2>
-      <a href={href(lang, '/playbooks/')} class="font-mono text-xs text-mute hover:text-paper">{t('home.allPlaybooks')}</a>
-    </div>
-    <ul class="divide-y divide-ink-700 border-y border-ink-700">
+    <ul class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
       {
         playbooks.map((p, i) => (
           <li>
-            <a
-              href={href(lang, playbookPath(p))}
-              class="group grid gap-3 py-4 transition-colors hover:bg-ink-900 md:grid-cols-[2.5rem_16rem_minmax(0,1fr)] md:items-center md:gap-6 md:px-2"
-            >
-              <span class="hidden font-mono text-xs text-faint md:block">{String(i + 1).padStart(2, '0')}</span>
-              <span class="flex items-center gap-2 font-medium text-paper">
-                {p.data.name}
-                <span aria-hidden="true" class="text-ember opacity-0 transition-opacity group-hover:opacity-100">
-                  →
-                </span>
-              </span>
-              <span class="min-w-0 overflow-hidden" aria-hidden="true">
-                <Flow steps={p.data.steps.map((s) => s.title).slice(0, 6)} compact />
-              </span>
-            </a>
+            <PlaybookCard playbook={p} index={i + 1} />
           </li>
         ))
       }
     </ul>
   </section>
 
-  <!-- Tools + cheatsheets -->
-  <section class="grid gap-12 border-t border-ink-700 py-12 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
-    <div aria-labelledby="tools-h" class="min-w-0">
-      <div class="mb-6 flex items-baseline justify-between gap-4">
-        <h2 id="tools-h" class="label"><span class="mr-3 text-ember">03</span>{t('home.tools')}</h2>
-        <a href={href(lang, '/tools/')} class="font-mono text-xs text-mute hover:text-paper">{t('home.allTools')}</a>
-      </div>
-      <ul class="grid grid-cols-1 gap-px border border-ink-700 bg-ink-700 sm:grid-cols-2">
-        {
-          toolCategories.map((c) => (
-            <li class="bg-ink-950">
-              <a
-                href={href(lang, `/tools/${c.id}/`)}
-                class="group flex h-full items-start gap-4 p-4 transition-colors hover:bg-ink-900"
-              >
-                <Icon name={c.icon} size={18} class="mt-0.5 shrink-0 text-mute group-hover:text-ember" />
-                <span class="min-w-0">
-                  <span class="flex items-baseline gap-2">
-                    <span class="font-medium text-paper">{c.label[lang]}</span>
-                    <span class="font-mono text-[0.6875rem] text-faint">
-                      {String(countBy(tools, c.id)).padStart(2, '0')}
-                    </span>
-                  </span>
-                  <span class="mt-1 block truncate text-xs text-mute">
-                    {tools
-                      .filter((x) => x.data.category === c.id)
-                      .map((x) => x.data.name)
-                      .join(' · ')}
-                  </span>
-                </span>
-              </a>
-            </li>
-          ))
-        }
-      </ul>
+  <!-- Reference: supports the playbooks -->
+  <section aria-labelledby="reference" class="border-t border-ink-700 py-12">
+    <div class="mb-8 max-w-2xl">
+      <h2 id="reference" class="label"><span class="mr-3 text-ember">02</span>{t('home.reference')}</h2>
+      <p class="mt-3 text-sm leading-relaxed text-mute">{t('home.referenceText')}</p>
     </div>
 
-    <div aria-labelledby="sheets-h" class="min-w-0">
-      <div class="mb-6 flex items-baseline justify-between gap-4">
-        <h2 id="sheets-h" class="label"><span class="mr-3 text-ember">04</span>{t('home.cheatsheets')}</h2>
+    <div class="grid gap-10 md:grid-cols-3">
+      <div class="min-w-0">
+        <div class="mb-3 flex items-baseline justify-between gap-3 border-b border-ink-700 pb-2">
+          <h3 class="font-semibold text-paper">{t('nav.artifacts')}</h3>
+          <a href={href(lang, '/artifacts/')} class="font-mono text-xs text-mute hover:text-paper">→</a>
+        </div>
+        <ul class="divide-y divide-ink-800">
+          {
+            ARTIFACT_CATEGORIES.map((c) => (
+              <li>
+                <a href={href(lang, `/artifacts/${c.id}/`)} class={refRow}>
+                  <Icon name={c.icon} size={16} class="shrink-0 text-mute group-hover:text-ember" />
+                  <span class="flex-1">{c.label[lang]}</span>
+                  <span class="font-mono text-[0.6875rem] text-faint">
+                    {String(countBy(artifacts, c.id)).padStart(2, '0')}
+                  </span>
+                </a>
+              </li>
+            ))
+          }
+        </ul>
       </div>
-      <ul class="divide-y divide-ink-700 border-y border-ink-700">
-        {
-          sheets.map((s) => (
-            <li>
-              <a href={href(lang, cheatsheetPath(s))} class="group block py-3.5 transition-colors hover:bg-ink-900 sm:px-2">
-                <span class="flex items-center gap-2 font-medium text-paper">
-                  {s.data.name}
+
+      <div class="min-w-0">
+        <div class="mb-3 flex items-baseline justify-between gap-3 border-b border-ink-700 pb-2">
+          <h3 class="font-semibold text-paper">{t('nav.tools')}</h3>
+          <a href={href(lang, '/tools/')} class="font-mono text-xs text-mute hover:text-paper">→</a>
+        </div>
+        <ul class="divide-y divide-ink-800">
+          {
+            toolCategories.map((c) => (
+              <li>
+                <a href={href(lang, `/tools/${c.id}/`)} class={refRow}>
+                  <Icon name={c.icon} size={16} class="shrink-0 text-mute group-hover:text-ember" />
+                  <span class="flex-1">{c.label[lang]}</span>
+                  <span class="font-mono text-[0.6875rem] text-faint">
+                    {String(countBy(tools, c.id)).padStart(2, '0')}
+                  </span>
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+
+      <div class="min-w-0">
+        <div class="mb-3 flex items-baseline justify-between gap-3 border-b border-ink-700 pb-2">
+          <h3 class="font-semibold text-paper">{t('nav.cheatsheets')}</h3>
+          <a href={href(lang, '/cheatsheets/')} class="font-mono text-xs text-mute hover:text-paper">→</a>
+        </div>
+        <ul class="divide-y divide-ink-800">
+          {
+            sheets.map((s) => (
+              <li>
+                <a href={href(lang, cheatsheetPath(s))} class={refRow}>
+                  <span class="flex-1">{s.data.name}</span>
                   <span aria-hidden="true" class="text-ember opacity-0 transition-opacity group-hover:opacity-100">
                     →
                   </span>
-                </span>
-                <span class="mt-0.5 block text-sm text-mute">{s.data.summary}</span>
-              </a>
-            </li>
-          ))
-        }
-      </ul>
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
     </div>
   </section>
 

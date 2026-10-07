@@ -1,0 +1,70 @@
+---
+import Icon from './Icon.astro';
+import { playbookPath, slugOf, type Playbook } from '@/lib/content';
+import { getLang, href } from '@/lib/url';
+import { useTranslations } from '@/i18n/ui';
+
+/** "I have… → playbook" card. Shows saved progress (client-side) when present. */
+interface Props {
+  playbook: Playbook;
+  index: number;
+}
+
+const { playbook, index } = Astro.props;
+const lang = getLang(Astro.url);
+const t = useTranslations(lang);
+const d = playbook.data;
+const preview = d.steps.map((s) => s.title);
+---
+
+<a
+  href={href(lang, playbookPath(playbook))}
+  data-pb-card={slugOf(playbook)}
+  data-pb-total={d.steps.length}
+  class="group flex h-full flex-col border border-ink-700 bg-ink-900 p-5 transition-colors hover:border-ember/50 hover:bg-ink-850"
+>
+  <div class="flex items-start justify-between gap-3">
+    <span
+      class="flex size-10 items-center justify-center border border-ink-600 text-mute transition-colors group-hover:border-ember/50 group-hover:text-ember"
+    >
+      <Icon name={d.icon} size={20} />
+    </span>
+    <span class="font-mono text-[0.6875rem] text-faint">{String(index).padStart(2, '0')}</span>
+  </div>
+
+  <p class="label mt-5">{t('home.ihave')}</p>
+  <p class="mt-1 text-lg leading-snug font-semibold text-balance text-paper">{d.scenario}</p>
+
+  <div class="mt-auto pt-5">
+    <p class="flex items-center gap-2 border-t border-ink-700 pt-3 text-sm text-paper-dim">
+      <span class="min-w-0 flex-1 truncate">{d.name}</span>
+      <span aria-hidden="true" class="text-ember transition-transform group-hover:translate-x-0.5">→</span>
+    </p>
+    <p class="mt-1.5 truncate font-mono text-[0.6875rem] text-faint" aria-hidden="true">
+      {preview.join(' → ')}
+    </p>
+    <p class="mt-2 flex items-center gap-3 font-mono text-[0.6875rem] text-mute">
+      <span>{t('playbooks.steps', { n: d.steps.length })}</span>
+      {d.questions.length > 0 && <span>· {t('playbooks.questions', { n: d.questions.length })}</span>}
+      <span data-pb-progress hidden class="ml-auto text-ember"></span>
+    </p>
+  </div>
+</a>
+
+<script>
+  // Show saved progress ("3/10") on cards for playbooks already started.
+  document.querySelectorAll<HTMLElement>('[data-pb-card]').forEach((card) => {
+    try {
+      const raw = localStorage.getItem(`kh-pb:${card.dataset.pbCard}`);
+      if (!raw) return;
+      const done = (JSON.parse(raw) as { s?: number[] }).s?.length ?? 0;
+      const el = card.querySelector<HTMLElement>('[data-pb-progress]');
+      if (el && done > 0) {
+        el.textContent = `✓ ${done}/${card.dataset.pbTotal}`;
+        el.hidden = false;
+      }
+    } catch {
+      /* storage unavailable */
+    }
+  });
+</script>

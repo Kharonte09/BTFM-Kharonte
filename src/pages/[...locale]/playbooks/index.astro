@@ -2,9 +2,8 @@
 import type { GetStaticPaths } from 'astro';
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import PageHeader from '@/components/PageHeader.astro';
-import Flow from '@/components/Flow.astro';
-import { getPlaybooks, playbookPath, refCode, slugOf } from '@/lib/content';
-import { href } from '@/lib/url';
+import PlaybookCard from '@/components/PlaybookCard.astro';
+import { getPlaybooks } from '@/lib/content';
 import { localeStaticPaths } from '@/i18n/routing';
 import { useTranslations, type Lang } from '@/i18n/ui';
 
@@ -18,27 +17,13 @@ const playbooks = await getPlaybooks(lang);
 <BaseLayout title={t('playbooks.title')} description={t('playbooks.summary')}>
   <PageHeader title={t('playbooks.title')} summary={t('playbooks.summary')} crumbs={[{ label: t('playbooks.title') }]} />
 
-  <ol class="mt-10 space-y-4">
+  <ul class="mt-10 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
     {
       playbooks.map((p, i) => (
         <li>
-          <a
-            href={href(lang, playbookPath(p))}
-            class="group block border border-ink-700 bg-ink-900 p-5 transition-colors hover:border-ink-500 hover:bg-ink-850"
-          >
-            <div class="flex flex-wrap items-baseline gap-x-4 gap-y-1">
-              <span class="font-mono text-xs text-ember">{String(i + 1).padStart(2, '0')}</span>
-              <h2 class="text-lg font-semibold text-paper">{p.data.name}</h2>
-              <span class="label text-faint">{refCode('playbook', slugOf(p))}</span>
-              <span class="label ml-auto text-faint">{t('playbooks.steps', { n: p.data.steps.length })}</span>
-            </div>
-            <p class="mt-2 max-w-3xl text-sm leading-relaxed text-mute">{p.data.summary}</p>
-            <div class="mt-4" aria-hidden="true">
-              <Flow steps={p.data.steps.map((s) => s.title)} compact />
-            </div>
-          </a>
+          <PlaybookCard playbook={p} index={i + 1} />
         </li>
       ))
     }
-  </ol>
+  </ul>
 </BaseLayout>
