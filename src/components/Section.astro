@@ -1,0 +1,19 @@
+---
+/** Numbered manual section: "02 — LOOK FOR". */
+interface Props {
+  id: string;
+  title: string;
+  index?: number;
+  class?: string;
+}
+const { id, title, index, class: className } = Astro.props;
+const num = index !== undefined ? String(index).padStart(2, '0') : undefined;
+---
+
+<section id={id} aria-labelledby={`${id}-h`} class:list={['scroll-mt-24', className]}>
+  <h2 id={`${id}-h`} class="label mb-4 flex items-center gap-3 border-b border-ink-700 pb-2">
+    {num && <span class="text-ember">{num}</span>}
+    <span>{title}</span>
+  </h2>
+  <slot />
+</section>

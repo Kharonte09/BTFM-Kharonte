@@ -1,0 +1,107 @@
+---
+import { Menu, Search, X } from '@lucide/astro';
+import Logo from './Logo.astro';
+import { NAV } from '@/lib/site';
+import { url } from '@/lib/url';
+
+const current = Astro.url.pathname;
+const isActive = (href: string) => current.startsWith(url(href));
+---
+
+<header class="sticky top-0 z-40 border-b border-ink-700 bg-ink-950/90 backdrop-blur-md">
+  <a
+    href="#main"
+    class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:bg-ember focus:px-3 focus:py-2 focus:text-ink-950"
+    >Skip to content</a
+  >
+  <div class="mx-auto flex h-14 max-w-page items-center gap-6 px-4 sm:px-6">
+    <a href={url('/')} class="flex items-center gap-2.5 text-paper" aria-label="KHARONTE — home">
+      <Logo size={22} />
+      <span class="font-mono text-sm font-semibold tracking-[0.22em]">KHARONTE</span>
+      <span class="hidden border-l border-ink-600 pl-2.5 font-mono text-[0.6875rem] tracking-[0.14em] text-faint uppercase md:inline"
+        >Blue Team Field Manual</span
+      >
+    </a>
+
+    <nav aria-label="Main" class="ml-auto hidden md:block">
+      <ul class="flex items-center gap-1">
+        {
+          NAV.map((item) => (
+            <li>
+              <a
+                href={url(item.href)}
+                aria-current={isActive(item.href) ? 'page' : undefined}
+                class="relative px-3 py-2 text-sm text-mute transition-colors hover:text-paper aria-[current=page]:text-paper aria-[current=page]:after:absolute aria-[current=page]:after:inset-x-3 aria-[current=page]:after:-bottom-[0.6875rem] aria-[current=page]:after:h-px aria-[current=page]:after:bg-ember"
+              >
+                {item.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <a
+      href={url('/search/')}
+      data-open-search
+      class="ml-auto flex items-center gap-2 border border-ink-600 bg-ink-900 px-2.5 py-1.5 text-sm text-mute transition-colors hover:border-ink-500 hover:text-paper md:ml-0"
+      aria-label="Search (press / or Ctrl+K)"
+    >
+      <Search size={15} stroke-width={1.5} aria-hidden="true" />
+      <span class="hidden lg:inline">Search</span>
+      <span class="kbd hidden lg:inline-flex" aria-hidden="true">Ctrl K</span>
+    </a>
+
+    <button
+      type="button"
+      class="-mr-1 p-1.5 text-mute hover:text-paper md:hidden"
+      aria-controls="mobile-nav"
+      aria-expanded="false"
+      data-menu-toggle
+    >
+      <span class="sr-only">Menu</span>
+      <Menu size={20} stroke-width={1.5} aria-hidden="true" data-menu-open />
+      <X size={20} stroke-width={1.5} aria-hidden="true" data-menu-close class="hidden" />
+    </button>
+  </div>
+
+  <nav id="mobile-nav" aria-label="Main" hidden class="border-t border-ink-700 bg-ink-950 md:hidden">
+    <ul class="mx-auto max-w-page divide-y divide-ink-800 px-4">
+      {
+        NAV.map((item, i) => (
+          <li>
+            <a
+              href={url(item.href)}
+              aria-current={isActive(item.href) ? 'page' : undefined}
+              class="flex items-center gap-4 py-3.5 text-paper-dim aria-[current=page]:text-paper"
+            >
+              <span class="font-mono text-xs text-ember">{String(i + 1).padStart(2, '0')}</span>
+              <span class="text-base">{item.label}</span>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </nav>
+</header>
+
+<script>
+  const toggle = document.querySelector<HTMLButtonElement>('[data-menu-toggle]');
+  const panel = document.getElementById('mobile-nav');
+  if (toggle && panel) {
+    const set = (open: boolean) => {
+      panel.hidden = !open;
+      toggle.setAttribute('aria-expanded', String(open));
+      toggle.querySelector('[data-menu-open]')?.classList.toggle('hidden', open);
+      toggle.querySelector('[data-menu-close]')?.classList.toggle('hidden', !open);
+    };
+    toggle.addEventListener('click', () => set(panel.hasAttribute('hidden')));
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !panel.hasAttribute('hidden')) {
+        set(false);
+        toggle.focus();
+      }
+    });
+    matchMedia('(min-width: 48rem)').addEventListener('change', (e) => e.matches && set(false));
+  }
+</script>

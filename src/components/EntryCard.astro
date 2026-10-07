@@ -1,0 +1,36 @@
+---
+import { url } from '@/lib/url';
+
+interface Props {
+  href: string;
+  title: string;
+  summary: string;
+  code?: string;
+  meta?: string;
+}
+const { href, title, summary, code, meta } = Astro.props;
+---
+
+<a
+  href={url(href)}
+  class="group flex h-full flex-col gap-2 border border-ink-700 bg-ink-900 p-4 transition-colors hover:border-ink-500 hover:bg-ink-850"
+>
+  {
+    (code || meta) && (
+      <div class="flex items-center justify-between gap-3">
+        {code && <span class="label truncate text-faint">{code}</span>}
+        {meta && <span class="label shrink-0 text-faint">{meta}</span>}
+      </div>
+    )
+  }
+  <h3 class="flex items-center gap-2 font-semibold text-paper">
+    {title}
+    <span
+      aria-hidden="true"
+      class="text-ember opacity-0 transition-all group-hover:translate-x-0.5 group-hover:opacity-100"
+    >
+      →
+    </span>
+  </h3>
+  <p class="text-sm leading-relaxed text-mute">{summary}</p>
+</a>

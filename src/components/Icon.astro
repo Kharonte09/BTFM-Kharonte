@@ -1,0 +1,40 @@
+---
+import {
+  Binary,
+  Bug,
+  Braces,
+  FileText,
+  HardDrive,
+  Mail,
+  MemoryStick,
+  Monitor,
+  Network,
+  Wrench,
+} from '@lucide/astro';
+import type { IconName } from '@/lib/taxonomy';
+
+interface Props {
+  name: IconName;
+  size?: number;
+  class?: string;
+}
+
+const { name, size = 18, class: className } = Astro.props;
+
+const ICONS = {
+  windows: Monitor,
+  email: Mail,
+  documents: FileText,
+  binaries: Binary,
+  network: Network,
+  memory: MemoryStick,
+  dfir: HardDrive,
+  malware: Bug,
+  reversing: Braces,
+  general: Wrench,
+} as const;
+
+const Component = ICONS[name];
+---
+
+<Component size={size} stroke-width={1.5} class={className} aria-hidden="true" />

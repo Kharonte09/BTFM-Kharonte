@@ -1,0 +1,42 @@
+---
+import Logo from './Logo.astro';
+import { NAV } from '@/lib/site';
+import { url } from '@/lib/url';
+---
+
+<footer class="mt-24 border-t border-ink-700">
+  <div class="mx-auto grid max-w-page gap-8 px-4 py-10 sm:px-6 md:grid-cols-[1fr_auto]">
+    <div class="max-w-md space-y-3">
+      <p class="flex items-center gap-2.5 text-paper">
+        <Logo size={18} />
+        <span class="font-mono text-xs font-semibold tracking-[0.22em]">KHARONTE</span>
+      </p>
+      <p class="text-sm leading-relaxed text-mute">
+        A technical reference to support analysis — not a replacement for the analyst. Verify against
+        primary sources before acting on any entry.
+      </p>
+      <p class="font-mono text-[0.6875rem] text-faint">
+        Static · No tracking · No external APIs · Open source
+      </p>
+    </div>
+    <nav aria-label="Footer">
+      <ul class="grid grid-cols-2 gap-x-10 gap-y-2 text-sm">
+        {
+          NAV.map((item) => (
+            <li>
+              <a href={url(item.href)} class="text-mute transition-colors hover:text-paper">
+                {item.label}
+              </a>
+            </li>
+          ))
+        }
+        <li>
+          <a href={url('/search/')} class="text-mute transition-colors hover:text-paper">Search</a>
+        </li>
+        <li>
+          <a href={url('/about/')} class="text-mute transition-colors hover:text-paper">About</a>
+        </li>
+      </ul>
+    </nav>
+  </div>
+</footer>

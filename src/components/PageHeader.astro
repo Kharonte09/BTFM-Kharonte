@@ -1,0 +1,26 @@
+---
+import Breadcrumbs, { type Crumb } from './Breadcrumbs.astro';
+
+interface Props {
+  title: string;
+  summary?: string;
+  code?: string;
+  crumbs: Crumb[];
+}
+const { title, summary, code, crumbs } = Astro.props;
+---
+
+<header class="border-b border-ink-700 pb-8">
+  <Breadcrumbs items={crumbs} />
+  {code && <p class="label mt-8 text-ember">{code}</p>}
+  <h1
+    class:list={[
+      'text-3xl font-semibold tracking-tight text-balance text-paper sm:text-4xl',
+      code ? 'mt-2' : 'mt-8',
+    ]}
+  >
+    {title}
+  </h1>
+  {summary && <p class="mt-4 max-w-3xl text-lg leading-relaxed text-paper-dim">{summary}</p>}
+  <slot />
+</header>

@@ -1,0 +1,35 @@
+---
+/** Key/value metadata block for the side rail. */
+export interface MetaItem {
+  label: string;
+  value?: string | string[] | undefined;
+  href?: string | undefined;
+}
+interface Props {
+  items: MetaItem[];
+}
+const items = Astro.props.items.filter(
+  (i) => i.value && (!Array.isArray(i.value) || i.value.length > 0),
+);
+---
+
+<dl class="divide-y divide-ink-700 border-y border-ink-700">
+  {
+    items.map((i) => (
+      <div class="grid grid-cols-[6.5rem_1fr] gap-3 py-2.5">
+        <dt class="label pt-0.5">{i.label}</dt>
+        <dd class="text-sm text-paper-dim">
+          {i.href ? (
+            <a href={i.href} class="link break-all" rel="noopener noreferrer" target="_blank">
+              {i.value}
+            </a>
+          ) : Array.isArray(i.value) ? (
+            i.value.join(' · ')
+          ) : (
+            i.value
+          )}
+        </dd>
+      </div>
+    ))
+  }
+</dl>

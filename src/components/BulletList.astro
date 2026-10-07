@@ -1,0 +1,26 @@
+---
+import { inline } from '@/lib/inline';
+
+interface Props {
+  items: string[];
+  mono?: boolean;
+}
+const { items, mono = false } = Astro.props;
+---
+
+<ul class="space-y-2">
+  {
+    items.map((item) => (
+      <li
+        class:list={[
+          'relative pl-5 leading-relaxed text-paper-dim',
+          'before:absolute before:top-[0.72em] before:left-0 before:h-px before:w-2.5 before:bg-ember',
+          '[&_code]:rounded-sm [&_code]:bg-ink-800 [&_code]:px-1 [&_code]:py-px [&_code]:text-[0.85em] [&_code]:text-paper',
+          '[&_strong]:font-semibold [&_strong]:text-paper',
+          mono && 'font-mono text-sm',
+        ]}
+        set:html={inline(item)}
+      />
+    ))
+  }
+</ul>

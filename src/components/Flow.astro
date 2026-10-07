@@ -1,0 +1,58 @@
+---
+import { inline } from '@/lib/inline';
+
+/**
+ * Workflow diagram. Vertical by default (readable on mobile);
+ * `compact` renders a wrapping horizontal strip, optionally linking to #step-N.
+ */
+interface Props {
+  steps: string[];
+  compact?: boolean;
+  links?: boolean;
+}
+const { steps, compact = false, links = false } = Astro.props;
+const anchor = (i: number) => `step-${i + 1}`;
+---
+
+{
+  compact ? (
+    <ol class="flex flex-wrap items-center gap-x-1.5 gap-y-2 font-mono text-xs" aria-label="Workflow">
+      {steps.map((s, i) => (
+        <li class="flex items-center gap-1.5">
+          {links ? (
+            <a
+              href={`#${anchor(i)}`}
+              class="border border-ink-600 bg-ink-850 px-2 py-1 text-paper-dim transition-colors hover:border-ember/60 hover:text-paper"
+            >
+              <span class="text-faint">{String(i + 1).padStart(2, '0')}</span> {s}
+            </a>
+          ) : (
+            <span class="border border-ink-600 bg-ink-850 px-2 py-1 text-paper-dim">{s}</span>
+          )}
+          {i < steps.length - 1 && (
+            <span aria-hidden="true" class="text-ember">
+              →
+            </span>
+          )}
+        </li>
+      ))}
+    </ol>
+  ) : (
+    <ol class="font-mono text-sm" aria-label="Workflow">
+      {steps.map((s, i) => (
+        <li class="relative pb-3 pl-9 last:pb-0">
+          {i < steps.length - 1 && (
+            <span aria-hidden="true" class="absolute top-6 bottom-0 left-[0.6875rem] w-px bg-ink-600" />
+          )}
+          <span
+            aria-hidden="true"
+            class="absolute top-0 left-0 flex size-[1.4rem] items-center justify-center border border-ink-600 bg-ink-900 text-[0.625rem] text-ember"
+          >
+            {i + 1}
+          </span>
+          <span class="block pt-0.5 text-paper-dim [&_code]:text-paper" set:html={inline(s)} />
+        </li>
+      ))}
+    </ol>
+  )
+}

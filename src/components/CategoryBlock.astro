@@ -1,0 +1,56 @@
+---
+import EntryCard from './EntryCard.astro';
+import Icon from './Icon.astro';
+import type { Category } from '@/lib/taxonomy';
+import { url } from '@/lib/url';
+
+export interface CardData {
+  href: string;
+  title: string;
+  summary: string;
+  code?: string;
+  meta?: string;
+}
+
+interface Props {
+  category: Category;
+  href?: string;
+  entries: CardData[];
+  headingLevel?: 'h2' | 'h3';
+}
+
+const { category, href, entries, headingLevel = 'h2' } = Astro.props;
+const Heading = headingLevel;
+---
+
+<section id={category.id} aria-labelledby={`cat-${category.id}`} class="scroll-mt-24">
+  <div class="mb-4 flex items-end justify-between gap-4 border-b border-ink-700 pb-3">
+    <div class="flex items-start gap-3">
+      <span class="mt-0.5 flex size-8 shrink-0 items-center justify-center border border-ink-600 text-ember">
+        <Icon name={category.icon} size={16} />
+      </span>
+      <div>
+        <Heading id={`cat-${category.id}`} class="font-semibold text-paper">
+          {href ? <a href={url(href)} class="hover:underline hover:decoration-ember hover:underline-offset-4">{category.label}</a> : category.label}
+        </Heading>
+        <p class="text-sm text-mute">{category.description}</p>
+      </div>
+    </div>
+    <span class="label shrink-0">{String(entries.length).padStart(2, '0')} entries</span>
+  </div>
+  {
+    entries.length > 0 ? (
+      <ul class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {entries.map((e) => (
+          <li>
+            <EntryCard {...e} />
+          </li>
+        ))}
+      </ul>
+    ) : (
+      <p class="border border-dashed border-ink-700 px-4 py-6 text-sm text-faint">
+        No entries yet. Contributions welcome.
+      </p>
+    )
+  }
+</section>

@@ -1,0 +1,43 @@
+---
+import BaseLayout from './BaseLayout.astro';
+import PageHeader from '@/components/PageHeader.astro';
+import MetaList, { type MetaItem } from '@/components/MetaList.astro';
+import ReviewNotice from '@/components/ReviewNotice.astro';
+import Toc, { type TocItem } from '@/components/Toc.astro';
+import type { Crumb } from '@/components/Breadcrumbs.astro';
+
+/** Two-column reference layout shared by tools, artifacts and playbooks. */
+interface Props {
+  title: string;
+  summary: string;
+  code: string;
+  crumbs: Crumb[];
+  meta: MetaItem[];
+  toc: TocItem[];
+  review?: boolean;
+  updated?: Date | undefined;
+}
+
+const { title, summary, code, crumbs, meta, toc, review = false, updated } = Astro.props;
+const updatedLabel = updated?.toISOString().slice(0, 10);
+---
+
+<BaseLayout title={title} description={summary} type="article">
+  <PageHeader title={title} summary={summary} code={code} crumbs={crumbs}>
+    <slot name="header" />
+  </PageHeader>
+
+  <div class="mt-8 grid gap-10 lg:grid-cols-[minmax(0,1fr)_17rem] lg:gap-14">
+    <aside class="space-y-8 lg:order-2" aria-label="Entry details">
+      <div class="space-y-8 lg:sticky lg:top-24">
+        <MetaList items={[...meta, { label: 'Updated', value: updatedLabel }]} />
+        <Toc items={toc} />
+      </div>
+    </aside>
+
+    <article class="min-w-0 space-y-12 lg:order-1">
+      {review && <ReviewNotice />}
+      <slot />
+    </article>
+  </div>
+</BaseLayout>

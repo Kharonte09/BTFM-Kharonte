@@ -1,0 +1,36 @@
+---
+import { resolveRefs } from '@/lib/content';
+
+/** Renders cross references as chips; known entries become links. */
+interface Props {
+  refs: string[];
+  empty?: string;
+}
+const { refs, empty } = Astro.props;
+const resolved = await resolveRefs(refs);
+---
+
+{
+  resolved.length === 0 ? (
+    empty && <p class="text-sm text-faint">{empty}</p>
+  ) : (
+    <ul class="flex flex-wrap gap-2">
+      {resolved.map((r) => (
+        <li>
+          {r.href ? (
+            <a href={r.href} class="chip">
+              <span aria-hidden="true" class="text-ember">
+                →
+              </span>
+              {r.label}
+            </a>
+          ) : (
+            <span class="chip border-dashed text-mute" title="Not documented in Kharonte yet">
+              {r.label}
+            </span>
+          )}
+        </li>
+      ))}
+    </ul>
+  )
+}
