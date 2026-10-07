@@ -1,0 +1,87 @@
+name: Wireshark Display Filters
+summary: Display filters y menús de Wireshark listos para usar en el análisis de PCAP — hosts, DNS, HTTP, TLS, credenciales, ficheros y C2.
+order: 4
+tags: [wireshark, pcap, display filters, red, btlo]
+sections:
+  - id: basics
+    title: Básicos
+    note: Los display filters (esta hoja) no son lo mismo que los capture filters (BPF, p. ej. `host 10.0.0.5`). Combínalos con `&&`, `||`, `!` y paréntesis.
+    columns: [Filtro, Qué muestra]
+    rows:
+      - ['ip.addr == 10.0.0.5', 'Tráfico desde o hacia un equipo.']
+      - ['ip.src == 10.0.0.5 && ip.dst == 203.0.113.10', 'Un sentido entre dos equipos.']
+      - ['tcp.port == 4444 || udp.port == 53', 'Tráfico en un puerto (en cualquier extremo).']
+      - ['tcp.stream eq 12', 'Una única conversación TCP (igual que Follow TCP Stream).']
+      - ['frame.number == 1234', 'Saltar a / referenciar un paquete.']
+      - ['frame.time >= "2024-01-15 10:00:00" && frame.time <= "2024-01-15 10:30:00"', 'Una ventana temporal (usa el formato de hora que muestre tu Wireshark).']
+      - ['!(arp || dns || icmp || ssdp || nbns)', 'Ocultar el ruido habitual.']
+      - ['frame contains "password"', 'Paquetes que contienen un string (distingue mayúsculas; usa `matches "(?i)password"` para no distinguir).']
+  - id: hosts
+    title: Identificar hosts
+    columns: [Filtro, Qué muestra]
+    rows:
+      - ['dhcp', 'Tráfico DHCP — `dhcp.option.hostname` da el hostname del cliente y `eth.src` su MAC.']
+      - ['nbns', 'Registros de nombres NetBIOS — hostnames en redes Windows.']
+      - ['kerberos.CNameString', 'Nombres de cliente Kerberos — cuentas de usuario (y de máquina, acabadas en `$`).']
+      - ['ntlmssp.auth.username', 'Autenticación NTLM — nombres de usuario y dominio.']
+      - ['http.user_agent', 'Pistas de navegador / sistema operativo y user agents de malware.']
+  - id: dns
+    title: DNS
+    columns: [Filtro, Qué muestra]
+    rows:
+      - ['dns.flags.response == 0', 'Solo consultas DNS.']
+      - ['dns.qry.name contains "example"', 'Consultas de un nombre.']
+      - ['dns.qry.type == 16', 'Consultas TXT (tunneling, C2).']
+      - ['dns.flags.rcode == 3', 'Respuestas NXDOMAIN (DGA, errores tipográficos, sinkholes).']
+      - ['dns.a == 203.0.113.10', 'Respuestas que resuelven a una IP concreta.']
+  - id: http
+    title: HTTP
+    columns: [Filtro, Qué muestra]
+    rows:
+      - ['http.request', 'Todas las peticiones HTTP.']
+      - ['http.request.method == "POST"', 'Subidas / formularios / check-ins de C2.']
+      - ['http.host contains "example"', 'Peticiones a un host.']
+      - ['http.request.uri contains ".exe"', 'Peticiones de ejecutables (prueba `.ps1`, `.hta`, `.zip`, `.dll`).']
+      - ['http.response.code == 200 && http.content_type contains "application"', 'Descargas correctas de binarios / documentos.']
+      - ['http.authorization', 'Headers Authorization (Basic u otros).']
+  - id: tls
+    title: TLS
+    columns: [Filtro, Qué muestra]
+    rows:
+      - ['tls.handshake.type == 1', 'Client Hello — añade la columna `tls.handshake.extensions_server_name` (SNI).']
+      - ['tls.handshake.extensions_server_name contains "example"', 'Sesiones TLS a un nombre de servidor.']
+      - ['tls.handshake.type == 11', 'Mensajes Certificate — revisa emisor, sujeto y validez.']
+  - id: credentials
+    title: Credenciales y protocolos en claro
+    columns: [Filtro, Qué muestra]
+    rows:
+      - ['ftp.request.command == "USER" || ftp.request.command == "PASS"', 'Usuario y contraseña de FTP.']
+      - ['ftp-data', 'Transferencias de ficheros FTP (expórtalas con Follow / Export Objects).']
+      - ['smtp.req.command == "AUTH"', 'Autenticación SMTP (le siguen las credenciales en Base64).']
+      - ['pop || imap', 'Descarga de correo en claro.']
+      - ['telnet', 'Sesiones Telnet — léelas con Follow TCP Stream.']
+      - ['smb2.filename', 'Ficheros accedidos por SMB2.']
+  - id: hunting
+    title: Hunting
+    columns: [Filtro, Qué muestra]
+    rows:
+      - ['tcp.flags.syn == 1 && tcp.flags.ack == 0', 'Intentos de conexión — muchos a puertos distintos = escaneo.']
+      - ['tcp.flags.reset == 1', 'Conexiones rechazadas / puertos cerrados.']
+      - ['tcp.analysis.flags', 'Retransmisiones, resets, ventanas cero — sesiones rotas o inusuales.']
+      - ['icmp.type == 8', 'Peticiones de ping (barridos, ICMP tunneling).']
+      - ['tcp.len > 1000 && ip.src == 10.0.0.5', 'Payloads salientes grandes desde un equipo (exfiltración).']
+  - id: menus
+    title: Menús útiles
+    columns: [Menú, Para qué]
+    mono: []
+    rows:
+      - ['Statistics → Capture File Properties', 'Rango temporal, número de paquetes, hashes del fichero.']
+      - ['Statistics → Protocol Hierarchy', 'Qué protocolos hay.']
+      - ['Statistics → Endpoints / Conversations', 'Quién habla más, bytes por equipo y por conversación.']
+      - ['Statistics → HTTP → Requests', 'Todas las URLs pedidas agrupadas por host.']
+      - ['Statistics → I/O Graphs', 'Tráfico en el tiempo — patrones de beaconing.']
+      - ['Analyze → Follow → TCP / HTTP Stream', 'Leer una conversación completa.']
+      - ['File → Export Objects → HTTP / SMB / FTP-DATA / IMF', 'Recuperar ficheros transferidos (trátalos como malware).']
+      - ['File → Export Specified Packets', 'Guardar solo los paquetes relevantes.']
+      - ['Analyze → Expert Information', 'Avisos y errores que ha detectado Wireshark.']
+      - ['View → Time Display Format → UTC', 'Mostrar las horas en UTC.']
