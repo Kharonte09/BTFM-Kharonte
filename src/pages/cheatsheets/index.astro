@@ -10,7 +10,7 @@ const summary = 'Filterable quick-reference tables for use during an investigati
 
 <BaseLayout title="Cheatsheets" description={summary}>
   <PageHeader title="Cheatsheets" summary={summary} crumbs={[{ label: 'Cheatsheets' }]} />
-  <ul class="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+  <ul class="mt-10 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
     {
       sheets.map((s) => (
         <li>
