@@ -15,14 +15,7 @@ const { href, title, summary, code, meta } = Astro.props;
   href={url(href)}
   class="group flex h-full flex-col gap-2 border border-ink-700 bg-ink-900 p-4 transition-colors hover:border-ink-500 hover:bg-ink-850"
 >
-  {
-    (code || meta) && (
-      <div class="flex items-center justify-between gap-3">
-        {code && <span class="label truncate text-faint">{code}</span>}
-        {meta && <span class="label shrink-0 text-faint">{meta}</span>}
-      </div>
-    )
-  }
+  {code && <span class="label truncate text-faint">{code}</span>}
   <h3 class="flex items-center gap-2 font-semibold text-paper">
     {title}
     <span
@@ -32,5 +25,6 @@ const { href, title, summary, code, meta } = Astro.props;
       →
     </span>
   </h3>
+  {meta && <span class="-mt-1 font-mono text-xs text-mute">{meta}</span>}
   <p class="text-sm leading-relaxed text-mute">{summary}</p>
 </a>
