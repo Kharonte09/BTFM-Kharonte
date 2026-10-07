@@ -1,0 +1,111 @@
+name: Windows Event IDs
+summary: High-value Windows event IDs for investigations — Security, System, PowerShell, Sysmon, Task Scheduler, RDP and Defender.
+order: 1
+tags: [event logs, evtx, sysmon, logons, detection]
+sections:
+  - id: security
+    title: Security log
+    note: Many of these depend on the audit policy. `4688` only includes the command line when "Include command line in process creation events" is enabled.
+    columns: [ID, Event, Why it matters]
+    rows:
+      - ['4624', 'An account was successfully logged on', 'Who, when, from where. Check `LogonType`, source IP/workstation and logon ID for correlation.']
+      - ['4625', 'An account failed to log on', 'Brute force / password spraying. Check failure status codes and source.']
+      - ['4634', 'An account was logged off', 'Session end; pair with `4624` via logon ID.']
+      - ['4647', 'User initiated logoff', 'Interactive session end.']
+      - ['4648', 'A logon was attempted using explicit credentials', '`runas`, scheduled tasks, lateral movement tools using alternate credentials.']
+      - ['4672', 'Special privileges assigned to new logon', 'Admin-equivalent logon. Correlate with `4624` logon ID.']
+      - ['4688', 'A new process has been created', 'Process execution with parent; command line if enabled.']
+      - ['4697', 'A service was installed in the system', 'Service persistence / remote execution (Security log counterpart of `7045`).']
+      - ['4698', 'A scheduled task was created', 'Task persistence; XML of the task in the event. Needs the "Other Object Access Events" audit subcategory.']
+      - ['4699', 'A scheduled task was deleted', 'Cleanup after execution.']
+      - ['4700 / 4701', 'A scheduled task was enabled / disabled', 'Task tampering.']
+      - ['4702', 'A scheduled task was updated', 'Modification of existing tasks for persistence.']
+      - ['4720', 'A user account was created', 'Backdoor accounts.']
+      - ['4722', 'A user account was enabled', 'Re-enabled dormant accounts.']
+      - ['4724', 'An attempt was made to reset an account''s password', 'Account takeover by an admin-level actor.']
+      - ['4728 / 4732 / 4756', 'Member added to a global / local / universal security group', 'Privilege escalation (e.g. Domain Admins, Administrators).']
+      - ['4738', 'A user account was changed', 'Attribute changes (e.g. password never expires).']
+      - ['4740', 'A user account was locked out', 'Brute force indicator; source workstation in the event.']
+      - ['4768', 'A Kerberos TGT was requested', 'Domain authentication on DCs; encryption type can indicate downgrade.']
+      - ['4769', 'A Kerberos service ticket was requested', 'Kerberoasting (many requests, RC4 encryption).']
+      - ['4771', 'Kerberos pre-authentication failed', 'Password guessing against Kerberos.']
+      - ['4776', 'The computer attempted to validate the credentials for an account', 'NTLM authentication (on DCs or locally for local accounts).']
+      - ['4778 / 4779', 'Session reconnected / disconnected from a Window Station', 'RDP reconnect / disconnect.']
+      - ['5140', 'A network share object was accessed', 'Access to `ADMIN$`, `C$`, `IPC$` — lateral movement.']
+      - ['5145', 'A network share object was checked to see whether client can be granted desired access', 'Detailed share file access (noisy).']
+      - ['1102', 'The audit log was cleared', 'Anti-forensics.']
+  - id: system
+    title: System log
+    columns: [ID, Event, Why it matters]
+    rows:
+      - ['7045', 'A service was installed in the system', 'PsExec-style remote execution and service persistence. Check `ImagePath`.']
+      - ['7036', 'Service entered the running / stopped state', 'Service start/stop timeline; security tools being stopped.']
+      - ['7040', 'Service start type changed', 'Disabling security services or enabling persistence.']
+      - ['104', 'The event log was cleared', 'Anti-forensics (non-Security logs).']
+      - ['6005 / 6006', 'Event log service started / stopped', 'Boot / shutdown markers.']
+      - ['1074', 'System shutdown or restart initiated by a process/user', 'Who/what restarted the host.']
+  - id: powershell
+    title: PowerShell
+    note: '`4103`/`4104` are in `Microsoft-Windows-PowerShell/Operational`; `400`/`403`/`600`/`800` are in the classic `Windows PowerShell` log.'
+    columns: [ID, Event, Why it matters]
+    rows:
+      - ['4104', 'Script block logging', 'De-obfuscated script content. Suspicious blocks are logged at Warning level even without policy.']
+      - ['4103', 'Module / pipeline logging', 'Cmdlets executed with parameters.']
+      - ['400 / 403', 'Engine state changed to Available / Stopped', 'PowerShell start/stop, host application and command line; engine version (downgrade to v2).']
+      - ['600', 'Provider started', 'Provider lifecycle; includes host application details.']
+      - ['800', 'Pipeline execution details', 'Command details when module logging is enabled.']
+  - id: sysmon
+    title: Sysmon
+    note: Channel `Microsoft-Windows-Sysmon/Operational`. Coverage depends entirely on the deployed configuration.
+    columns: [ID, Event, Why it matters]
+    rows:
+      - ['1', 'Process creation', 'Command line, hashes, parent process, user.']
+      - ['2', 'A process changed a file creation time', 'Timestomping.']
+      - ['3', 'Network connection', 'Process-attributed connections (often filtered).']
+      - ['4', 'Sysmon service state changed', 'Sysmon stopped / started.']
+      - ['5', 'Process terminated', 'Process lifetime.']
+      - ['6', 'Driver loaded', 'Malicious or vulnerable drivers.']
+      - ['7', 'Image loaded', 'DLL loads — side-loading (noisy).']
+      - ['8', 'CreateRemoteThread', 'Code injection.']
+      - ['9', 'RawAccessRead', 'Raw disk reads (credential/NTDS theft techniques).']
+      - ['10', 'ProcessAccess', 'Access to `lsass.exe` — credential dumping.']
+      - ['11', 'FileCreate', 'Dropped files.']
+      - ['12 / 13 / 14', 'Registry object create/delete · value set · key/value rename', 'Registry persistence.']
+      - ['15', 'FileCreateStreamHash', 'Alternate data streams, e.g. `Zone.Identifier` (Mark of the Web).']
+      - ['16', 'Sysmon configuration change', 'Tampering with monitoring.']
+      - ['17 / 18', 'Pipe created / connected', 'Named pipes used by C2 frameworks and lateral movement.']
+      - ['19 / 20 / 21', 'WMI filter / consumer / binding', 'WMI event subscription persistence.']
+      - ['22', 'DNS query', 'Process-attributed DNS.']
+      - ['23', 'FileDelete (archived)', 'Deleted files preserved in the archive directory.']
+      - ['24', 'Clipboard change', 'Clipboard capture (if configured).']
+      - ['25', 'Process tampering', 'Process hollowing / herpaderping.']
+      - ['26', 'FileDeleteDetected', 'File deletions logged without archiving.']
+      - ['27 / 28', 'FileBlockExecutable / FileBlockShredding', 'Blocked executable writes / shredding.']
+      - ['29', 'FileExecutableDetected', 'Executable file written.']
+  - id: tasks-rdp-defender
+    title: Task Scheduler · RDP · WMI · Defender
+    columns: [ID, Log, Why it matters]
+    rows:
+      - ['106', 'TaskScheduler/Operational — task registered', 'New scheduled task.']
+      - ['140', 'TaskScheduler/Operational — task updated', 'Task modification.']
+      - ['141', 'TaskScheduler/Operational — task deleted', 'Cleanup.']
+      - ['200 / 201', 'TaskScheduler/Operational — action started / completed', 'Task execution.']
+      - ['1149', 'TerminalServices-RemoteConnectionManager/Operational', 'RDP user authentication succeeded (source IP).']
+      - ['21 / 22', 'TerminalServices-LocalSessionManager/Operational', 'RDP session logon / shell start.']
+      - ['24 / 25', 'TerminalServices-LocalSessionManager/Operational', 'RDP session disconnected / reconnected.']
+      - ['5861', 'WMI-Activity/Operational', 'Permanent WMI event consumer registered (persistence).']
+      - ['1116 / 1117', 'Windows Defender/Operational', 'Malware detected / action taken.']
+      - ['5001', 'Windows Defender/Operational', 'Real-time protection disabled.']
+  - id: logon-types
+    title: Logon types
+    columns: [Type, Name, Typical source]
+    rows:
+      - ['2', 'Interactive', 'Console logon.']
+      - ['3', 'Network', 'SMB, mapped drives, PsExec, WMI and many remote admin tools.']
+      - ['4', 'Batch', 'Scheduled tasks.']
+      - ['5', 'Service', 'Services running as an account.']
+      - ['7', 'Unlock', 'Workstation unlock.']
+      - ['8', 'NetworkCleartext', 'Credentials sent in cleartext (e.g. IIS basic auth).']
+      - ['9', 'NewCredentials', '`runas /netonly`, some pass-the-hash tooling.']
+      - ['10', 'RemoteInteractive', 'RDP.']
+      - ['11', 'CachedInteractive', 'Logon with cached domain credentials.']

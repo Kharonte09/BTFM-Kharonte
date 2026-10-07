@@ -1,0 +1,77 @@
+name: Common DFIR Commands
+summary: PowerShell, Windows CLI, Linux and network one-liners for live response and triage. Reference only — run them in an appropriate environment.
+order: 2
+tags: [commands, powershell, live response, linux, triage]
+sections:
+  - id: powershell
+    title: PowerShell
+    note: Live response changes the system. Record every command you run and prefer collecting artifacts over interactive exploration.
+    columns: [Command, Purpose]
+    rows:
+      - ["Get-FileHash -Algorithm SHA256 .\\sample.bin", 'Hash a file.']
+      - ["Get-ChildItem C:\\Users\\*\\Downloads -Recurse -File | Get-FileHash -Algorithm SHA256", 'Hash every file under a path.']
+      - ["Get-WinEvent -FilterHashtable @{LogName='Security'; Id=4624; StartTime=(Get-Date).AddDays(-1)}", 'Query recent events by ID from a live log.']
+      - ["Get-WinEvent -FilterHashtable @{Path='.\\Security.evtx'; Id=4625}", 'Query an exported .evtx file.']
+      - ["Get-WinEvent -LogName 'Microsoft-Windows-PowerShell/Operational' -FilterXPath '*[System[EventID=4104]]' -MaxEvents 50", 'Recent PowerShell script blocks.']
+      - ["Get-Process | Select-Object Id, ProcessName, Path, StartTime", 'Running processes with image path.']
+      - ["Get-CimInstance Win32_Process | Select-Object ProcessId, ParentProcessId, Name, CommandLine", 'Processes with parent PID and command line.']
+      - ["Get-NetTCPConnection -State Established | Select-Object LocalAddress, LocalPort, RemoteAddress, RemotePort, OwningProcess", 'Established TCP connections with owning PID.']
+      - ["Get-NetTCPConnection -State Listen", 'Listening ports.']
+      - ["Get-DnsClientCache", 'DNS client cache.']
+      - ["Get-ScheduledTask | Where-Object State -ne 'Disabled' | Select-Object TaskPath, TaskName, State", 'Enabled scheduled tasks.']
+      - ["(Get-ScheduledTask -TaskName '<name>').Actions", 'What a task executes.']
+      - ["Get-CimInstance Win32_Service | Select-Object Name, State, StartMode, StartName, PathName", 'Services with binary path and account.']
+      - ["Get-ItemProperty 'HKLM:\\Software\\Microsoft\\Windows\\CurrentVersion\\Run', 'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Run'", 'Run key autostarts.']
+      - ["Get-CimInstance -Namespace root\\subscription -ClassName __EventConsumer", 'WMI event consumers (persistence).']
+      - ["Get-LocalUser; Get-LocalGroupMember Administrators", 'Local accounts and administrators.']
+      - ["Get-Item .\\file.exe -Stream *", 'List alternate data streams.']
+      - ["Get-Content .\\file.exe -Stream Zone.Identifier", 'Mark of the Web — download origin (if present).']
+      - ["Get-AuthenticodeSignature .\\file.exe", 'Signature status and signer.']
+      - ["Get-ChildItem C:\\Users -Recurse -Force -File -ErrorAction SilentlyContinue | Where-Object LastWriteTime -gt (Get-Date).AddDays(-2)", 'Recently modified files under user profiles.']
+      - ["[Text.Encoding]::Unicode.GetString([Convert]::FromBase64String($b64))", 'Decode a `-EncodedCommand` value (UTF-16LE) without executing it.']
+  - id: windows-cli
+    title: Windows CLI
+    columns: [Command, Purpose]
+    rows:
+      - ['certutil -hashfile sample.bin SHA256', 'Hash a file.']
+      - ['tasklist /v', 'Processes with user and window title.']
+      - ['tasklist /svc', 'Services hosted by each process.']
+      - ['netstat -ano', 'Connections and listening ports with PID.']
+      - ['ipconfig /displaydns', 'DNS client cache.']
+      - ['schtasks /query /fo LIST /v', 'Scheduled tasks, verbose.']
+      - ['net user · net localgroup administrators', 'Local accounts and administrators.']
+      - ['query user', 'Logged-on sessions (RDP / console).']
+      - ['wevtutil qe Security /q:"*[System[(EventID=4624)]]" /c:20 /rd:true /f:text', 'Last 20 logon events.']
+      - ['wevtutil epl Security C:\Cases\Security.evtx', 'Export a log for offline analysis.']
+      - ['autorunsc -accepteula -a * -c -h -s -m > autoruns.csv', 'Sysinternals Autoruns — all autostarts, CSV, hashes, signature check, hide Microsoft entries.']
+      - ['wmic', 'Deprecated and removed from recent Windows builds — use `Get-CimInstance` instead.']
+  - id: linux
+    title: Linux
+    columns: [Command, Purpose]
+    rows:
+      - ['sha256sum sample.bin', 'Hash a file.']
+      - ['file sample.bin', 'Identify type by magic bytes.']
+      - ['strings -n 8 sample.bin', 'ASCII strings (min length 8).']
+      - ['strings -el sample.bin', 'UTF-16LE strings (Windows binaries).']
+      - ['xxd sample.bin | head', 'Hex view of the header.']
+      - ['ps auxf', 'Process tree.']
+      - ['ss -tunap', 'Sockets with owning process.']
+      - ['last -F · lastb', 'Logon / failed logon history.']
+      - ["journalctl -u ssh --since '2026-01-01'", 'Service logs for a time window (unit may be `sshd` on some distros).']
+      - ['find / -xdev -type f -mtime -2 2>/dev/null', 'Files modified in the last 2 days.']
+      - ['crontab -l · ls -la /etc/cron*', 'Cron persistence.']
+      - ['systemctl list-unit-files --type=service --state=enabled', 'Enabled services.']
+      - ['cat ~/.ssh/authorized_keys', 'SSH key persistence.']
+      - ["grep -Eo '([0-9]{1,3}\\.){3}[0-9]{1,3}' file.txt | sort -u", 'Extract IPv4-like strings.']
+      - ["jq -r '.[] | .field' data.json", 'Pull a field from a JSON array.']
+  - id: network
+    title: Network
+    columns: [Command, Purpose]
+    rows:
+      - ['tshark -r capture.pcap -q -z conv,ip', 'IP conversations.']
+      - ["tshark -r capture.pcap -Y 'dns.flags.response == 0' -T fields -e frame.time -e ip.src -e dns.qry.name", 'DNS queries as a table.']
+      - ["tshark -r capture.pcap -Y 'http.request' -T fields -e ip.src -e http.host -e http.request.uri -e http.user_agent", 'HTTP requests.']
+      - ["tshark -r capture.pcap -Y 'tls.handshake.type == 1' -T fields -e ip.dst -e tls.handshake.extensions_server_name", 'TLS SNI values.']
+      - ['tshark -r capture.pcap --export-objects http,./out', 'Export HTTP objects (treat as malware).']
+      - ['zeek -r capture.pcap', 'Generate Zeek logs (conn, dns, http, ssl…) from a capture.']
+      - ['cat conn.log | zeek-cut id.orig_h id.resp_h id.resp_p proto service duration', 'Select columns from a Zeek log.']

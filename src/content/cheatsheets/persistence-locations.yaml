@@ -1,0 +1,36 @@
+name: Persistence Locations
+summary: Common Windows and Linux persistence mechanisms, where to look, and the related MITRE ATT&CK technique.
+order: 3
+tags: [persistence, autostart, registry, att&ck]
+sections:
+  - id: windows
+    title: Windows
+    columns: [Mechanism, Where to look, ATT&CK]
+    mono: [1, 2]
+    rows:
+      - ['Run / RunOnce keys', 'HKLM\Software\Microsoft\Windows\CurrentVersion\Run · RunOnce  (and HKCU equivalents)', 'T1547.001']
+      - ['Startup folder', '%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup · C:\ProgramData\Microsoft\Windows\Start Menu\Programs\StartUp', 'T1547.001']
+      - ['Services', 'HKLM\SYSTEM\CurrentControlSet\Services\<name>  · System 7045 · Security 4697', 'T1543.003']
+      - ['Scheduled tasks', 'C:\Windows\System32\Tasks\ · TaskCache registry · Security 4698', 'T1053.005']
+      - ['WMI event subscription', 'root\subscription: __EventFilter, __EventConsumer, __FilterToConsumerBinding · WMI-Activity 5861', 'T1546.003']
+      - ['Winlogon helper', 'HKLM\Software\Microsoft\Windows NT\CurrentVersion\Winlogon  (Shell, Userinit)', 'T1547.004']
+      - ['Image File Execution Options', 'HKLM\Software\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\<exe>  (Debugger)', 'T1546.012']
+      - ['Accessibility features', 'sethc.exe, utilman.exe replaced or IFEO Debugger set', 'T1546.008']
+      - ['AppInit DLLs', 'HKLM\Software\Microsoft\Windows NT\CurrentVersion\Windows  (AppInit_DLLs)', 'T1546.010']
+      - ['COM hijacking', 'HKCU\Software\Classes\CLSID\{…}\InprocServer32 shadowing HKLM entries', 'T1546.015']
+      - ['BITS jobs', 'bitsadmin /list /allusers /verbose · Bits-Client Operational log', 'T1197']
+      - ['Office startup', 'Normal.dotm, XLSTART folders, Office add-ins', 'T1137']
+      - ['Accounts', 'New local/domain accounts · Security 4720, 4732', 'T1136']
+  - id: linux
+    title: Linux
+    columns: [Mechanism, Where to look, ATT&CK]
+    mono: [1, 2]
+    rows:
+      - ['Cron', '/etc/crontab · /etc/cron.d/ · /etc/cron.{hourly,daily,weekly,monthly} · /var/spool/cron/', 'T1053.003']
+      - ['systemd services', '/etc/systemd/system/ · /lib/systemd/system/ · ~/.config/systemd/user/', 'T1543.002']
+      - ['systemd timers', '*.timer units in the same directories', 'T1053.006']
+      - ['Shell configuration', '~/.bashrc · ~/.bash_profile · ~/.profile · /etc/profile · /etc/profile.d/', 'T1546.004']
+      - ['SSH authorized keys', '~/.ssh/authorized_keys · /root/.ssh/authorized_keys', 'T1098.004']
+      - ['Dynamic linker hijacking', '/etc/ld.so.preload · LD_PRELOAD in environment files', 'T1574.006']
+      - ['rc scripts', '/etc/rc.local · /etc/init.d/', 'T1037.004']
+      - ['New accounts / sudoers', '/etc/passwd · /etc/shadow · /etc/sudoers · /etc/sudoers.d/', 'T1136.001']
