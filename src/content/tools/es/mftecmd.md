@@ -22,7 +22,7 @@ workflow:
   - Recolectar `$MFT` y `$Extend\$UsnJrnl:$J`
   - MFTECmd → CSV
   - Filtrar por ventana temporal y ruta
-  - Correlacionar con Prefetch / registros de eventos
+  - Correlacionar con Prefetch / event logs
 examples:
   - label: Analizar la $MFT
     command: 'MFTECmd.exe -f "C:\Cases\triage\C\$MFT" --csv "C:\Cases\out" --csvf mft.csv'
@@ -40,6 +40,6 @@ related_artifacts: [prefetch, lnk]
 review: true
 ---
 
-MFTECmd (Eric Zimmerman) analiza las estructuras de metadatos de NTFS. La **$MFT** es la tabla maestra de ficheros: un registro por fichero o directorio con nombres, tamaños y marcas de tiempo. El flujo **$J** del USN journal registra los cambios hechos a los ficheros a lo largo del tiempo.
+MFTECmd (Eric Zimmerman) analiza las estructuras de metadatos de NTFS. La **$MFT** es la tabla maestra de ficheros: un registro por fichero o directorio con nombres, tamaños y marcas de tiempo. El stream **$J** del USN journal registra los cambios hechos a los ficheros a lo largo del tiempo.
 
 Juntos permiten construir un timeline del sistema de ficheros que no depende de que Windows tenga activado el logging.

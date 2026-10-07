@@ -198,9 +198,9 @@ const en = {
 export type UiKey = keyof typeof en;
 
 const es: Record<UiKey, string> = {
-  'site.title': 'KHARONTE — Manual de campo Blue Team',
+  'site.title': 'KHARONTE — Blue Team Field Manual',
   'site.description':
-    'Manual de campo Blue Team de código abierto: artefactos, herramientas, playbooks y cheatsheets para DFIR, ingeniería de detección y análisis de malware.',
+    'Blue Team Field Manual de código abierto: artefactos, herramientas, playbooks y cheatsheets para DFIR, ingeniería de detección y análisis de malware.',
 
   'nav.artifacts': 'Artefactos',
   'nav.tools': 'Herramientas',
@@ -214,7 +214,7 @@ const es: Record<UiKey, string> = {
   'nav.skip': 'Saltar al contenido',
   'nav.home': 'KHARONTE — inicio',
   'nav.searchAria': 'Buscar (pulsa / o Ctrl+K)',
-  'nav.subtitle': 'Manual de campo Blue Team',
+  'nav.subtitle': 'Blue Team Field Manual',
 
   'theme.toLight': 'Cambiar a tema claro',
   'theme.toDark': 'Cambiar a tema oscuro',
@@ -253,7 +253,7 @@ const es: Record<UiKey, string> = {
   'sec.what': '¿Qué es?',
   'sec.useWhen': 'Úsala cuando',
   'sec.lookFor': 'Qué buscar',
-  'sec.workflow': 'Flujo típico',
+  'sec.workflow': 'Workflow típico',
   'sec.examples': 'Ejemplos',
   'sec.output': 'Salida',
   'sec.notes': 'Notas operativas',
@@ -265,7 +265,7 @@ const es: Record<UiKey, string> = {
   'sec.tools': 'Herramientas',
   'sec.limitations': 'Limitaciones',
   'sec.start': 'Empieza aquí cuando',
-  'sec.steps': 'Flujo',
+  'sec.steps': 'Workflow',
   'sec.iocs': 'IOCs a extraer',
   'sec.escalateWhen': 'Escala cuando',
   'sec.pbNotes': 'Notas',
@@ -277,7 +277,7 @@ const es: Record<UiKey, string> = {
   'step.artifacts': 'Artefactos',
   'step.escalate': 'Escalar',
   'ref.missing': 'Aún no documentado en Kharonte',
-  'flow.label': 'Flujo',
+  'flow.label': 'Workflow',
 
   'copy.copy': 'copiar',
   'copy.copied': 'copiado',
@@ -296,13 +296,13 @@ const es: Record<UiKey, string> = {
   'search.navigate': 'moverse',
   'search.open': 'abrir',
   'search.close': 'cerrar',
-  'search.dialog': 'Buscar en el manual',
+  'search.dialog': 'Buscar en el Field Manual',
   'search.noscript': 'La búsqueda necesita JavaScript. Navega por las secciones desde el menú principal.',
   'search.title': 'Buscar',
   'search.summary':
     'Herramientas, artefactos, playbooks, Event IDs, comandos y técnicas. Todo se ejecuta en tu navegador.',
   'search.description':
-    'Busca herramientas, artefactos, playbooks, Event IDs y comandos en el manual de campo Kharonte.',
+    'Busca herramientas, artefactos, playbooks, Event IDs y comandos en el Field Manual de Kharonte.',
 
   'kind.artifact': 'Artefactos',
   'kind.tool': 'Herramientas',
@@ -327,7 +327,7 @@ const es: Record<UiKey, string> = {
   'tools.catTitle': 'Herramientas: {label}',
   'playbooks.title': 'Playbooks',
   'playbooks.summary':
-    'Flujos de investigación de alto nivel. Cada paso indica su objetivo, las herramientas y artefactos implicados y cuándo escalar.',
+    'Workflows de investigación de alto nivel. Cada paso indica su objetivo, las herramientas y artefactos implicados y cuándo escalar.',
   'playbooks.steps': '{n} pasos',
   'cheatsheets.title': 'Cheatsheets',
   'cheatsheets.summary': 'Tablas de consulta rápida con filtro, para usar durante una investigación.',
@@ -336,9 +336,9 @@ const es: Record<UiKey, string> = {
   'cheatsheets.filter': 'Filtrar filas',
   'cheatsheets.filterPlaceholder': 'Filtrar filas… (p. ej. 4624, logon, Get-WinEvent)',
 
-  'home.kicker': 'Manual de ref. · v0.1',
-  'home.h1a': 'Manual de campo',
-  'home.h1b': 'Blue Team',
+  'home.kicker': 'Ref. manual · v0.1',
+  'home.h1a': 'Blue Team',
+  'home.h1b': 'Field Manual',
   'home.lead': 'Una referencia práctica para DFIR, detección y análisis de malware.',
   'home.lead2': 'Tienes un artefacto delante: ¿qué haces ahora?',
   'home.contents': 'Contenido',
@@ -361,7 +361,7 @@ const es: Record<UiKey, string> = {
   'about.p1':
     '**Referencia, no analista.** Las fichas describen qué comprobar, qué herramientas ayudan y qué salida importa. El criterio sigue siendo tuyo.',
   'about.p2':
-    '**Primero el flujo de trabajo.** Cada página responde: qué es, qué compruebo primero, qué hago después, qué puedo extraer como IOC y cuándo escalo.',
+    '**Workflow primero.** Cada página responde: qué es, qué compruebo primero, qué hago después, qué puedo extraer como IOC y cuándo escalo.',
   'about.p3':
     '**Sin capacidades inventadas.** El comportamiento de las herramientas se describe de forma conservadora. Las fichas pendientes de verificar muestran un aviso visible de **Pendiente de revisión**.',
   'about.p4':

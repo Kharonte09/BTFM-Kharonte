@@ -6,13 +6,13 @@ aliases: [Scheduled Tasks, Task Scheduler, schtasks, Programador de tareas]
 tags: [persistencia, movimiento lateral, ejecución]
 evidence:
   - Definición de la tarea — desencadenador, acción (comando + argumentos), principal (usuario), autor y fecha de registro.
-  - Eventos de creación, actualización, borrado y ejecución en los registros.
+  - Eventos de creación, actualización, borrado y ejecución en los logs.
 locations:
   - label: Ficheros XML de tareas
     path: C:\Windows\System32\Tasks\
   - label: Caché en el registro
     path: HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Tree · \Tasks
-  - label: Registro operativo
+  - label: Log operativo
     path: Microsoft-Windows-TaskScheduler/Operational
 questions:
   - ¿Se creó persistencia mediante una tarea programada, y quién lo hizo?
@@ -28,11 +28,11 @@ look_for:
   - Tareas presentes en el `TaskCache` del registro pero sin fichero XML, o sin descriptor de seguridad (tareas ocultas).
 limitations:
   - Los eventos de Security `4698`–`4702` requieren la subcategoría de auditoría "Other Object Access Events".
-  - El registro Operational de TaskScheduler puede estar desactivado o ser pequeño en sistemas antiguos.
+  - El log Operational de TaskScheduler puede estar desactivado o ser pequeño en sistemas antiguos.
   - El XML de la tarea puede modificarse tras su creación; revisa tanto el XML como el registro.
 related_artifacts: [windows-event-logs, registry, powershell-logs]
 ---
 
 Las tareas programadas se guardan como ficheros XML en `C:\Windows\System32\Tasks\` y también en el `TaskCache` del registro. Comparar ambas fuentes ayuda a detectar manipulaciones, como tareas ocultadas eliminando su descriptor de seguridad.
 
-La creación remota (`schtasks /create /s <host>`, o mediante la interfaz RPC del Programador de tareas) es una técnica de movimiento lateral habitual; correlaciónala con inicios de sesión de red (`4624` tipo 3) en el equipo destino.
+La creación remota (`schtasks /create /s <host>`, o mediante la interfaz RPC del Programador de tareas) es una técnica de movimiento lateral habitual; correlaciónala con logons de red (`4624` tipo 3) en el equipo destino.

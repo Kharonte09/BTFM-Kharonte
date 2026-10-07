@@ -8,7 +8,7 @@ license: Código abierto (MIT)
 homepage: https://github.com/horsicq/Detect-It-Easy
 difficulty: basic
 aliases: [DIE, diec]
-tags: [identificación de ficheros, packer, compilador, entropía, triaje]
+tags: [identificación de ficheros, packer, compilador, entropía, triage]
 use_when:
   - Primer vistazo a un fichero desconocido, antes de decidir qué vía de análisis seguir.
   - Sospechas que una muestra está empaquetada o protegida (UPX, Themida, packers propios).
@@ -43,4 +43,4 @@ review: true
 
 Detect It Easy (DIE) identifica tipos de fichero y la cadena de herramientas que los generó mediante una biblioteca de firmas programables. Soporta PE, ELF, Mach-O, APK y muchos formatos de archivo comprimido y documentos, e incluye interfaz gráfica (`die`), versión de consola (`diec`) y una variante ligera.
 
-En el triaje responde a la primera pregunta sobre una muestra: **¿qué es y cómo se construyó?**
+En el triage responde a la primera pregunta sobre una muestra: **¿qué es y cómo se construyó?**

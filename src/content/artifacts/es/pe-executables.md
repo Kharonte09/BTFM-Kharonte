@@ -10,7 +10,7 @@ evidence:
   - Imports y exports — pistas de capacidades.
   - Secciones, entropía, recursos y overlay — pistas de empaquetado o payloads embebidos.
   - Firma Authenticode e información de versión.
-  - Cadenas — URLs, rutas, comandos, mutex.
+  - Strings — URLs, rutas, comandos, mutex.
 locations:
   - label: Ubicaciones habituales de drop
     path: '%TEMP% · %APPDATA% · %LOCALAPPDATA% · C:\ProgramData · C:\Users\Public · Downloads'

@@ -1,12 +1,12 @@
 ---
 name: EXE sospechoso
-summary: Triaje de un ejecutable Windows del hash a los IOCs — identificar, analizar en estático, consultar reputación, observar el comportamiento y decidir si hacer reversing.
+summary: Triage de un ejecutable Windows del hash a los IOCs — identificar, analizar en estático, consultar reputación, observar el comportamiento y decidir si hacer reversing.
 order: 2
 trigger: Tienes un `.exe` / `.dll` sospechoso — de una alerta, un endpoint, un adjunto o una descarga. Cópialo a un entorno de análisis aislado (idealmente dentro de un archivo con contraseña, por convención `infected`).
-tags: [malware, pe, análisis estático, sandbox, triaje]
+tags: [malware, pe, análisis estático, sandbox, triage]
 steps:
   - title: Hash
-    goal: Obtener la huella del fichero antes de nada.
+    goal: Obtener el hash del fichero antes de nada.
     actions:
       - Calcula el SHA-256 (y MD5/SHA-1 para consultas en sistemas antiguos).
       - Registra ruta de origen, equipo, momento de la recolección y quién lo recolectó.
@@ -29,7 +29,7 @@ steps:
     goal: Conocer capacidades e IOCs sin ejecutar.
     actions:
       - Revisa imports, secciones, entropía, recursos y overlay.
-      - Extrae cadenas, incluidas las ofuscadas.
+      - Extrae strings, incluidos los ofuscados.
       - Identifica capacidades y técnicas ATT&CK candidatas.
       - Analiza con conjuntos de reglas YARA.
     tools: [PEStudio, FLOSS, capa, YARA]
@@ -61,7 +61,7 @@ steps:
       - Úsalos como consultas de hunting en toda la flota.
     artifacts: [registry, scheduled-tasks]
   - title: Análisis profundo
-    goal: Responder preguntas concretas que el triaje no pudo resolver.
+    goal: Responder preguntas concretas que el triage no pudo resolver.
     actions:
       - Decide qué necesitas — extraer la configuración, el protocolo, la rutina de descifrado.
       - Desempaqueta si hace falta y haz reversing de funciones concretas (empieza por las direcciones de capa).
@@ -77,9 +77,9 @@ iocs:
   - SHA-256 / SHA-1 / MD5 e imphash.
   - Nombres y rutas de los ficheros soltados.
   - Mutex, named pipes, nombres de servicios y tareas, claves del registro.
-  - Dominios, IPs y URLs de C2, user agents, huellas JA3/JA4 si están disponibles.
+  - Dominios, IPs y URLs de C2, user agents, fingerprints JA3/JA4 si están disponibles.
 escalate_when:
-  - La muestra es desconocida o dirigida (sin resultados públicos, nombres internos en las cadenas).
+  - La muestra es desconocida o dirigida (sin resultados públicos, nombres internos en los strings).
   - Las capacidades incluyen robo de credenciales, movimiento lateral o comportamiento de ransomware.
   - Se encuentra evidencia de persistencia o C2 en endpoints de producción.
 related_playbooks: [malware-triage, windows-endpoint-investigation]

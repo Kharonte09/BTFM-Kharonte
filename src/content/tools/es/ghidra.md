@@ -9,7 +9,7 @@ homepage: https://github.com/NationalSecurityAgency/ghidra
 difficulty: advanced
 tags: [reversing, descompilador, desensamblador, análisis estático]
 use_when:
-  - El triaje estático (cadenas, imports, capa) no basta para responder tu pregunta.
+  - El triage estático (strings, imports, capa) no basta para responder tu pregunta.
   - Necesitas entender una rutina concreta — descifrado de configuración, protocolo C2, lógica de persistencia.
   - Quieres confirmar a nivel de código un hallazgo de capa.
 look_for:
@@ -19,7 +19,7 @@ look_for:
   - Configuración en claro (C2, claves, mutex, IDs de campaña).
 workflow:
   - Importar y autoanalizar
-  - Empezar por imports / cadenas / direcciones de capa
+  - Empezar por imports / strings / direcciones de capa
   - Renombrar y anotar funciones
   - Extraer configuración / IOCs
   - Escribir regla YARA
@@ -37,4 +37,4 @@ related_artifacts: [pe-executables]
 
 Ghidra es un framework de ingeniería inversa publicado como código abierto por la National Security Agency de EE. UU. Incluye desensamblador multiarquitectura, descompilador, scripting y soporte de proyectos colaborativos.
 
-En un contexto Blue Team es el **paso de escalado** tras el triaje: lo abres cuando necesitas una respuesta que solo el código puede dar.
+En un contexto Blue Team es el **paso de escalado** tras el triage: lo abres cuando necesitas una respuesta que solo el código puede dar.

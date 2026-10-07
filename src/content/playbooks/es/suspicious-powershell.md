@@ -2,7 +2,7 @@
 name: PowerShell sospechoso
 summary: Decodificar, desofuscar y contextualizar un comando de PowerShell — y averiguar quién lo ejecutó, qué contactó y si dejó persistencia.
 order: 3
-trigger: Una alerta, una entrada de registro o un evento del EDR muestra PowerShell con contenido codificado, ofuscado o de tipo descargar-y-ejecutar.
+trigger: Una alerta, una entrada de log o un evento del EDR muestra PowerShell con contenido codificado, ofuscado o de tipo descargar-y-ejecutar.
 tags: [powershell, desofuscación, living off the land, ejecución]
 steps:
   - title: Comando
@@ -20,7 +20,7 @@ steps:
   - title: Desofuscación
     goal: Recuperar la lógica legible sin ejecutarla.
     actions:
-      - Resuelve concatenaciones, cadenas de formato `-f`, cadenas invertidas, acentos graves y trucos de mayúsculas.
+      - Resuelve concatenaciones, format strings `-f`, strings invertidos, acentos graves y trucos de mayúsculas.
       - Prioriza el **script block `4104`** — a menudo ya contiene la capa desofuscada.
       - Nunca hagas `IEX` del contenido decodificado «para ver qué hace»; si tienes que evaluarlo en una sandbox, sustituye `IEX` por una salida a fichero.
     tools: [CyberChef]
@@ -29,7 +29,7 @@ steps:
     goal: Entender con qué identidad y privilegios se ejecutó.
     actions:
       - Cuenta de usuario, nivel de integridad, interactivo frente a servicio/tarea, sesión de inicio.
-      - Correlaciona con los eventos de inicio de sesión de esa misma sesión.
+      - Correlaciona con los eventos de logon de esa misma sesión.
     artifacts: [windows-event-logs]
   - title: Proceso padre
     goal: Averiguar qué lanzó PowerShell.
@@ -57,7 +57,7 @@ steps:
 iocs:
   - URLs, dominios e IPs de descarga.
   - Hashes de los payloads descargados.
-  - Cadenas distintivas del script (nombres de variables, nombres de funciones, user agents).
+  - Strings distintivos del script (nombres de variables, nombres de funciones, user agents).
   - Artefactos de persistencia (nombres de tareas, valores del registro).
 escalate_when:
   - El script descarga y ejecuta una segunda etapa.

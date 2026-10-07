@@ -8,7 +8,7 @@ license: Código abierto (AGPL-3.0)
 homepage: https://docs.velociraptor.app/
 difficulty: intermediate
 aliases: [VQL]
-tags: [triaje, hunting, recolección, respuesta en vivo, flota]
+tags: [triage, hunting, recolección, respuesta en vivo, flota]
 use_when:
   - Necesitas recolectar o consultar artefactos en muchos endpoints a la vez (hunts).
   - Necesitas respuesta en vivo en un equipo remoto sin acceso físico.
@@ -41,6 +41,6 @@ complements: [KAPE, EvtxECmd, YARA]
 related_artifacts: [windows-event-logs, prefetch, registry, scheduled-tasks]
 ---
 
-Velociraptor es un agente de endpoint y un servidor cuyo núcleo es **VQL** (Velociraptor Query Language), un lenguaje tipo SQL que consulta el estado del endpoint: ficheros, registro, registros de eventos, procesos, conexiones de red, etc.
+Velociraptor es un agente de endpoint y un servidor cuyo núcleo es **VQL** (Velociraptor Query Language), un lenguaje tipo SQL que consulta el estado del endpoint: ficheros, registro, event logs, procesos, conexiones de red, etc.
 
 Las consultas reutilizables se empaquetan como **artefactos**. Una amplia biblioteca integrada cubre las recolecciones DFIR habituales y la comunidad mantiene un artifact exchange.

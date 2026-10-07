@@ -26,7 +26,7 @@ tools: [olevba, oledump.py, oleid, XLMMacroDeobfuscator, Detect It Easy, CyberCh
 look_for:
   - Puntos de autoejecución — `AutoOpen`, `Document_Open`, `Workbook_Open`, `Auto_Open`.
   - '`Shell`, `WScript.Shell`, `CreateObject`, `URLDownloadToFile`, `XMLHTTP`, `Environ`, `CallByName`.'
-  - Ofuscación — cadenas de `Chr()`, inversión de cadenas, `StrReverse`, bloques Base64, código basura.
+  - Ofuscación — cadenas de `Chr()`, inversión de strings, `StrReverse`, bloques Base64, código basura.
   - Hojas de macros XLM ocultas o muy ocultas con `EXEC`, `CALL`, `REGISTER`, `URLDownloadToFileA`.
   - Destinos externos en ficheros `.rels` (inyección de plantilla remota).
   - Objetos OLE / packages embebidos, y ficheros RTF con `\objdata`.

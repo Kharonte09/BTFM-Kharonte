@@ -9,7 +9,7 @@ evidence:
   - Conexiones de red y sockets a la escucha con su proceso propietario.
   - DLL y módulos cargados, handles (ficheros, claves del registro, mutex).
   - Regiones de memoria ejecutable inyectadas o sin respaldo en disco.
-  - Cadenas descifradas, claves y configuraciones presentes solo en tiempo de ejecución.
+  - Strings descifrados, claves y configuraciones presentes solo en tiempo de ejecución.
 locations:
   - label: Salida de la adquisición
     path: Raw (.raw/.mem) · volcado de bloqueo (.dmp) · ficheros de memoria de VM (p. ej. .vmem)

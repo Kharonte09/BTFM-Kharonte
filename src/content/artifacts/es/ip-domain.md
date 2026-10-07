@@ -1,6 +1,6 @@
 ---
 name: Direcciones IP y dominios
-summary: Indicadores de red encontrados en registros, alertas, correos o muestras. Necesitan contexto y enriquecimiento antes de convertirse en IOCs accionables.
+summary: Indicadores de red encontrados en logs, alertas, correos o muestras. Necesitan contexto y enriquecimiento antes de convertirse en IOCs accionables.
 category: network
 aliases: [IP Addresses & Domains, IP, Domain, Suspicious IP, Suspicious domain, URL, Dominio, IP sospechosa]
 tags: [iocs, enriquecimiento, inteligencia de amenazas, infraestructura, c2]
@@ -11,9 +11,9 @@ evidence:
   - Reputación y relación con malware o campañas conocidas.
 locations:
   - label: Fuentes internas
-    path: Logs de firewall / proxy / DNS · telemetría EDR · Sysmon 3 y 22 · logs de la pasarela de correo
+    path: Logs de firewall / proxy / DNS · telemetría EDR · Sysmon 3 y 22 · logs del mail gateway
   - label: Muestras y documentos
-    path: Cadenas, configuraciones, informes de sandbox, cuerpos y cabeceras de correo
+    path: Cadenas, configuraciones, informes de sandbox, cuerpos y headers de correo
 questions:
   - ¿Qué equipos internos se comunicaron con este indicador, y cuándo por primera vez?
   - ¿Es infraestructura compartida (CDN, cloud, hosting) o dedicada?
@@ -21,7 +21,7 @@ questions:
   - ¿Qué más está alojado en él o relacionado con él?
 tools: [VirusTotal, Wireshark, Zeek, CyberChef]
 look_for:
-  - Primera y última aparición en **tus** registros — eso define la ventana del alcance.
+  - Primera y última aparición en **tus** logs — eso define la ventana del alcance.
   - Dominios registrados recientemente y nombres parecidos a otros legítimos.
   - Direcciones de cloud y CDN — bloquear la IP puede romper servicios legítimos; prioriza indicadores de dominio/URL.
   - Dominios que resuelven a muchas IPs rápidamente (fast flux) o IPs que alojan muchos dominios no relacionados.
@@ -35,4 +35,4 @@ review: true
 
 Una IP o un dominio solo es un indicador cuando tiene **contexto**: dónde lo viste, qué es y por qué importa. Enriquécelo, delimita su alcance en tu propia telemetría y solo entonces bloquéalo o repórtalo.
 
-Neutraliza (defang) los indicadores en los informes (`hxxps://evil[.]example`) para que no se puedan pulsar por accidente.
+Haz defang de los indicadores en los informes (`hxxps://evil[.]example`) para que no se puedan pulsar por accidente.

@@ -18,7 +18,7 @@ sections:
       - ['Funciones de accesibilidad', 'sethc.exe, utilman.exe sustituidos o Debugger de IFEO configurado', 'T1546.008']
       - ['AppInit DLLs', 'HKLM\Software\Microsoft\Windows NT\CurrentVersion\Windows  (AppInit_DLLs)', 'T1546.010']
       - ['COM hijacking', 'HKCU\Software\Classes\CLSID\{…}\InprocServer32 suplantando entradas de HKLM', 'T1546.015']
-      - ['Trabajos BITS', 'bitsadmin /list /allusers /verbose · registro operativo Bits-Client', 'T1197']
+      - ['Trabajos BITS', 'bitsadmin /list /allusers /verbose · log operativo Bits-Client', 'T1197']
       - ['Arranque de Office', 'Normal.dotm, carpetas XLSTART, complementos de Office', 'T1137']
       - ['Cuentas', 'Cuentas locales/de dominio nuevas · Security 4720, 4732', 'T1136']
   - id: linux

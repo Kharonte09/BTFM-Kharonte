@@ -8,7 +8,7 @@ license: Código abierto (Apache-2.0)
 homepage: https://github.com/mandiant/capa
 difficulty: intermediate
 aliases: [flare-capa]
-tags: [análisis estático, capacidades, att&ck, mbc, triaje]
+tags: [análisis estático, capacidades, att&ck, mbc, triage]
 use_when:
   - Quieres saber **qué puede hacer un binario** antes de abrir un desensamblador.
   - Necesitas técnicas ATT&CK candidatas para un informe.
@@ -43,6 +43,6 @@ complements: [FLOSS, Detect It Easy, Ghidra, YARA]
 related_artifacts: [pe-executables]
 ---
 
-capa es un proyecto de FLARE (Mandiant). Extrae características de un programa — llamadas a API, cadenas, constantes, instrucciones — y las compara con un conjunto de reglas de la comunidad. Cada regla describe una capacidad, y muchas están mapeadas a **MITRE ATT&CK** y al **Malware Behavior Catalog (MBC)**.
+capa es un proyecto de FLARE (Mandiant). Extrae características de un programa — llamadas a API, strings, constantes, instrucciones — y las compara con un conjunto de reglas de la comunidad. Cada regla describe una capacidad, y muchas están mapeadas a **MITRE ATT&CK** y al **Malware Behavior Catalog (MBC)**.
 
 Es especialmente útil para decidir si hace falta un reversing más profundo y por dónde empezar.

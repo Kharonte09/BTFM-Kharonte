@@ -8,7 +8,7 @@ evidence:
   - Equipos que se comunican, puertos, protocolos y volúmenes a lo largo del tiempo.
   - Consultas y respuestas DNS.
   - Peticiones/respuestas HTTP, user agents y ficheros transferidos.
-  - Metadatos TLS — SNI, certificados, huellas del cliente.
+  - Metadatos TLS — SNI, certificados, fingerprints del cliente.
   - Credenciales en claro y comandos de protocolo.
 locations:
   - label: Fuentes
@@ -24,7 +24,7 @@ look_for:
   - Conexiones periódicas de tamaño similar (beaconing).
   - DNS — subdominios largos o con entropía alta, muchos NXDOMAIN, consultas TXT, dominios recién vistos.
   - HTTP — POST a IPs directas, descargas de ejecutables, user agents raros, Base64 en URIs o cuerpos.
-  - TLS — certificados autofirmados o emitidos recientemente, SNI que no coincide con el certificado, huellas de cliente inusuales.
+  - TLS — certificados autofirmados o emitidos recientemente, SNI que no coincide con el certificado, fingerprints de cliente inusuales.
   - Transferencias salientes grandes, sobre todo a almacenamiento cloud o puertos poco comunes.
 limitations:
   - El tráfico cifrado oculta los payloads; solo tienes metadatos.

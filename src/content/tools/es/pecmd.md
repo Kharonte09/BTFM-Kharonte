@@ -11,7 +11,7 @@ aliases: [Prefetch Explorer Command Line]
 tags: [prefetch, ejecución, ejecución de programas, timeline, eric zimmerman]
 use_when:
   - Necesitas evidencia de que un programa **se ejecutó** en un equipo Windows y cuándo.
-  - Estás construyendo un timeline de ejecución a partir de una recolección de triaje (KAPE, Velociraptor).
+  - Estás construyendo un timeline de ejecución a partir de una recolección de triage (KAPE, Velociraptor).
   - Ha aparecido el nombre de un binario sospechoso y quieres su número de ejecuciones y los ficheros que tocó al arrancar.
 look_for:
   - Ejecutables lanzados desde rutas escribibles por el usuario (`%TEMP%`, `%APPDATA%`, `Downloads`, `C:\ProgramData`, `C:\Users\Public`).
@@ -24,7 +24,7 @@ workflow:
   - PECmd → CSV
   - Ordenar por última ejecución
   - Pivotar sobre ejecutables sospechosos
-  - Correlacionar con Amcache, Shimcache y registros de eventos
+  - Correlacionar con Amcache, Shimcache y event logs
 examples:
   - label: Parsear un directorio Prefetch completo a CSV
     command: 'PECmd.exe -d "C:\Cases\triage\C\Windows\Prefetch" --csv "C:\Cases\out" --csvf prefetch.csv'

@@ -30,6 +30,6 @@ related_artifacts: [eml, office-documents]
 review: true
 ---
 
-Un PDF es un conjunto de objetos (diccionarios, streams) referenciados desde un trailer. **pdfid.py** de Didier Stevens da un triaje rápido por palabras clave; **pdf-parser.py** permite buscar, descomprimir y volcar objetos concretos.
+Un PDF es un conjunto de objetos (diccionarios, streams) referenciados desde un trailer. **pdfid.py** de Didier Stevens da un triage rápido por palabras clave; **pdf-parser.py** permite buscar, descomprimir y volcar objetos concretos.
 
 En las campañas de phishing actuales los PDF son sobre todo **contenedores de un enlace o un código QR**; extrae y analiza la URL como siguiente paso.

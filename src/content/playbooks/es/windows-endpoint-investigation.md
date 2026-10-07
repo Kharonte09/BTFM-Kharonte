@@ -1,6 +1,6 @@
 ---
 name: Investigación de endpoint Windows
-summary: Investigación estructurada de un equipo Windows posiblemente comprometido — timeline, procesos, inicios de sesión, persistencia, red, ficheros, registro y actividad del usuario.
+summary: Investigación estructurada de un equipo Windows posiblemente comprometido — timeline, procesos, logons, persistencia, red, ficheros, registro y actividad del usuario.
 order: 4
 trigger: Se sospecha que un endpoint está comprometido (alerta del EDR, detección de malware, indicio de movimiento lateral, reporte de un usuario). Decide pronto si adquirir la **memoria** antes de contener o apagar.
 tags: [endpoint, dfir, windows, timeline, movimiento lateral, persistencia]
@@ -8,7 +8,7 @@ steps:
   - title: Timeline
     goal: Recolectar y construir un timeline anclado en un evento conocido.
     actions:
-      - Adquiere la memoria si el equipo está encendido y es relevante; después recolecta un triaje.
+      - Adquiere la memoria si el equipo está encendido y es relevante; después recolecta un triage.
       - Analiza los artefactos a CSV y únelos en un único timeline en UTC.
       - Ánclate en el primer evento malicioso conocido y trabaja hacia atrás y hacia delante.
     tools: [KAPE, Velociraptor, EvtxECmd, MFTECmd]
@@ -20,10 +20,10 @@ steps:
       - Revisa los artefactos de ejecución de los binarios lanzados en la ventana.
     tools: [PECmd, AmcacheParser]
     artifacts: [prefetch, amcache, shimcache, sysmon, memory-dump]
-  - title: Inicios de sesión
+  - title: Logons
     goal: Determinar qué cuentas se usaron y desde dónde.
     actions:
-      - '`4624`/`4625`/`4648`/`4672` con tipos de inicio de sesión y direcciones de origen; registros de RDP.'
+      - '`4624`/`4625`/`4648`/`4672` con tipos de logon y direcciones de origen; logs de RDP.'
       - Identifica el equipo de origen del movimiento lateral y pivota hacia él.
     tools: [EvtxECmd]
     artifacts: [windows-event-logs]
@@ -43,7 +43,7 @@ steps:
     goal: Encontrar herramientas soltadas, datos preparados para exfiltrar y ficheros borrados.
     actions:
       - '`$MFT` y USN journal para creaciones, renombrados y borrados en la ventana.'
-      - Recolecta los ficheros sospechosos para el triaje de malware.
+      - Recolecta los ficheros sospechosos para el triage de malware.
     tools: [MFTECmd]
     artifacts: [pe-executables]
   - title: Registro
@@ -70,9 +70,9 @@ iocs:
   - Dominios e IPs de C2.
 escalate_when:
   - Hay cuentas de administrador de dominio o de servicio implicadas.
-  - Hay evidencia de volcado de credenciales o movimiento lateral a otros equipos.
+  - Hay evidencia de credential dumping o movimiento lateral a otros equipos.
   - Hay indicios de preparación o exfiltración de datos.
-  - Se borraron registros o se manipularon herramientas de seguridad.
+  - Se borraron logs o se manipularon herramientas de seguridad.
 related_playbooks: [malware-triage, suspicious-powershell]
 ---
 

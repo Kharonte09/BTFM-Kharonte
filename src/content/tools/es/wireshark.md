@@ -39,7 +39,7 @@ examples:
 outputs:
   - Paquetes diseccionados con los campos de cada protocolo.
   - Estadísticas (conversaciones, endpoints, jerarquía de protocolos, gráficas de E/S).
-  - Flujos reensamblados y objetos exportados (HTTP, SMB, TFTP, IMF…).
+  - Streams reensamblados y objetos exportados (HTTP, SMB, TFTP, IMF…).
 notes:
   - 'Los **filtros de visualización** (`ip.addr == 10.0.0.5`) y los **filtros de captura** (BPF, `host 10.0.0.5`) usan sintaxis distintas.'
   - Los objetos exportados pueden ser malware activo. Expórtalos solo en un entorno de análisis aislado.

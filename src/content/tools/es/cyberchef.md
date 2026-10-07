@@ -10,8 +10,8 @@ difficulty: basic
 tags: [decodificación, base64, desofuscación, powershell, iocs, defang]
 use_when:
   - Necesitas decodificar capas Base64, hex, URL-encoding, UTF-16LE, gzip/deflate o XOR.
-  - Estás desofuscando un script o una línea de comandos encontrada en los registros.
-  - Necesitas extraer o neutralizar (defang) IOCs (URLs, dominios, IPs) de un texto para un informe.
+  - Estás desofuscando un script o una línea de comandos encontrada en los logs.
+  - Necesitas extraer o hacer defang de IOCs (URLs, dominios, IPs) de un texto para un informe.
 look_for:
   - Cada capa decodificada — anótala en las notas del caso; la cadena de pasos también es evidencia.
   - Texto legible tras **From Base64 → Decode text (UTF-16LE)** en un `-EncodedCommand` de PowerShell.
@@ -22,7 +22,7 @@ workflow:
   - Probar **Magic** para obtener pistas
   - Construir la receta capa a capa
   - Extraer IOCs
-  - Neutralizarlos (defang) para el informe
+  - Defang para el informe
 examples:
   - label: Receta para -EncodedCommand de PowerShell
     command: 'From_Base64(''A-Za-z0-9+/='',true,false) → Decode_text(''UTF-16LE (1200)'')'

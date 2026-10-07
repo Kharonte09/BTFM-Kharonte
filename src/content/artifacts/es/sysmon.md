@@ -1,6 +1,6 @@
 ---
 name: Sysmon
-summary: System Monitor de Sysinternals. Registro basado en driver de creación de procesos, conexiones de red y actividad de ficheros y registro en un canal de eventos.
+summary: System Monitor de Sysinternals. Logging basado en driver de creación de procesos, conexiones de red y actividad de ficheros y registro en un canal de eventos.
 category: windows
 aliases: [System Monitor, Sysmon logs]
 tags: [creación de procesos, red, detección, telemetría, ejecución]
@@ -12,7 +12,7 @@ evidence:
 locations:
   - label: Canal de eventos
     path: Microsoft-Windows-Sysmon/Operational
-  - label: Fichero de registro
+  - label: Fichero de log
     path: C:\Windows\System32\winevt\Logs\Microsoft-Windows-Sysmon%4Operational.evtx
 questions:
   - ¿Qué proceso lanzó este proceso (cadena de padres)?

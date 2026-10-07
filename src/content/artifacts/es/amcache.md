@@ -23,7 +23,7 @@ look_for:
   - Binarios cuyo nombre imita ficheros del sistema pero con la ruta equivocada.
   - Valores SHA-1 para consultar en servicios de reputación.
 limitations:
-  - La presencia no prueba ejecución — corrobora con Prefetch, registros de eventos u otros artefactos de ejecución.
+  - La presencia no prueba ejecución — corrobora con Prefetch, event logs u otros artefactos de ejecución.
   - El SHA-1 solo cubre los primeros 31.457.280 bytes en ficheros grandes.
   - El contenido y el comportamiento del hive cambian entre versiones y actualizaciones de Windows.
 related_artifacts: [prefetch, shimcache, registry]

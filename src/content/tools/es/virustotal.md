@@ -36,4 +36,4 @@ complements: [Hybrid Analysis, ANY.RUN, YARA, PEStudio]
 related_artifacts: [pe-executables, ip-domain]
 ---
 
-VirusTotal (propiedad de Google) agrega motores antivirus, listas de bloqueo de URLs/dominios, sandboxes y comentarios de la comunidad. En el triaje es sobre todo un servicio de **consulta**: buscar un hash es pasivo, mientras que subir un fichero lo hace público.
+VirusTotal (propiedad de Google) agrega motores antivirus, listas de bloqueo de URLs/dominios, sandboxes y comentarios de la comunidad. En el triage es sobre todo un servicio de **consulta**: buscar un hash es pasivo, mientras que subir un fichero lo hace público.

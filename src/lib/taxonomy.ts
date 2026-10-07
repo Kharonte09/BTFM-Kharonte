@@ -99,13 +99,13 @@ export const TOOL_CATEGORIES = [
     code: 'DFIR',
     description: {
       en: 'Collection, triage and forensic acquisition.',
-      es: 'Recolección, triaje y adquisición forense.',
+      es: 'Recolección, triage y adquisición forense.',
     },
     icon: 'dfir',
   },
   {
     id: 'windows',
-    label: { en: 'Windows Forensics', es: 'Forense Windows' },
+    label: { en: 'Windows Forensics', es: 'Windows Forensics' },
     code: 'WIN',
     description: {
       en: 'Parsers for Windows artifacts — mostly Eric Zimmerman tools.',
