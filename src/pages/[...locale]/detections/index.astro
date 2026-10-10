@@ -1,0 +1,41 @@
+---
+import type { GetStaticPaths } from 'astro';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import PageHeader from '@/components/PageHeader.astro';
+import EntryCard from '@/components/EntryCard.astro';
+import { detectionPath, getDetections, refCode, slugOf } from '@/lib/content';
+import { localeStaticPaths } from '@/i18n/routing';
+import { useTranslations, type Lang } from '@/i18n/ui';
+
+export const getStaticPaths = (() => localeStaticPaths()) satisfies GetStaticPaths;
+
+const { lang } = Astro.props as { lang: Lang };
+const t = useTranslations(lang);
+const detections = await getDetections(lang);
+---
+
+<BaseLayout title={t('detections.title')} description={t('detections.summary')}>
+  <PageHeader
+    title={t('detections.title')}
+    summary={t('detections.summary')}
+    crumbs={[{ label: t('detections.title') }]}
+  />
+
+  <ul class="mt-10 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+    {
+      detections.map((x) => (
+        <li>
+          <EntryCard
+            href={detectionPath(x)}
+            title={x.data.name}
+            summary={x.data.summary}
+            code={refCode('detection', slugOf(x))}
+            meta={`${x.data.platforms.join(' · ')} — ${t('detections.hunts', {
+              n: x.data.hunts.reduce((sum, h) => sum + h.commands.length, 0),
+            })}`}
+          />
+        </li>
+      ))
+    }
+  </ul>
+</BaseLayout>

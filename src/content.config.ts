@@ -131,4 +131,40 @@ const playbooks = defineCollection({
   }),
 });
 
-export const collections = { tools, artifacts, playbooks };
+/**
+ * Detections: "I think this attack is happening. How do I find it in the logs?"
+ * One attack per entry — the pattern, the log sources and copy-paste hunts.
+ */
+const detections = defineCollection({
+  loader: glob({ pattern: '**/*.md', base: './src/content/detections' }),
+  schema: z.object({
+    ...common,
+    aliases: list,
+    order: z.number().default(100),
+    /** Where the hunts run (Windows, Linux, Web, SIEM…). */
+    platforms: z.array(z.string()).min(1),
+    /** MITRE ATT&CK technique ids (e.g. T1110). */
+    mitre: list,
+    /** "Start here": first checks, in order. */
+    start_here: list,
+    /** "What it looks like": the pattern in the data. */
+    signs: list,
+    /** "Where to look": log source and the events / lines that matter in it. */
+    sources: z.array(z.object({ source: z.string(), look: z.string() })).default([]),
+    /** "Hunt": commands grouped by where they run. */
+    hunts: z
+      .array(z.object({ source: z.string(), note: z.string().optional(), commands: z.array(command).min(1) }))
+      .min(1),
+    /** "Did it succeed?": what turns noise into an incident. */
+    confirm: list,
+    false_positives: list,
+    /** "What to extract": IOCs and facts to record. */
+    extract: list,
+    mistakes: list,
+    tools: list,
+    related_artifacts: list,
+    related_playbooks: list,
+  }),
+});
+
+export const collections = { tools, artifacts, playbooks, detections };

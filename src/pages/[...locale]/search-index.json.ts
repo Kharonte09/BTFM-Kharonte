@@ -1,10 +1,13 @@
 import type { APIRoute, GetStaticPaths } from 'astro';
 import {
   artifactPath,
+  detectionPath,
   getArtifacts,
+  getDetections,
   getPlaybooks,
   getTools,
   playbookPath,
+  playbooksForDetection,
   playbooksReferencing,
   resolveRefs,
   toolPath,
@@ -80,6 +83,28 @@ export const GET: APIRoute = async ({ props }) => {
         d.iocs,
       ),
       x: await toolNames([...new Set(d.steps.flatMap((s) => s.tools))].slice(0, 6)),
+    });
+  }
+
+  for (const x of await getDetections(lang)) {
+    const d = x.data;
+    docs.push({
+      k: 'detection',
+      t: d.name,
+      u: href(lang, detectionPath(x)),
+      c: d.platforms.join(' · '),
+      s: d.summary,
+      a: d.aliases,
+      g: d.tags,
+      w: words(
+        d.mitre,
+        d.signs,
+        d.sources.map((s) => `${s.source} ${s.look}`),
+        d.hunts.flatMap((h) => h.commands.map((c) => c.label)),
+        d.confirm,
+      ),
+      p: (await playbooksForDetection(x, lang)).map((p) => p.data.name),
+      x: await toolNames(d.tools.slice(0, 6)),
     });
   }
 

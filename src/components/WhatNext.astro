@@ -10,9 +10,10 @@ interface Props {
   playbooks?: Playbook[];
   artifacts?: string[];
   tools?: string[];
+  detections?: string[];
 }
 
-const { playbooks = [], artifacts = [], tools = [] } = Astro.props;
+const { playbooks = [], artifacts = [], tools = [], detections = [] } = Astro.props;
 const lang = getLang(Astro.url);
 const t = useTranslations(lang);
 ---
@@ -36,6 +37,14 @@ const t = useTranslations(lang);
             </li>
           ))}
         </ul>
+      </div>
+    )
+  }
+  {
+    detections.length > 0 && (
+      <div>
+        <p class="label mb-2">{t('related.detections')}</p>
+        <RefList refs={detections} />
       </div>
     )
   }

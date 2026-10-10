@@ -1,5 +1,5 @@
 /** Shape of each document in /search-index.json (shared by server and client). */
-export type SearchKind = 'artifact' | 'tool' | 'playbook';
+export type SearchKind = 'artifact' | 'tool' | 'playbook' | 'detection';
 
 export interface SearchDoc {
   /** kind */
@@ -38,4 +38,4 @@ export interface SearchStrings {
   error: string;
 }
 
-export const KIND_ORDER: SearchKind[] = ['playbook', 'artifact', 'tool'];
+export const KIND_ORDER: SearchKind[] = ['playbook', 'detection', 'artifact', 'tool'];

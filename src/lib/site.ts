@@ -6,6 +6,7 @@ export const SITE = {
 
 export const NAV: readonly { key: UiKey; href: string }[] = [
   { key: 'nav.playbooks', href: '/playbooks/' },
+  { key: 'nav.detections', href: '/detections/' },
   { key: 'nav.artifacts', href: '/artifacts/' },
   { key: 'nav.tools', href: '/tools/' },
 ];

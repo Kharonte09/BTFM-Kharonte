@@ -31,6 +31,7 @@ Content lives in `src/content/<collection>/<lang>/` (`en/` and `es/`, same file 
 ```text
 src/content/
 ├── playbooks/    *.md
+├── detections/   *.md   (one attack per file: where to look + hunt commands)
 ├── artifacts/    *.md
 └── tools/        *.md
 ```

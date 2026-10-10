@@ -17,6 +17,7 @@ const en = {
   'nav.artifacts': 'Artifacts',
   'nav.tools': 'Tools',
   'nav.playbooks': 'Playbooks',
+  'nav.detections': 'Detections',
   'nav.search': 'Search',
   'nav.about': 'About',
   'nav.main': 'Main',
@@ -50,6 +51,8 @@ const en = {
   'meta.updated': 'Updated',
   'meta.tags': 'Tags',
   'meta.steps': 'Steps',
+  'meta.runsOn': 'Runs on',
+  'meta.mitre': 'ATT&CK',
 
   'coverage.basic': 'Basic',
   'coverage.intermediate': 'Intermediate',
@@ -88,6 +91,12 @@ const en = {
   'sec.pbOutput': 'Output',
   'sec.pbNotes': 'Notes',
   'sec.relatedPlaybooks': 'Related playbooks',
+  'sec.firstChecks': 'First checks',
+  'sec.signs': 'What it looks like',
+  'sec.sources': 'Where to look',
+  'sec.hunt': 'Hunt it',
+  'sec.confirm': 'Did it succeed?',
+  'sec.falsePositives': 'False positives',
 
   'tools.tierStart': 'Start with',
   'tools.tierDeeper': 'Go deeper',
@@ -100,6 +109,7 @@ const en = {
   'related.artifacts': 'Artifacts',
   'related.tools': 'Tools',
   'related.playbooks': 'Playbooks',
+  'related.detections': 'Detections',
   'related.usedIn': 'Used in playbooks',
   'step.tools': 'Tools',
   'step.artifacts': 'Artifacts',
@@ -138,6 +148,7 @@ const en = {
   'kind.tool': 'Tools',
   'kind.playbook': 'Playbooks',
   'kind.playbookOne': 'Playbook',
+  'kind.detection': 'Detections',
 
   'cat.entries': '{n} entries',
   'cat.empty': 'No entries yet. Contributions welcome.',
@@ -156,6 +167,10 @@ const en = {
   'playbooks.summary':
     'High-level investigation workflows. Each step states its goal, the tools and artifacts involved, and when to escalate.',
   'playbooks.steps': '{n} steps',
+  'detections.title': 'Detections',
+  'detections.summary':
+    'One attack per page: what it looks like in the logs, where to look and the commands to hunt for it.',
+  'detections.hunts': '{n} hunts',
 
   'home.kicker': 'Ref. manual · v0.1',
   'home.h1a': 'Blue Team',
@@ -180,6 +195,8 @@ const en = {
   'home.allArtifacts': 'All artifacts →',
   'home.playbooks': 'Playbooks',
   'home.allPlaybooks': 'All playbooks →',
+  'home.detections': 'Detect an attack',
+  'home.allDetections': 'All detections →',
   'home.tools': 'Tools',
   'home.allTools': 'All tools →',
   'home.scope': 'Scope',
@@ -226,6 +243,7 @@ const es: Record<UiKey, string> = {
   'nav.artifacts': 'Artefactos',
   'nav.tools': 'Herramientas',
   'nav.playbooks': 'Playbooks',
+  'nav.detections': 'Detecciones',
   'nav.search': 'Buscar',
   'nav.about': 'Acerca de',
   'nav.main': 'Principal',
@@ -259,6 +277,8 @@ const es: Record<UiKey, string> = {
   'meta.updated': 'Actualizado',
   'meta.tags': 'Etiquetas',
   'meta.steps': 'Pasos',
+  'meta.runsOn': 'Se ejecuta en',
+  'meta.mitre': 'ATT&CK',
 
   'coverage.basic': 'Básica',
   'coverage.intermediate': 'Intermedia',
@@ -297,6 +317,12 @@ const es: Record<UiKey, string> = {
   'sec.pbOutput': 'Qué debes entregar',
   'sec.pbNotes': 'Notas',
   'sec.relatedPlaybooks': 'Playbooks relacionados',
+  'sec.firstChecks': 'Primeras comprobaciones',
+  'sec.signs': 'Cómo se ve',
+  'sec.sources': 'Dónde mirar',
+  'sec.hunt': 'Comandos para buscarlo',
+  'sec.confirm': '¿Ha tenido éxito?',
+  'sec.falsePositives': 'Falsos positivos',
 
   'tools.tierStart': 'Empieza por',
   'tools.tierDeeper': 'Para profundizar',
@@ -309,6 +335,7 @@ const es: Record<UiKey, string> = {
   'related.artifacts': 'Artefactos',
   'related.tools': 'Herramientas',
   'related.playbooks': 'Playbooks',
+  'related.detections': 'Detecciones',
   'related.usedIn': 'Se usa en los playbooks',
   'step.tools': 'Herramientas',
   'step.artifacts': 'Artefactos',
@@ -347,6 +374,7 @@ const es: Record<UiKey, string> = {
   'kind.tool': 'Herramientas',
   'kind.playbook': 'Playbooks',
   'kind.playbookOne': 'Playbook',
+  'kind.detection': 'Detecciones',
 
   'cat.entries': '{n} fichas',
   'cat.empty': 'Aún no hay fichas. Se aceptan contribuciones.',
@@ -365,6 +393,10 @@ const es: Record<UiKey, string> = {
   'playbooks.summary':
     'Workflows de investigación de alto nivel. Cada paso indica su objetivo, las herramientas y artefactos implicados y cuándo escalar.',
   'playbooks.steps': '{n} pasos',
+  'detections.title': 'Detecciones',
+  'detections.summary':
+    'Un ataque por página: cómo se ve en los logs, dónde mirar y los comandos para buscarlo.',
+  'detections.hunts': '{n} búsquedas',
 
   'home.kicker': 'Ref. manual · v0.1',
   'home.h1a': 'Blue Team',
@@ -389,6 +421,8 @@ const es: Record<UiKey, string> = {
   'home.allArtifacts': 'Todos los artefactos →',
   'home.playbooks': 'Playbooks',
   'home.allPlaybooks': 'Todos los playbooks →',
+  'home.detections': 'Detecta un ataque',
+  'home.allDetections': 'Todas las detecciones →',
   'home.tools': 'Herramientas',
   'home.allTools': 'Todas las herramientas →',
   'home.scope': 'Alcance',

@@ -3,8 +3,19 @@ import type { GetStaticPaths } from 'astro';
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import SearchPanel from '@/components/SearchPanel.astro';
 import PlaybookCard from '@/components/PlaybookCard.astro';
+import EntryCard from '@/components/EntryCard.astro';
 import Icon from '@/components/Icon.astro';
-import { artifactPath, getArtifacts, getPlaybooks, getTools, playbookPath, slugOf } from '@/lib/content';
+import {
+  artifactPath,
+  detectionPath,
+  getArtifacts,
+  getDetections,
+  getPlaybooks,
+  getTools,
+  playbookPath,
+  refCode,
+  slugOf,
+} from '@/lib/content';
 import { ENTRY_POINTS } from '@/lib/entry-points';
 import { ARTIFACT_CATEGORIES, TOOL_CATEGORIES } from '@/lib/taxonomy';
 import { href } from '@/lib/url';
@@ -16,10 +27,11 @@ export const getStaticPaths = (() => localeStaticPaths()) satisfies GetStaticPat
 const { lang } = Astro.props as { lang: Lang };
 const t = useTranslations(lang);
 
-const [artifacts, tools, playbooks] = await Promise.all([
+const [artifacts, tools, playbooks, detections] = await Promise.all([
   getArtifacts(lang),
   getTools(lang),
   getPlaybooks(lang),
+  getDetections(lang),
 ]);
 
 const countBy = <T extends { data: { category: string } }>(items: T[], id: string) =>
@@ -29,6 +41,7 @@ const toolCategories = TOOL_CATEGORIES.filter((c) => countBy(tools, c.id) > 0);
 
 const stats = [
   { label: t('nav.playbooks'), value: playbooks.length, href: '/playbooks/' },
+  { label: t('nav.detections'), value: detections.length, href: '/detections/' },
   { label: t('nav.artifacts'), value: artifacts.length, href: '/artifacts/' },
   { label: t('nav.tools'), value: tools.length, href: '/tools/' },
 ];
@@ -144,10 +157,35 @@ const refRow =
     </ul>
   </section>
 
+  <!-- Detections: one attack → how to find it in the logs -->
+  <section aria-labelledby="dets" class="border-t border-ink-700 py-12">
+    <div class="mb-6 flex items-baseline justify-between gap-4">
+      <h2 id="dets" class="label"><span class="mr-3 text-ember">03</span>{t('home.detections')}</h2>
+      <a href={href(lang, '/detections/')} class="font-mono text-xs text-mute hover:text-paper">
+        {t('home.allDetections')}
+      </a>
+    </div>
+    <ul class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      {
+        detections.map((x) => (
+          <li>
+            <EntryCard
+              href={detectionPath(x)}
+              title={x.data.name}
+              summary={x.data.summary}
+              code={refCode('detection', slugOf(x))}
+              meta={x.data.platforms.join(' · ')}
+            />
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
   <!-- Reference: supports the playbooks -->
   <section aria-labelledby="reference" class="border-t border-ink-700 py-12">
     <div class="mb-8 max-w-2xl">
-      <h2 id="reference" class="label"><span class="mr-3 text-ember">03</span>{t('home.reference')}</h2>
+      <h2 id="reference" class="label"><span class="mr-3 text-ember">04</span>{t('home.reference')}</h2>
       <p class="mt-3 text-sm leading-relaxed text-mute">{t('home.referenceText')}</p>
     </div>
 
