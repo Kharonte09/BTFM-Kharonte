@@ -36,6 +36,6 @@ mistakes:
   - Decoding works by emulation and targets x86/x64 Windows PE files; it can be slow on large samples.
   - No decoded strings does not mean no obfuscation.
   - Treat every extracted indicator as a lead — validate it before blocking.
-complements: [PEStudio, Detect It Easy, capa, YARA, CyberChef]
+complements: [strings, PEStudio, Detect It Easy, capa, YARA, CyberChef]
 related_artifacts: [pe-executables]
 ---

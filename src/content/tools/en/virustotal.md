@@ -1,7 +1,7 @@
 ---
 name: VirusTotal
 summary: Online multi-engine scanner and threat-intelligence service for files, URLs, domains and IP addresses.
-category: malware-analysis
+category: general
 type: Reputation / threat intelligence
 platforms: [Web]
 license: Free public web interface; premium services are commercial

@@ -36,6 +36,6 @@ mistakes:
   - La decodificación funciona por emulación y está orientada a PE x86/x64 de Windows; puede ser lenta en muestras grandes.
   - No obtener strings decodificados no significa que no haya ofuscación.
   - Trata cada indicador extraído como una pista — valídalo antes de bloquear.
-complements: [PEStudio, Detect It Easy, capa, YARA, CyberChef]
+complements: [strings, PEStudio, Detect It Easy, capa, YARA, CyberChef]
 related_artifacts: [pe-executables]
 ---

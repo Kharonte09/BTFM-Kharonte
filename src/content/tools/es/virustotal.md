@@ -1,7 +1,7 @@
 ---
 name: VirusTotal
 summary: Servicio online de análisis multimotor e inteligencia de amenazas para ficheros, URLs, dominios y direcciones IP.
-category: malware-analysis
+category: general
 type: Reputación / inteligencia de amenazas
 platforms: [Web]
 license: Interfaz web pública gratuita; los servicios premium son comerciales
